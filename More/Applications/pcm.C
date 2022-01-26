@@ -122,6 +122,9 @@ public:
   //! Add the specified phase bin to the constraints
   void add_phase_bin (const string& text);
 
+  //! Add to the list of file(s) from which phase bins will be chosen
+  void add_binfile (const string& filename);
+
   //! Set the range of pulse phase to use as constraints
   void set_phase_range (const string& text);
 
@@ -151,7 +154,7 @@ pcm::pcm () : Pulsar::Application ("pcm",
 }
 
 // Construct a calibrator model for MEM mode
-SystemCalibrator* measurement_equation_modeling (const string& binname,
+SystemCalibrator* measurement_equation_modeling (const vector<string>& binfiles,
                                                  unsigned nbin);
 
 // Construct a calibrator model for METM mode
@@ -719,8 +722,8 @@ unsigned nthread = 1;
 // name of file containing list of filenames to be calibrated
 string calibrate_these;
 
-// name of file from which phase bins will be chosen
-string binfile;
+// name(s) of file(s) from which phase bins will be chosen
+vector<string> binfiles;
 
 // name of least squares minimization algorithm
 string least_squares;
@@ -862,6 +865,13 @@ void pcm::add_phase_bin (const string& text)
   cerr << "pcm: adding phase bin " << bin << endl;
   phase_bins.push_back (bin);
 }
+
+void pcm::add_binfile (const string& filename)
+{
+  cerr << "pcm: adding " << filename << " to phase bin reference files" << endl;
+  binfiles.push_back (filename);
+}
+
 
 void pcm::set_phase_range (const string& text)
 {
@@ -1064,7 +1074,7 @@ void pcm::add_options (CommandLine::Menu& menu)
   arg->set_help ("set the phase bin selection policy: int, pol, orth, inv");
   arg->set_long_help ("separate multiple policies with commas");
 
-  arg = menu.add (binfile, 'c', "file");
+  arg = menu.add (this, &pcm::add_binfile, 'c', "file");
   arg->set_help ("choose best input states from observation in file");
 
   arg = menu.add (this, &pcm::add_phase_bin, 'b', "nbin");
@@ -1146,7 +1156,7 @@ void pcm::setup ()
 
   bool mem_mode = template_filename.empty();
   
-  if (mem_mode && phmin == phmax && binfile.empty())
+  if (mem_mode && phmin == phmax && binfiles.empty())
     throw Error (InvalidState, "pcm",
       "In MEM mode, at least one of the following options"
       " must be specified:\n"
@@ -1344,7 +1354,7 @@ void pcm::process (Pulsar::Archive* archive)
     if (!template_filename.empty())
       model = matrix_template_matching (template_filename);
     else
-      model = measurement_equation_modeling (binfile, archive->get_nbin());
+      model = measurement_equation_modeling (binfiles, archive->get_nbin());
 
     configure_model (model);  
   }
@@ -1353,7 +1363,8 @@ void pcm::process (Pulsar::Archive* archive)
     test for phase shift only if phase_std is not from current archive.
     this test will fail if binfile is a symbollic link.
   */
-  if (phase_std && (binfile.empty() || archive->get_filename() != binfile))
+  if ( phase_std && find (binfiles.begin(), binfiles.end(),
+			  archive->get_filename()) == binfiles.end() )
   {
     if (verbose)
       cerr << "pcm: creating checking phase" << endl;
@@ -1647,7 +1658,7 @@ void pcm::finalize ()
 
 using namespace Pulsar;
 
-SystemCalibrator* measurement_equation_modeling (const string& binfile,
+SystemCalibrator* measurement_equation_modeling (const vector<string>& binfiles,
                                                  unsigned nbin) try
 {
   ReceptionCalibrator* model = new ReceptionCalibrator (model_type);
@@ -1737,24 +1748,27 @@ SystemCalibrator* measurement_equation_modeling (const string& binfile,
   // archive from which pulse phase bins will be chosen
   Reference::To<Pulsar::Archive> autobin;
 
-  if (!binfile.empty()) try 
+  if (!binfiles.empty())
   {
-    // archive from which pulse phase bins will be chosen
-    Reference::To<Pulsar::Archive> autobin;
+    for (auto filename: binfiles) try 
+    {
+      // archive from which pulse phase bins will be chosen
+      Reference::To<Pulsar::Archive> autobin;
 
-    autobin = load (binfile);
+      autobin = load (filename);
 
-    auto_select (*model, autobin, maxbins);
-
-    if (alignment_threshold)
-      phase_std = autobin->get_Profile (0,0,0);
+      auto_select (*model, autobin, maxbins);
+      
+      if (alignment_threshold)
+	phase_std = autobin->get_Profile (0,0,0);
+    }
+    catch (Error& error)
+    {
+      error << "\ncould not load constraint archive '" << filename << "'";
+      throw error;
+    }
   }
-  catch (Error& error)
-  {
-    error << "\ncould not load constraint archive '" << binfile << "'";
-    throw error;
-  }
-
+  
   if (phmin != phmax)
     range_select (phase_bins, phmin, phmax, nbin, maxbins);
 

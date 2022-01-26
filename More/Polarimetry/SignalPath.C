@@ -46,7 +46,8 @@ SignalPath::SignalPath (Pulsar::Calibrator::Type* _type)
 
   valid = true;
   built = false;
-
+  sharing = false;
+  
   time_variations_engaged = true;
   step_after_cal = false;
   constant_pulsar_gain = false;
@@ -61,6 +62,15 @@ void SignalPath::copy (SignalPath* other)
   equation->copy_fit( other->equation );
 }
 
+void SignalPath::share (SignalPath* other)
+{
+  equation = other->equation;
+  response = other->response;
+  impurity = other->impurity;
+  sharing = true;
+  other->sharing = true;
+}
+
 void SignalPath::set_valid (bool f, const char* reason)
 {
   valid = f;
@@ -71,6 +81,10 @@ void SignalPath::set_valid (bool f, const char* reason)
 
 void SignalPath::set_response (MEAL::Complex2* x)
 {
+  if (sharing)
+    throw Error (InvalidState, "SignalPath::set_response",
+		 "cannot set response when sharing with another SignalPath");
+  
   response = x;
 }
 
@@ -101,6 +115,10 @@ SignalPath::get_response_variation (unsigned iparam) const
 
 void SignalPath::set_impurity (MEAL::Real4* x)
 {
+  if (sharing)
+    throw Error (InvalidState, "SignalPath::set_impurity",
+		 "cannot set impurity when sharing with another SignalPath");
+
   impurity = x;
 }
 
@@ -143,8 +161,7 @@ Calibration::ReceptionModel* SignalPath::get_equation ()
 }
 
 //! Get the measurement equation solver
-const Calibration::ReceptionModel*
-SignalPath::get_equation () const
+const Calibration::ReceptionModel* SignalPath::get_equation () const
 {
   return equation;
 }
