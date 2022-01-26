@@ -27,16 +27,23 @@
 
 namespace Calibration
 {
+  class VariableBackend;
+  class VariableBackendEstimate;
+  
   //! Manages multiple signal path transformations in a reception model
 
   /*! As in Table 1 of van Straten (2004), different types of
     observations are subjected to different polarimetric
-    transformations */
+    transformations.
 
-  class VariableBackendEstimate;
-  class VariableBackend;
-  class BackendEstimate;
-  
+    Each SignalPath instance manages the polarimetric tranformations
+    for observations of a single pulsar, its reference source
+    (e.g. noise diode), and a flux calibrator.
+
+    Multiple pulsars are managed by multiple SignalPaths that share a
+    reception model and a common set of polarimetric transformations.
+  */
+
   class SignalPath : public Reference::Able
   {
   public:
@@ -47,9 +54,13 @@ namespace Calibration
     //! Default constructor
     SignalPath (Pulsar::Calibrator::Type*);
 
-    //! Copy the state of another instance
-    void copy (SignalPath*);
+    //! Copy state of other instance
+    void copy (SignalPath* other);
 
+    //! Share reception model and common transformations of other instance
+    /*! Common transformations are experienced by all sources. */
+    void share (SignalPath* other);
+    
     //! Set the response transformation
     void set_response (MEAL::Complex2*);
 
@@ -231,12 +242,13 @@ namespace Calibration
     //! The algorithm used to solve the measurement equation
     Reference::To< Calibration::ReceptionModel::Solver > solver;
 
-    //! The instrumental response to be modelled
+    //! The common instrumental response to be modelled
     
     /*! All signal paths include this transformation, which is the
-      response to be modeled and output as a solution.  All other
-      transformations deal with variations as a function of time,
-      variations between signals of different types, etc. */
+      response to be modeled and output as a solution.  
+
+      Other transformations mostly deal with variations as a function
+      of time, variations between signals of different types, etc. */
     
     Reference::To< MEAL::Complex2 > response;
 
@@ -264,8 +276,9 @@ namespace Calibration
     Calibration::ConvertMJD convert;
 
     //! The set of instrumental backend transformations for each epoch
-    /*! This is the new way to handle jumps in the instrumental response
-      that apply to both calibrator and pulsar observations. */
+    /*! The VariableBackendEstimate class handles jumps in the
+      instrumental response that apply to both calibrator and pulsar
+      observations. */
     std::vector< Reference::To< VariableBackendEstimate > > backends;
 
     //! Return a newly constructed and initialized backend
@@ -281,7 +294,11 @@ namespace Calibration
     Reference::To< MEAL::Univariate<MEAL::Scalar> > diff_gain_variation;
     Reference::To< MEAL::Univariate<MEAL::Scalar> > diff_phase_variation;
 
-    //! The Mueller transformation
+    //! The (optional) common instrumental impurity to be modelled
+    
+    /*! When used, all signal paths include this transformation, which
+      supplements the response to be modeled and output as a solution. */
+
     Reference::To< MEAL::Real4 > impurity;
 
     //! The instrumental response returned by get_transformation
@@ -320,6 +337,9 @@ namespace Calibration
     //! built flag
     bool built;
 
+    //! flag set when sharing model and common transformations
+    bool sharing;
+    
     //! build method
     void build ();
 

@@ -1,7 +1,7 @@
 //-*-C++-*-
 /***************************************************************************
  *
- *   Copyright (C) 2008 - 2016 by Willem van Straten
+ *   Copyright (C) 2008 - 2022 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -32,7 +32,15 @@ namespace Pulsar
   //! PolnCalibrator with estimated calibrator Stokes parameters
   /*! The SystemCalibrator is the virtual base class of polarization
     calibrators that determine both the instrumental response and the
-    input Stokes parameters of the reference signal.
+    input Stokes parameters of a reference signal (e.g. noise diode).
+
+    Each SystemCalibrator instance manages the observations of a
+    single pulsar, its reference source (e.g. noise diode), and a flux
+    calibrator.
+
+    Multiple pulsars are managed by multiple SystemCalibrator
+    instances that share a reception model and a common set of
+    polarimetric transformations.
   */
 
   class SystemCalibrator : public PolnCalibrator
