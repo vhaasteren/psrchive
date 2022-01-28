@@ -68,6 +68,14 @@ SystemCalibrator* SystemCalibratorManager::get_calibrator (const Archive* data)
 	       "no model matches filename=" + data->get_filename()); 
 }
 
+void SystemCalibratorManager::solve ()
+{
+  for (auto cal: calibrator)
+    cal->solve_prepare ();
+
+  get_model()->solve ();
+}
+
 //! Return the reference epoch of the calibration experiment
 MJD SystemCalibratorManager::get_epoch () const
 {

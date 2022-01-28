@@ -277,13 +277,14 @@ namespace Pulsar
     /*! By default, will throw exception */
     virtual bool match (const Archive*, bool throw_exception = true);
 
-    bool match_check_nchan;
-    
     //! Solution unloading policy
     class Unloader;
 
   protected:
 
+    friend class SystemCalibratorManager;
+    bool match_check_nchan;
+    
     //! SystemCalibrator with whom common reception model is shared
     /* and common polarimetric transformations */
     Reference::To<SystemCalibrator> partner;
