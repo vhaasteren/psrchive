@@ -297,7 +297,7 @@ void Pulsar::PulsarCalibrator::init_model (unsigned ichan)
 }
 
 //! Ensure that the pulsar observation can be added to the data set
-void Pulsar::PulsarCalibrator::match (const Archive* data)
+bool Pulsar::PulsarCalibrator::match (const Archive* data, bool throw_exception)
 {
   if (verbose)
     cerr << "Pulsar::PulsarCalibrator::match"
@@ -320,11 +320,16 @@ void Pulsar::PulsarCalibrator::match (const Archive* data)
   }
 
   if (!match.match (get_calibrator(), data))
-    throw Error (InvalidParam, "Pulsar::PulsarCalibrator::match",
+  {
+    if (throw_exception)
+      throw Error (InvalidParam, "Pulsar::PulsarCalibrator::match",
                  "mismatch between calibrator\n\t"
-                 + get_calibrator()->get_filename() +
-                 " and\n\t" + data->get_filename() + match.get_reason());
-
+		   + get_calibrator()->get_filename() +
+		   " and\n\t" + data->get_filename() + match.get_reason());
+    else
+      return false;
+  }
+  
   if (!has_Receiver())
     set_Receiver (data);
 
@@ -333,6 +338,8 @@ void Pulsar::PulsarCalibrator::match (const Archive* data)
 
   if (!mtm.size())
     build (data->get_nchan());
+
+  return true;
 }
 
 /*!

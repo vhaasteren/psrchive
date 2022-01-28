@@ -6,8 +6,15 @@
  ***************************************************************************/
 
 #include "Pulsar/SystemCalibratorManager.h"
+#include "Pulsar/Archive.h"
 
 using namespace Pulsar;
+using namespace std;
+
+SystemCalibratorManager::SystemCalibratorManager ()
+{
+  fscrunch_data_to_model = false;
+}
 
 void SystemCalibratorManager::manage (SystemCalibrator* cal)
 {
@@ -18,6 +25,47 @@ void SystemCalibratorManager::manage (SystemCalibrator* cal)
      invalid for different pulsars */
   
   calibrator.push_back (cal);
+}
+
+//! Return the number of managed system calibrators
+unsigned SystemCalibratorManager::get_ncalibrator ()
+{
+  return calibrator.size ();
+}
+
+//! Return the ith system calibrator
+SystemCalibrator* SystemCalibratorManager::get_calibrator (unsigned i)
+{
+  return calibrator[i];
+}
+
+//! Return the fiducial system calibrator
+SystemCalibrator* SystemCalibratorManager::get_model ()
+{
+  // TO DO: define fiducial calibrator
+  return calibrator[0];
+}
+
+SystemCalibrator* SystemCalibratorManager::get_calibrator (const Archive* data)
+{
+  bool throw_exception = false;
+
+  // TO DO: match will fail if model nchan != data nchan
+  for (auto cal: calibrator)
+  {
+    if (fscrunch_data_to_model)
+      cal->match_check_nchan = false;
+	
+    bool match = cal->match (data, throw_exception);
+
+    cal->match_check_nchan = true;
+
+    if (match)
+      return cal;
+  }
+  
+  throw Error (InvalidState, "SystemCalibratorManager::get_calibrator",
+	       "no model matches filename=" + data->get_filename()); 
 }
 
 //! Return the reference epoch of the calibration experiment
@@ -60,6 +108,18 @@ SystemCalibratorManager::new_info_pulsar (unsigned istate) const
 //! Prepare the data for inclusion in the model
 void SystemCalibratorManager::preprocess (Archive* data)
 {
+  SystemCalibrator* model = get_calibrator (data);
+  
+  if (fscrunch_data_to_model &&
+      model->get_nchan() < data->get_nchan())
+  {
+    cerr << "SystemCalibratorManager::preprocess frequency integrating data"
+      " (nchan=" << data->get_nchan() << ") to match model"
+      " (nchan=" << model->get_nchan() << ")" << endl;
+    data->fscrunch_to_nchan (model->get_nchan());
+  }
+
+  model->preprocess (data);
 }
 
 //! Add the observation to the set of constraints

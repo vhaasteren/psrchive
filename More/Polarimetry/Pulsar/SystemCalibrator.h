@@ -273,6 +273,12 @@ namespace Pulsar
     //! Return the SignalPath for the specified channel
     virtual const Calibration::SignalPath* get_model (unsigned ichan) const;
 
+    //! Ensure that the pulsar observation can be added to the data set
+    /*! By default, will throw exception */
+    virtual bool match (const Archive*, bool throw_exception = true);
+
+    bool match_check_nchan;
+    
     //! Solution unloading policy
     class Unloader;
 
@@ -383,9 +389,6 @@ namespace Pulsar
 
     Reference::To<StepFinder> step_finder;
     
-    //! Ensure that the pulsar observation can be added to the data set
-    virtual void match (const Archive*);
-
     //! Pulsar data loaded but not submitted or integrated
     std::vector< std::vector<Calibration::CoherencyMeasurementSet> > pulsar_data;
 
