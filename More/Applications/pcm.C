@@ -1529,12 +1529,10 @@ void pcm::finalize ()
 
   total = 0;
 
-  SystemCalibrator* model = model_manager->get_model ();
-
   try
   {
     cerr << "pcm: solving model" << endl;
-    model->solve ();
+    model_manager->solve ();
   }
   catch (Error& error)
   {
@@ -1542,6 +1540,8 @@ void pcm::finalize ()
     return;
   }
 
+  SystemCalibrator* model = model_manager->get_model ();
+    
   if (model->has_valid())
   {
     cerr << "pcm: unload model" << endl;
