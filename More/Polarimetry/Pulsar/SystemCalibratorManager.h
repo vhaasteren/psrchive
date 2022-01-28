@@ -44,6 +44,9 @@ namespace Pulsar
 
     //! Return the fiducial system calibrator
     SystemCalibrator* get_model ();
+
+    //! Solve the entire system of calibrators
+    void solve ();
     
     //! Return the reference epoch of the calibration experiment
     MJD get_epoch () const;
