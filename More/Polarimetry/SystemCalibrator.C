@@ -98,21 +98,27 @@ SystemCalibrator::SystemCalibrator (Archive* archive)
 
 void SystemCalibrator::share (SystemCalibrator* other)
 {
-  if (!other)
-    throw Error (InvalidParam, "SystemCalibrator::share",
-		 "other pointer is NULL");
+  partner = other;
+}
+
+void SystemCalibrator::setup_sharing ()
+{
+  if (!partner)
+    throw Error (InvalidParam, "SystemCalibrator::set_sharing",
+		 "no sharing partner");
 
   if (model.size() == 0)
-    throw Error (InvalidState, "SystemCalibrator::share",
+    throw Error (InvalidState, "SystemCalibrator::setup_sharing",
 		 "model not created");
 
-  if (other->model.size() != this->model.size())
-    throw Error (InvalidState, "SystemCalibrator::share",
-		 "other nchan=%u != this nchan=%u",
-		 other->model.size(), this->model.size());
-    
+  if (partner->model.size() != this->model.size())
+    throw Error (InvalidState, "SystemCalibrator::setup_sharing",
+		 "partner nchan=%u != this nchan=%u",
+		 partner->model.size(), this->model.size());
+
+  // TO DO other checks, like nchan, freq, bw, etc.
   for (unsigned ichan=0; ichan < model.size(); ichan++)
-    model[ichan]->share( other->model[ichan] );
+    model[ichan]->share( partner->model[ichan] );
 }
 
 void SystemCalibrator::set_calibrator (const Archive* archive)
@@ -1453,6 +1459,9 @@ void SystemCalibrator::create_model () try
     init_model( ichan );
   }
 
+  if (partner)
+    setup_sharing ();
+  
   if (verbose)
     cerr << "SystemCalibrator::create_model exit" << endl;
 }
