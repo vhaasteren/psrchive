@@ -27,7 +27,23 @@ namespace Pulsar
 
   public:
 
+    //! Default constructor
+    SystemCalibratorManager ();
+
+    //! Add to the array of system calibrators
     void manage (SystemCalibrator*);
+
+    //! Return the ith managed system calibrator
+    SystemCalibrator* get_calibrator (unsigned i);
+
+    //! Return the number of managed system calibrators
+    unsigned get_ncalibrator ();
+
+    //! Return the system calibrator that matches the data
+    SystemCalibrator* get_calibrator (const Archive*);
+
+    //! Return the fiducial system calibrator
+    SystemCalibrator* get_model ();
     
     //! Return the reference epoch of the calibration experiment
     MJD get_epoch () const;
@@ -68,11 +84,15 @@ namespace Pulsar
     //! Pre-calibrate the polarization of the given archive
     virtual void precalibrate (Archive* archive);
 
+    void set_fscrunch_data_to_model (bool f) { fscrunch_data_to_model = f; }
+    
   protected:
 
     //! The system calibrators
     std::vector< Reference::To<SystemCalibrator> > calibrator;
 
+    //! If needed, frequency integrate data to same resolution as model
+    bool fscrunch_data_to_model;
   };
 
 }

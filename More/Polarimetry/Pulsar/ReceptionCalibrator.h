@@ -191,7 +191,7 @@ namespace Pulsar
     void submit_calibrator_data ();
 
     //! Ensure that the pulsar observation can be added to the data set
-    void match (const Archive*);
+    bool match (const Archive*, bool throw_exception = true);
 
     void add_pulsar (Calibration::CoherencyMeasurementSet&,
 		     const Integration*, unsigned ichan);
