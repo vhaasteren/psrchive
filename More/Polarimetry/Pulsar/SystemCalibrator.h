@@ -62,6 +62,10 @@ namespace Pulsar
     //! Destructor
     virtual ~SystemCalibrator ();
 
+    //! Share reception model and common transformations of other instance
+    /*! Common transformations are experienced by all sources. */
+    virtual void share (SystemCalibrator* other);
+
     //! Return the Calibrator information
     Calibrator::Info* get_Info () const;
 
