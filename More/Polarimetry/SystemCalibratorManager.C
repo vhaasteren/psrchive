@@ -92,6 +92,12 @@ unsigned SystemCalibratorManager::get_nstate_pulsar () const
   return 0;
 }
 
+//! Return true if the state index is a pulsar
+unsigned SystemCalibratorManager::get_state_is_pulsar (unsigned istate) const
+{
+  return false;
+}
+
 //! Return true if calibrator (e.g. noise diode) data are incorporated
 bool SystemCalibratorManager::has_cal () const
 {
@@ -125,6 +131,8 @@ void SystemCalibratorManager::preprocess (Archive* data)
 //! Add the observation to the set of constraints
 void SystemCalibratorManager::add_observation (const Archive* data)
 {
+  SystemCalibrator* model = get_calibrator (data);
+  model->add_observation (data);
 }
 
 //! Get the epoch of the first observation
