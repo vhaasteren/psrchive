@@ -29,7 +29,7 @@
 #include "Pulsar/ModelParametersReport.h"
 #include "Pulsar/InputDataReport.h"
 
-#include "Pulsar/Archive.h"
+#include "Pulsar/ArchiveMatch.h"
 #include "Pulsar/IntegrationExpert.h"
 #include "Pulsar/Receiver.h"
 
@@ -84,6 +84,8 @@ SystemCalibrator::SystemCalibrator (Archive* archive)
   cal_intensity_threshold = 1.0;    // sigma
   cal_polarization_threshold = 0.5; // fraction of I
 
+  match_check_nchan = true;
+  
   projection = new VariableProjectionCorrection;
 
   ionospheric_rotation_measure = 0.0;
@@ -629,7 +631,7 @@ catch (Error& error)
 }
 
 //! Add the specified pulsar observation to the set of constraints
-void SystemCalibrator::match (const Archive* data)
+bool SystemCalibrator::match (const Archive* data, bool throw_exception)
 {
   if (verbose)
     cerr << "SystemCalibrator::match" << endl;
@@ -638,11 +640,22 @@ void SystemCalibrator::match (const Archive* data)
     throw Error (InvalidState, "SystemCalibrator::match",
 		 "No Archive containing pulsar data has yet been added");
 
-  string reason;
-  if (!get_calibrator()->mixable (data, reason))
-    throw Error (InvalidParam, "SystemCalibrator::match",
-		 "'" + data->get_filename() + "' does not match "
-		 "'" + get_calibrator()->get_filename() + reason);
+  Archive::Match match;
+
+  match.set_check_mixable (true);
+  match.set_check_nchan (match_check_nchan);
+
+  if (!match.match (get_calibrator(), data))
+  {
+    if (throw_exception)
+      throw Error (InvalidParam, "SystemCalibrator::match",
+		   "'" + data->get_filename() + "' does not match "
+		   "'" + get_calibrator()->get_filename() + match.get_reason());
+    else
+      return false;
+  }
+
+  return true;
 }
 
 void SystemCalibrator::set_calibrators (const vector<string>& n)

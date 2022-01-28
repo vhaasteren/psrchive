@@ -23,6 +23,7 @@
 #include "Pulsar/ManualVariableTransformation.h"
 #include "Pulsar/ManualPolnCalibrator.h"
 
+#include "Pulsar/SystemCalibratorManager.h"
 #include "Pulsar/SystemCalibratorUnloader.h"
 
 #include "Pulsar/Database.h"
@@ -124,8 +125,11 @@ public:
   //! Add the specified phase bin to the constraints
   void add_phase_bin (const string& text);
 
-  //! Add to the list of file(s) from which phase bins will be chosen
+  //! Add to the list of files from which phase bins will be chosen
   void add_binfile (const string& filename);
+
+  //! Add to the list of files from which templates will be loaded
+  void add_template (const string& filename);
 
   //! Set the range of pulse phase to use as constraints
   void set_phase_range (const string& text);
@@ -158,7 +162,7 @@ pcm::pcm () : Pulsar::Application ("pcm",
 }
 
 // Construct a calibrator model for MEM mode
-SystemCalibrator* measurement_equation_modeling (const vector<string>& binfiles,
+SystemCalibrator* measurement_equation_modeling (const string& binfile,
                                                  unsigned nbin);
 
 // Construct a calibrator model for METM mode
@@ -660,7 +664,7 @@ void pcm::enable_diagnostic (const string& name)
 vector<string> cal_dbase_filenames;
 
 // name of file containing the calibrated template
-string template_filename;
+vector<string> template_filenames;
 
 // hours from mid-time within which PolnCal observations will be selected
 float polncal_hours = 12.0;
@@ -710,7 +714,7 @@ string least_squares;
 vector<string> equation_configuration;
 
 bool unload_each_calibrated = true;
-bool fscrunch_data_to_template = false;
+bool fscrunch_data_to_model = false;
 
 bool reparallactify = false;
 
@@ -852,6 +856,11 @@ void pcm::add_binfile (const string& filename)
   binfiles.push_back (filename);
 }
 
+void pcm::add_template (const string& filename)
+{
+  cerr << "pcm: adding " << filename << " to template files" << endl;
+  template_filenames.push_back (filename);
+}
 
 void pcm::set_phase_range (const string& text)
 {
@@ -1107,10 +1116,10 @@ void pcm::add_options (CommandLine::Menu& menu)
 	    "METM: Measurement Equation Template Matching\n"
 	    "  -- observations of a known source as in van Straten (2013) \n");
 
-  arg = menu.add (template_filename, 'S', "file");
-  arg->set_help ("filename of calibrated standard");
+  arg = menu.add (this, &pcm::add_template, 'S', "file");
+  arg->set_help ("add filename of calibrated standard");
 
-  arg = menu.add (fscrunch_data_to_template, 'G');
+  arg = menu.add (fscrunch_data_to_model, 'G');
   arg->set_help ("fscrunch data to match number of channels of standard");
 
   arg = menu.add (choose_maximum_harmonic, 'H');
@@ -1137,7 +1146,7 @@ void pcm::setup ()
   cerr << "pcm: using a maximum of " << maxbins << " bins or harmonics" 
        << endl;
 
-  bool mem_mode = template_filename.empty();
+  bool mem_mode = template_filenames.empty();
   
   if (mem_mode && phmin == phmax && binfiles.empty())
     throw Error (InvalidState, "pcm",
@@ -1163,7 +1172,7 @@ void pcm::setup ()
     }
   }
   
-  if (mem_mode && fscrunch_data_to_template)
+  if (mem_mode && fscrunch_data_to_model)
     throw Error (InvalidState, "pcm",
 		 "In MEM mode, the -G option is not supported");
 
@@ -1188,7 +1197,7 @@ void pcm::setup ()
 }
 
   
-Reference::To<Pulsar::SystemCalibrator> model;
+Reference::To<Pulsar::SystemCalibratorManager> model_manager;
 Reference::To<Pulsar::Archive> total;
 Reference::To<Pulsar::Archive> archive;
 
@@ -1362,16 +1371,28 @@ void pcm::process (Pulsar::Archive* archive)
      }
   }
 
-  if (!model)
+  if (!model_manager)
   {
-    cerr << "pcm: creating model" << endl;
+    cerr << "pcm: creating model manager" << endl;
 
-    if (!template_filename.empty())
-      model = matrix_template_matching (template_filename);
-    else
-      model = measurement_equation_modeling (binfiles, archive->get_nbin());
+    model_manager = new SystemCalibratorManager;
 
-    configure_model (model);  
+    model_manager->set_fscrunch_data_to_model (fscrunch_data_to_model);
+      
+    for (auto filename: template_filenames)
+    {  
+      SystemCalibrator* model = matrix_template_matching (filename);
+      configure_model( model );  
+      model_manager->manage( model );
+    }
+
+    for (auto filename: binfiles)
+    {
+      unsigned nbin = archive->get_nbin();
+      SystemCalibrator* model = measurement_equation_modeling (filename, nbin);
+      configure_model( model );  
+      model_manager->manage( model );
+    }
   }
 
   /*
@@ -1396,27 +1417,19 @@ void pcm::process (Pulsar::Archive* archive)
     phase_std = temp->get_Profile (0,0,0);
   }
 
-  if (fscrunch_data_to_template &&
-      model->get_nchan() != archive->get_nchan())
-  {
-    cerr << "pcm: frequency integrating data (nchan=" << archive->get_nchan()
-	 << ") to match calibrator (nchan=" << model->get_nchan()
-	 << ")" << endl;
-    archive->fscrunch_to_nchan (model->get_nchan());
-  }
-
   cerr << "pcm: adding observation" << endl;
 
-  model->preprocess( archive );
-  model->add_observation( archive );
+  model_manager->preprocess( archive );
+  model_manager->add_observation( archive );
 
   if (archive->get_type() != Signal::Pulsar)
     return;
-      
+
+#if 0
   if (verbose)
     cerr << "pcm: calibrate with current best guess" << endl;
 
-  model->precalibrate (archive);
+  model_manager->precalibrate (archive);
 
   if (solve_each)
   {
@@ -1426,7 +1439,6 @@ void pcm::process (Pulsar::Archive* archive)
     cerr << "pcm: unloaded " << newname << endl;
   }
 
-#if 0
   if (verbose)
     cerr << "pcm: add to total" << endl;
 
@@ -1461,14 +1473,18 @@ void pcm::finalize ()
 
 #if HAVE_PGPLOT
 
-  Pulsar::SystemCalibratorPlotter plotter (model);
-  plotter.use_colour = !publication_plots;
-
   try {
 
     if (plot_guess)
-      plot_state (model, "guess");
+    {
+      SystemCalibrator* model = model_manager->get_model ();
+  
+      Pulsar::SystemCalibratorPlotter plotter (model);
+      plotter.use_colour = !publication_plots;
 
+      plot_state (model, "guess");
+    }
+    
     if (plot_total && total)
     {
       cerr << "pcm: plotting uncalibrated total PSR" << endl;
@@ -1487,12 +1503,22 @@ void pcm::finalize ()
       cpgend();
     }
 
-    if (plot_residual && model->get_nstate_pulsar())
+    if (plot_residual)
     {
-      cerr << "pcm: plotting pulsar constraints" << endl;
-      plot_constraints (plotter, model->get_nchan());
-    }
+      for (unsigned ical=0; ical < model_manager->get_ncalibrator(); ical++)
+      {
+	SystemCalibrator* model = model_manager->get_calibrator (ical);
 
+	if ( model->get_nstate_pulsar() )
+	{
+	  Pulsar::SystemCalibratorPlotter plotter (model);
+	  plotter.use_colour = !publication_plots;
+
+	  cerr << "pcm: plotting pulsar constraints" << endl;
+	  plot_constraints (plotter, model->get_nchan());
+	}
+      }
+    }
   }
   catch (Error& error)
   {
@@ -1502,6 +1528,8 @@ void pcm::finalize ()
 #endif // HAVE_PGPLOT
 
   total = 0;
+
+  SystemCalibrator* model = model_manager->get_model ();
 
   try
   {
@@ -1532,6 +1560,9 @@ void pcm::finalize ()
 
 #if HAVE_PGPLOT
 
+  Pulsar::SystemCalibratorPlotter plotter (model);
+  plotter.use_colour = !publication_plots;
+      
   if (plot_result) try
   {
     cerr << "pcm: plot result" << endl;
@@ -1598,7 +1629,7 @@ void pcm::finalize ()
 
     standard_options->process ( archive );
 
-    model->precalibrate( archive );
+    model_manager->precalibrate( archive );
 
     if (unload_each_calibrated)
     {
@@ -1675,7 +1706,7 @@ void pcm::finalize ()
 
 using namespace Pulsar;
 
-SystemCalibrator* measurement_equation_modeling (const vector<string>& binfiles,
+SystemCalibrator* measurement_equation_modeling (const string& binfile,
                                                  unsigned nbin) try
 {
   ReceptionCalibrator* model = new ReceptionCalibrator (model_type);
@@ -1754,25 +1785,19 @@ SystemCalibrator* measurement_equation_modeling (const vector<string>& binfiles,
   model->set_calibrators (calibrator_filenames);
   model->set_calibrator_preprocessor (standard_options);
 
-  if (!binfiles.empty())
+  if (!binfile.empty()) try 
   {
-    for (auto filename: binfiles) try 
-    {
-      // archive from which pulse phase bins will be chosen
-      Reference::To<Pulsar::Archive> autobin;
-
-      autobin = load (filename);
-
-      auto_select (*model, autobin, maxbins);
+    // archive from which pulse phase bins will be chosen
+    Reference::To<Pulsar::Archive> autobin = load (binfile);
+    auto_select (*model, autobin, maxbins);
       
-      if (alignment_threshold)
-	phase_std = autobin->get_Profile (0,0,0);
-    }
-    catch (Error& error)
-    {
-      error << "\ncould not load constraint archive '" << filename << "'";
-      throw error;
-    }
+    if (alignment_threshold)
+      phase_std = autobin->get_Profile (0,0,0);
+  }
+  catch (Error& error)
+  {
+    error << "\ncould not load constraint archive '" << binfile << "'";
+    throw error;
   }
   
   if (phmin != phmax)
@@ -1987,7 +2012,7 @@ void pcm::load_calibrator_database () try
     exit (-1);
   }
 
-  if (!template_filename.empty())
+  if (!template_filenames.empty())
     cerr << "pcm: no need for flux calibrator observations" << endl;
   else
   {
