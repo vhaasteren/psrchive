@@ -366,12 +366,14 @@ namespace Pulsar
     //! Initialize the SignalPath of the specified channel
     virtual void init_model (unsigned ichan);
 
+    typedef Reference::To<Calibration::SourceEstimate> SourceEstimate;
+    
     //! Initialize a vector of SourceEstimate instances
-    virtual void init_estimates ( std::vector<Calibration::SourceEstimate>&,
+    virtual void init_estimates ( std::vector<SourceEstimate>&,
 				  unsigned ibin = 0 );
 
     //! Report on input data failure rates
-    virtual void print_input_failed (const std::vector<Calibration::SourceEstimate>&);
+    virtual void print_input_failed (const std::vector<SourceEstimate>&);
     std::vector<std::ofstream*> input_failed;
     virtual void close_input_failed ();
 
@@ -380,6 +382,9 @@ namespace Pulsar
 
     //! Create the calibrator estimate
     virtual void create_calibrator_estimate ();
+
+    //! Copy the calibrator estimates from sharing partner
+    virtual void copy_calibrator_estimate ();
 
     //! Flag set when data have been integrated with measurement equation
     bool data_submitted;
@@ -429,7 +434,7 @@ namespace Pulsar
     Reference::To<Processor> calibrator_preprocessor;
 
     //! Uncalibrated estimate of calibrator polarization
-    std::vector<Calibration::SourceEstimate> calibrator_estimate;
+    std::vector< Reference::To<Calibration::SourceEstimate> > calibrator_estimate;
     
     //! Epoch of the first observation
     MJD start_epoch;
