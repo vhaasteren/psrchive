@@ -137,7 +137,7 @@ namespace Pulsar
     std::vector< Reference::To<Calibration::FluxCalManager> > fluxcal;
 
     //! Uncalibrated estimate of pulsar polarization as a function of phase
-    std::vector< std::vector<Calibration::SourceEstimate> > pulsar;
+    std::vector< std::vector< Reference::To<Calibration::SourceEstimate> > > pulsar;
     std::vector< unsigned > phase_bins;
 
     //! The epochs of all loaded calibrators
@@ -173,7 +173,7 @@ namespace Pulsar
       \param ichan the frequency channel
     */
     void add_data (std::vector<Calibration::CoherencyMeasurement>& bins,
-		   Calibration::SourceEstimate& estimate,
+		   Calibration::SourceEstimate* estimate,
 		   const MJD& epoch, unsigned ichan);
 
     //! Prepare the calibrator estimate
@@ -196,13 +196,13 @@ namespace Pulsar
     void add_pulsar (Calibration::CoherencyMeasurementSet&,
 		     const Integration*, unsigned ichan);
 
-    Calibration::SourceEstimate& get_estimate (unsigned index,
+    Calibration::SourceEstimate* get_estimate (unsigned index,
 					       unsigned ichan);
 
     void integrate_pulsar_data (const Calibration::CoherencyMeasurementSet&);
 
     void integrate_pulsar_data (const Calibration::CoherencyMeasurement&,
-				Calibration::SourceEstimate&,
+				Calibration::SourceEstimate*,
 				const MJD& epoch, unsigned ichan);
       
     //! Prepare the measurement equations for fitting
@@ -213,7 +213,7 @@ namespace Pulsar
 
     //! Set fit flags and initial values of the calibrator Stokes parameters
     void setup_calibrators ();
-    void setup_poln_calibrator (Calibration::SourceEstimate&);
+    void setup_poln_calibrator (Calibration::SourceEstimate*);
     void setup_flux_calibrator (Calibration::FluxCalManager*);
 
     //! Ensure that selected phase bins are represented in on-pulse mask
