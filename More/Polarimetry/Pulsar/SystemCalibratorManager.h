@@ -12,6 +12,7 @@
 #define __Pulsar_SystemCalibratorManager_H
 
 #include "Pulsar/SystemCalibrator.h"
+#include "Pulsar/Database.h"
 
 namespace Pulsar
 {
@@ -47,6 +48,9 @@ namespace Pulsar
 
     //! Solve the entire system of calibrators
     void solve ();
+
+    //! Set the calibrator database
+    void set_database (Pulsar::Database* db) { database = db; }
     
     //! Return the reference epoch of the calibration experiment
     MJD get_epoch () const;
@@ -93,6 +97,9 @@ namespace Pulsar
 
     //! The system calibrators
     std::vector< Reference::To<SystemCalibrator> > calibrator;
+
+    //! The database from which PolnCal and FluxCal
+    Reference::To<Pulsar::Database> database;
 
     //! If needed, frequency integrate data to same resolution as model
     bool fscrunch_data_to_model;

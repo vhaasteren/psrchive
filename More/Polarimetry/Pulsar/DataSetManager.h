@@ -30,13 +30,28 @@ namespace Pulsar
 
     //! Get the name of the pulsar in this data set
     const std::string& get_name () { return name; }
-    
+
+    //! Get the epoch of the first observation
+    MJD get_start_epoch () const;
+
+    //! Get the epoch of the last observation
+    MJD get_end_epoch () const;
+
+    const std::vector< std::string >& get_calibrator_filenames () const
+    { return calibrator_filenames; }
+
   protected:
 
+    friend class DataSetManager;
+    
     std::string name;
     double total_integration_length;
     
     std::vector< Reference::To<const Archive> > data;
+    MJD start_time;
+    MJD end_time;
+
+    std::vector< std::string > calibrator_filenames;
   };
   
   //! Manages sets of data from multiple sources and a calibrator database
@@ -55,6 +70,9 @@ namespace Pulsar
     //! Add to the array of system calibrators
     void manage (DataSet*);
 
+    //! Get the data set that matches the archive
+    DataSet* get (const Archive* data);
+    
     //! Set the calibrator database
     void set_database (Pulsar::Database* db) { database = db; }
     
@@ -65,19 +83,57 @@ namespace Pulsar
     /*! Add a new dataset if needed */
     void add (const Archive* data);
 
+    //! Load empty archives from filenames
+    void load ( std::vector<std::string>& filenames );
+      
     //! Get the epoch of the first observation
     MJD get_start_epoch () const;
 
     //! Get the epoch of the last observation
     MJD get_end_epoch () const;
 
+    //! Add filenames of polarization reference source observations
+    void add_polncals (DataSet*);
+
+    //! hours from mid-time within which PolnCal observations will be selected
+    void set_polncal_hours (float hours) { polncal_hours = hours;}
+
+    // days from mid-time within which FluxCalOn observations will be selected
+    void set_fluxcal_days (float days) { fluxcal_days = days;}
+
+    // look for PolnCal observations with nearby sky coordinates
+    void set_check_coordinates (bool f) { check_coordinates = f; }
+
+    void find_poln_calibrators ();
+    void find_on_flux_calibrators ();
+    void find_off_flux_calibrators ();
+
+    unsigned get_polncal_count () const { return npolncal; }
+    
   protected:
 
-    //! The system calibrators
-    std::vector< Reference::To<DataSet> > calibrator;
+    //! The data sets
+    std::vector< Reference::To<DataSet> > datasets;
 
     //! The database from which PolnCal and FluxCal
     Reference::To<Pulsar::Database> database;
+
+    // hours from mid-time within which PolnCal observations will be selected
+    float polncal_hours;
+
+    // days from mid-time within which FluxCalOn observations will be selected
+    float fluxcal_days;
+
+    // look for PolnCal observations with nearby sky coordinates
+    bool check_coordinates;
+
+    MJD start_time;
+    MJD end_time;
+    
+    void find_flux_calibrators (Signal::Source, const char* short_names);
+
+    // total number of PolnCal observations
+    unsigned npolncal;
   };
 
 }

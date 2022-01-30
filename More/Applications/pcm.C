@@ -28,6 +28,7 @@
 
 #include "Pulsar/Database.h"
 #include "Pulsar/StandardPrepare.h"
+#include "Pulsar/DataSetManager.h"
 
 #include "Pulsar/ReceptionModelSolveMEAL.h"
 #if HAVE_GSL
@@ -136,7 +137,14 @@ public:
 
   //! Assume that the specified parameter is not degenerate
   void assume_not_degenerate (const string& text);
-  
+
+  // Construct a calibrator model for MEM mode
+  SystemCalibrator* measurement_equation_modeling (const string& binfile,
+						   unsigned nbin);
+
+  // Construct a calibrator model for METM mode
+  SystemCalibrator* matrix_template_matching (const string& stdname);
+
 protected:
 
   //! Add command line options
@@ -148,6 +156,8 @@ protected:
   vector<MJD> get_mjds ();
   void print_time_variation (SystemCalibrator* model);
 
+  Reference::To<Pulsar::SystemCalibratorManager> model_manager;
+  Reference::To<Pulsar::DataSetManager> data_manager;
 };
 
 Reference::To<Pulsar::StandardOptions> standard_options;
@@ -160,13 +170,6 @@ pcm::pcm () : Pulsar::Application ("pcm",
 
   add( standard_options = new Pulsar::StandardOptions );
 }
-
-// Construct a calibrator model for MEM mode
-SystemCalibrator* measurement_equation_modeling (const string& binfile,
-                                                 unsigned nbin);
-
-// Construct a calibrator model for METM mode
-SystemCalibrator* matrix_template_matching (const string& stdname);
 
 // Plot the various components of the model
 void plot_state (SystemCalibrator* model, const string& state);
@@ -395,9 +398,6 @@ float auto_alignment_threshold = 0.0; // sigma
 
 // total intensity profile of first archive, used to check for phase jumps
 Reference::To<Pulsar::Profile> phase_std;
-
-// names of the calibrator files
-vector<string> calibrator_filenames;
 
 // Each flux calibrator observation may have unique values of I, Q & U
 bool multiple_flux_calibrators = false;
@@ -666,16 +666,11 @@ vector<string> cal_dbase_filenames;
 // name of file containing the calibrated template
 vector<string> template_filenames;
 
-// hours from mid-time within which PolnCal observations will be selected
-float polncal_hours = 12.0;
-
-// days from mid-time within which FluxCalOn observations will be selected
-float fluxcal_days = 7.0;
+// throw an exception when no polncal observation are available
+bool must_have_cals = true;
 
 // look for PolnCal observations with nearby sky coordinates
 bool check_coordinates = true;
-
-bool must_have_cals = true;
 
 // threshold used to reject outliers while computing CAL levels
 float cal_outlier_threshold = 0.0;
@@ -695,8 +690,6 @@ string calfile;
 /* Flux calibrator solution from which first guess of calibrator Stokes
    parameters will be derived */
 Reference::To<Pulsar::FluxCalibrator> flux_cal;
-
-void load_calibrator_database ();
 
 // Number of threads used to solve equations
 unsigned nthread = 1;
@@ -901,6 +894,9 @@ void pcm::assume_not_degenerate (const string& text)
 //! Add command line options
 void pcm::add_options (CommandLine::Menu& menu)
 {
+  if (!data_manager)
+    data_manager = new DataSetManager;
+    
   CommandLine::Argument* arg;
 
   //! Remove the -q, -v and -V (quiet, verbose and very verbose) options
@@ -946,10 +942,12 @@ void pcm::add_options (CommandLine::Menu& menu)
   arg = menu.add (calibrate_these, 'W', "file");
   arg->set_help ("filename with list of other data files to be calibrated");
 
-  arg = menu.add (fluxcal_days, 'F', "days");
+  arg = menu.add (data_manager.get(), &DataSetManager::set_fluxcal_days,
+		  'F', "days");
   arg->set_help ("use flux calibrators within days of pulsar data mid-time");
 
-  arg = menu.add (polncal_hours, 'L', "hours");
+  arg = menu.add (data_manager.get(), &DataSetManager::set_polncal_hours,
+		  'L', "hours");
   arg->set_help ("use reference sources within hours of pulsar data mid-time");
 
   arg = menu.add (must_have_cals, 'w');
@@ -1179,9 +1177,6 @@ void pcm::setup ()
   if (!mem_mode)
     alignment_threshold = 0.0;
 
-  if (!calfile.empty())
-    stringfload (&calibrator_filenames, calfile);
-
   load_calibrator_database();
 
   if (!prepare)
@@ -1196,8 +1191,6 @@ void pcm::setup ()
   unloader.set_filename( output_filename );
 }
 
-  
-Reference::To<Pulsar::SystemCalibratorManager> model_manager;
 Reference::To<Pulsar::Archive> total;
 Reference::To<Pulsar::Archive> archive;
 
@@ -1610,6 +1603,7 @@ void pcm::finalize ()
     cerr << "pcm: calibrating " << filenames.size() << " files listed in "
          << calibrate_these << endl;
   }
+#if 0
   else
   {
     for (unsigned ical=0; ical < calibrator_filenames.size(); ical++)
@@ -1617,7 +1611,8 @@ void pcm::finalize ()
 
     cerr << "pcm: calibrating archives (PSR and CAL)" << endl;
   }
-
+#endif
+  
   for (unsigned i = 0; i < filenames.size(); i++) try
   {
     if (verbose)
@@ -1706,8 +1701,8 @@ void pcm::finalize ()
 
 using namespace Pulsar;
 
-SystemCalibrator* measurement_equation_modeling (const string& binfile,
-                                                 unsigned nbin) try
+SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile,
+						      unsigned nbin) try
 {
   ReceptionCalibrator* model = new ReceptionCalibrator (model_type);
 
@@ -1784,11 +1779,13 @@ SystemCalibrator* measurement_equation_modeling (const string& binfile,
   cerr << "pcm: set calibrators" << endl;
   model->set_calibrators (calibrator_filenames);
   model->set_calibrator_preprocessor (standard_options);
+  // archive from which pulse phase bins will be chosen
+  Reference::To<Pulsar::Archive> autobin;
 
   if (!binfile.empty()) try 
   {
     // archive from which pulse phase bins will be chosen
-    Reference::To<Pulsar::Archive> autobin = load (binfile);
+    autobin = load (binfile);
     auto_select (*model, autobin, maxbins);
       
     if (alignment_threshold)
@@ -1799,7 +1796,25 @@ SystemCalibrator* measurement_equation_modeling (const string& binfile,
     error << "\ncould not load constraint archive '" << binfile << "'";
     throw error;
   }
+
+  if (!autobin)
+    throw Error (InvalidState, "pcm::measurement_equation_modeling",
+		 "need to update code to work without auto phase bin");
   
+  cerr << "pcm: set calibrators" << endl;
+
+  // BILLY
+  DataSet* dataset = data_manager->get (autobin);
+  vector<string> filenames = dataset->get_calibrator_filenames ();
+
+  if (!calfile.empty())
+  {
+    cerr << "pcm: loading calibrator filenames from " << calfile << endl;
+    stringfload (&filenames, calfile);
+  }
+  
+  model->set_calibrators (filenames);
+
   if (phmin != phmax)
     range_select (phase_bins, phmin, phmax, nbin, maxbins);
 
@@ -1819,7 +1834,7 @@ catch (Error& error)
   throw error += "pcm:mode A";
 }
 
-SystemCalibrator* matrix_template_matching (const string& stdname)
+SystemCalibrator* pcm::matrix_template_matching (const string& stdname)
 {
   PulsarCalibrator* model = new PulsarCalibrator (model_type);
 
@@ -1863,15 +1878,19 @@ SystemCalibrator* matrix_template_matching (const string& stdname)
   clock.stop();
   cerr << "pcm: standard set in " << clock << endl;
 
-  if (calibrator_filenames.size())
-    cerr << "pcm: adding " << calibrator_filenames.size() << " calibrators"
-         << endl;
+  DataSet* dataset = data_manager->get (standard);
 
-  for (unsigned ical=0; ical < calibrator_filenames.size(); ical++)
+  const vector<string>& filenames = dataset->get_calibrator_filenames ();
+  
+  if (filenames.size())
+    cerr << "pcm: adding " << filenames.size() << " calibrators" << endl;
+
+  for (unsigned ical=0; ical < filenames.size(); ical++)
   {
     Archive* cal = Archive::load (calibrator_filenames[ical]);
     standard_options->process (cal);
-    model->add_observation (cal);
+
+    model->add_observation( cal );
   }
 
   return model;
@@ -1914,7 +1933,7 @@ void pcm::get_span ()
 
   if (span < 1)
   {
-    span += 24;
+    span *= 24;
     unit = "hours";
   }
 
@@ -1937,25 +1956,11 @@ void pcm::load_calibrator_database () try
   if (!filenames.size())
     return;
 
-  Reference::To<Pulsar::Archive> archive;
-  while (filenames.size()) try
-  {
-    archive = Pulsar::Archive::load( filenames.front() );
-    break;
-  }
-  catch (Error& error)
-  {
-    cerr << "load_calibrator_database: error loading " << filenames.front()
-         << endl << error << endl;
-    filenames.erase( filenames.begin() );
-  }
+  if (!data_manager)
+    data_manager = new DataSetManager;
 
-  get_span ();
-
-  MJD mid = 0.5 * (end_time + start_time);
-  double span_hours = (end_time - start_time).in_days() * 24.0;
-  double search_hours = 0.5*span_hours + polncal_hours;
-
+  data_manager -> load (filenames);
+  
   Reference::To<Pulsar::Database> database;
 
   for (unsigned i=0; i<cal_dbase_filenames.size(); i++)
@@ -1970,33 +1975,17 @@ void pcm::load_calibrator_database () try
   cerr << "pcm: database constructed with " << database->size() 
        << " entries" << endl;
 
-  char buffer[256];
-
-  cerr << "pcm: searching for reference source observations"
-    " within " << search_hours << " hours of midtime" << endl;
-
-  cerr << "pcm: midtime = "
-       << mid.datestr (buffer, 256, "%Y-%m-%d-%H:%M:00") << endl;
-
-  Pulsar::Database::Criteria criteria;
-  criteria = database->criteria (archive, Signal::PolnCal);
-  criteria.entry->time = mid;
-  criteria.check_coordinates = check_coordinates;
-  criteria.minutes_apart = search_hours * 60.0;
-
-  vector<const Pulsar::Database::Entry*> oncals;
-  database->all_matching (criteria, oncals);
-
-  unsigned poln_cals = oncals.size();
-
-  if (poln_cals == 0)
+  data_manager -> set_database( database );
+  data_manager -> set_check_coordinates ( check_coordinates );
+  data_manager -> find_poln_calibrators ();
+  
+  if (data_manager->get_polncal_count () == 0)
   {
-    cerr << "pcm: no PolnCal observations found; closest match was \n\n"
-         << database->get_closest_match_report () << endl;
+    cerr << "pcm: no PolnCal observations found" << endl;
 
-    if (must_have_cals && calfile.empty())
+    if (must_have_cals)
     {
-      cerr << "pcm: cannot continue (disable this check with -)" << endl;
+      cerr << "pcm: cannot continue (disable this check with -w)" << endl;
       exit (-1);
     }
   }
@@ -2013,50 +2002,15 @@ void pcm::load_calibrator_database () try
   }
 
   if (!template_filenames.empty())
+  {
     cerr << "pcm: no need for flux calibrator observations" << endl;
-  else
-  {
-    double span_days = (end_time - start_time).in_days();
-    double search_days = 0.5*span_days + fluxcal_days;
-
-    criteria.check_coordinates = false;
-    criteria.minutes_apart = search_days * 24.0 * 60.0;
-    criteria.entry->obsType = Signal::FluxCalOn;
+    return;
+  }
     
-    cerr << "pcm: searching for on-source flux calibrator observations"
-      " within " << search_days << " days of midtime" << endl;
+  data_manager -> find_on_flux_calibrators ();
 
-    database->all_matching (criteria, oncals);
-
-    if (oncals.size() == poln_cals)
-      cerr << "pcm: no FluxCalOn observations found; closest match was \n\n"
-           << database->get_closest_match_report () << endl;
-
-    if (model_fluxcal_on_minus_off)
-    {
-      unsigned ncals = oncals.size();
-
-      criteria.entry->obsType = Signal::FluxCalOff;
-
-      cerr << "pcm: searching for off-source flux calibrator observations"
-              " within " << search_days << " days of midtime" << endl;
-
-      database->all_matching (criteria, oncals);
-
-      if (oncals.size() == ncals)
-        cerr << "pcm: no FluxCalOff observations found; closest match was \n\n"
-             << database->get_closest_match_report () << endl;
-    }
-  }
-
-  sort (oncals.begin(), oncals.end());
-  
-  for (unsigned i = 0; i < oncals.size(); i++)
-  {
-    string filename = database->get_filename( oncals[i] );
-    cerr << "pcm: adding " << oncals[i]->filename << endl;
-    calibrator_filenames.push_back (filename);
-  }
+  if (model_fluxcal_on_minus_off)
+    data_manager -> find_off_flux_calibrators ();
 }
 catch (Error& error)
 {

@@ -70,6 +70,8 @@ SystemCalibrator* SystemCalibratorManager::get_calibrator (const Archive* data)
 
 void SystemCalibratorManager::solve ()
 {
+  assert (calibrator.size() > 0);
+  
   for (auto cal: calibrator)
     cal->solve_prepare ();
 
