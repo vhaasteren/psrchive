@@ -5,11 +5,13 @@
  *
  ***************************************************************************/
 
-#include <Pulsar/DataSetManager.h>
-#include <Pulsar/ArchiveMatch.h>
-#include <Pulsar/Profile.h>
+#include "Pulsar/DataSetManager.h"
+#include "Pulsar/ArchiveMatch.h"
+#include "Pulsar/Profile.h"
 
 #include "debug.h"
+
+#include <cassert>
 
 using namespace Pulsar;
 using namespace std;
