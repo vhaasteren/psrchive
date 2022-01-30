@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *   Copyright (C) 2005-2018 by Willem van Straten
+ *   Copyright (C) 2005-2022 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
