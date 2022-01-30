@@ -18,6 +18,7 @@ nobase_include_HEADERS = \
 	Pulsar/ConstantGainInfo.h \
         Pulsar/ConvertMJD.h \
         Pulsar/Database.h \
+	Pulsar/DataSetManager.h \
         Pulsar/DeltaPA.h \
         Pulsar/DeltaRM.h \
 	Pulsar/Distortion.h \
@@ -127,6 +128,7 @@ libPolarimetry_la_SOURCES = \
 	ConstantGainInfo.C \
         ConvertMJD.C \
         Database.C \
+	DataSetManager.C \
         DeltaPA.C \
         DeltaRM.C \
 	Distortion.C \
