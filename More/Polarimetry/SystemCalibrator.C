@@ -249,7 +249,7 @@ unsigned SystemCalibrator::get_state_is_pulsar (unsigned istate) const
   if (!calibrator_estimate.size())
     return true;
 
-  return istate != calibrator_estimate[0].input_index;
+  return istate != calibrator_estimate[0]->input_index;
 }
 
 //! Get the number of pulsar polarization states in the model
@@ -724,13 +724,13 @@ void SystemCalibrator::load_calibrators ()
     if (!model[ichan]->get_valid())
       continue;
 
-    Estimate<double> I = calibrator_estimate[ichan].source->get_stokes()[0];
+    Estimate<double> I = calibrator_estimate[ichan]->source->get_stokes()[0];
     if (I.get_value() == 0)
     {
       cerr << "SystemCalibrator::load_calibrators"
        " reference flux equals zero \n"
-       "\t attempts=" << calibrator_estimate[ichan].add_data_attempts <<
-       "\t failures=" << calibrator_estimate[ichan].add_data_failures << endl;
+       "\t attempts=" << calibrator_estimate[ichan]->add_data_attempts <<
+       "\t failures=" << calibrator_estimate[ichan]->add_data_failures << endl;
 
       throw Error (InvalidState, "SystemCalibrator::load_calibrators",
                    "reference flux equals zero");
@@ -981,7 +981,7 @@ void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
 }
 catch (Error& error)
 {
-  throw error += "SystemCalibrator::add_calibrator";
+  throw error += "SystemCalibrator::add_calibrator (ReferenceCalibrator)";
 }
 
 
@@ -1013,13 +1013,13 @@ void SystemCalibrator::submit_calibrator_data () try
       
       CoherencyMeasurementSet measurements;
 
-      calibrator_estimate[ichan].add_data_attempts ++;
+      calibrator_estimate[ichan]->add_data_attempts ++;
 
       measurements.set_identifier( data.identifier );
       measurements.add_coordinate( model[ichan]->time.new_Value(data.epoch) );
 
       // convert to CoherencyMeasurement format
-      CoherencyMeasurement state (calibrator_estimate[ichan].input_index);
+      CoherencyMeasurement state (calibrator_estimate[ichan]->input_index);
 
       state.set_stokes( data.observation );
       measurements.push_back( state );
@@ -1056,7 +1056,7 @@ void SystemCalibrator::submit_calibrator_data () try
 	   << ichan << " integrate_calibrator_solution error\n"
 	   << error << endl;
 
-      calibrator_estimate[ichan].add_data_failures ++;
+      calibrator_estimate[ichan]->add_data_failures ++;
       
       continue;
     }
@@ -1161,7 +1161,8 @@ catch (Error& error)
 }
 
 void SystemCalibrator::init_estimates
-( std::vector<SourceEstimate>& estimate, unsigned ibin )
+( std::vector< Reference::To<Calibration::SourceEstimate> >& estimate,
+  unsigned ibin ) try
 {
   unsigned nchan = get_nchan ();
   unsigned nbin = get_calibrator()->get_nbin ();
@@ -1186,26 +1187,63 @@ void SystemCalibrator::init_estimates
     if (!model[ichan]->get_valid())
       continue;
 
-    estimate[ichan].create_source( model[ichan]->get_equation() );
-    estimate[ichan].phase_bin = ibin;
+    estimate[ichan] = new Calibration::SourceEstimate;
+    
+    estimate[ichan]->create_source( model[ichan]->get_equation() );
+    estimate[ichan]->phase_bin = ibin;
 
     string name_prefix = "psr";
     name_prefix += "_" + tostring(ibin);
 
-    estimate[ichan].source->set_param_name_prefix( name_prefix );
+    estimate[ichan]->source->set_param_name_prefix( name_prefix );
   }
 }
+catch (Error& error)
+{
+  throw error += "SystemCalibrator::init_estimates";
+}
 
-void SystemCalibrator::prepare_calibrator_estimate ( Signal::Source s )
+void SystemCalibrator::prepare_calibrator_estimate ( Signal::Source s ) try
 {
   if (verbose > 2)
     cerr << "SystemCalibrator::prepare_calibrator_estimate" << endl;
 
   if (calibrator_estimate.size() == 0)
-    create_calibrator_estimate();
+  {
+    if (partner)
+      copy_calibrator_estimate();
+    else
+      create_calibrator_estimate();
+  }
+}
+catch (Error& error)
+{
+  throw error += "SystemCalibrator::prepare_calibrator_estimate";
 }
 
-void SystemCalibrator::create_calibrator_estimate ()
+void SystemCalibrator::copy_calibrator_estimate ()
+{
+  if (!partner)
+    throw Error (InvalidParam, "SystemCalibrator::copy_calibrator_estimate",
+		 "no sharing partner");
+
+  cerr << "SystemCalibrator::copy_calibrator_estimate size="
+       << partner->calibrator_estimate.size() << endl;
+  
+  try
+  {
+    calibrator_estimate.resize( partner->calibrator_estimate.size() );
+    for (unsigned i=0; i<calibrator_estimate.size(); i++)
+      if (partner->calibrator_estimate[i])
+	calibrator_estimate[i] = partner->calibrator_estimate[i];
+  }
+  catch (Error& error)
+    {
+      throw error += "SystemCalibrator::copy_calibrator_estimate";
+    }
+}
+
+void SystemCalibrator::create_calibrator_estimate () try
 {
   if (verbose)
     cerr << "SystemCalibrator::create_calibrator_estimate" << endl;
@@ -1223,14 +1261,18 @@ void SystemCalibrator::create_calibrator_estimate ()
 
   unsigned nchan = get_nchan ();
 
-  for (unsigned ichan=0; ichan<nchan; ichan++)
-    if (calibrator_estimate[ichan].source)
+  for (unsigned ichan=0; ichan<nchan; ichan++)  
+    if (calibrator_estimate[ichan]->source)
     {   
-      calibrator_estimate[ichan].source->set_stokes( cal_state );
-      calibrator_estimate[ichan].source->set_infit( 0, false );
+      calibrator_estimate[ichan]->source->set_stokes( cal_state );
+      calibrator_estimate[ichan]->source->set_infit( 0, false );
 
-      calibrator_estimate[ichan].source->set_param_name_prefix( "cal" );
+      calibrator_estimate[ichan]->source->set_param_name_prefix( "cal" );
     }
+}
+catch (Error& error)
+{
+  throw error += "SystemCalibrator::create_calibrator_estimate";
 }
 
 void SystemCalibrator::submit_calibrator_data 
@@ -1261,9 +1303,7 @@ void SystemCalibrator::submit_calibrator_data
   
   if (!product->has_index())
   {
-#if _DEBUG
-    cerr << "SystemCalibrator call add_cal_path" << endl;
-#endif
+    DEBUG( "SystemCalibrator call add_cal_path" );
     model[data.ichan]->add_cal_path (backend);
   }
     
@@ -1326,7 +1366,7 @@ void SystemCalibrator::integrate_calibrator_data
 	 << " overpolarized by more than 1 sigma " << p-1 << endl;
 #endif
   
-  calibrator_estimate.at(data.ichan).estimate.integrate (result);
+  calibrator_estimate.at(data.ichan)->estimate.integrate (result);
 }
 
 void SystemCalibrator::integrate_calibrator_solution
@@ -1381,7 +1421,7 @@ SystemCalibrator::get_CalibratorStokes () const
     if (!valid)
       continue;
     
-    ext->set_stokes (ichan, calibrator_estimate[ichan].source->get_stokes());
+    ext->set_stokes (ichan, calibrator_estimate[ichan]->source->get_stokes());
   }
   catch (Error& error)
   {
@@ -1600,7 +1640,7 @@ void SystemCalibrator::close_input_failed ()
 }
 
 void SystemCalibrator::print_input_failed 
-     (const std::vector<Calibration::SourceEstimate>& sources)
+     (const std::vector<SourceEstimate>& sources)
 {
   unsigned nchan = sources.size();
 
@@ -1619,7 +1659,7 @@ void SystemCalibrator::print_input_failed
                  sources.size(), input_failed.size());
 
   for (unsigned ichan=0; ichan<nchan; ichan++)
-    sources[ichan].report_input_failed (*(input_failed[ichan]));
+    sources[ichan]->report_input_failed (*(input_failed[ichan]));
 }
 
 void SystemCalibrator::solve_prepare ()
@@ -1655,7 +1695,7 @@ void SystemCalibrator::solve_prepare ()
   
   if (set_initial_guess)
     for (unsigned ichan=0; ichan<calibrator_estimate.size(); ichan++)
-      calibrator_estimate[ichan].update ();
+      calibrator_estimate[ichan]->update ();
 
   MJD epoch = get_epoch();
 
@@ -1679,14 +1719,14 @@ void SystemCalibrator::solve_prepare ()
     if (ichan < calibrator_estimate.size())
     {
       // sanity check
-      Estimate<double> I = calibrator_estimate[ichan].source->get_stokes()[0];
+      Estimate<double> I = calibrator_estimate[ichan]->source->get_stokes()[0];
       if (I.get_value() == 0)
       {
         if (verbose > 1)
           cerr << "SystemCalibrator::solve_prepare"
            " reference flux equals zero \n"
-           "\t attempts=" << calibrator_estimate[ichan].add_data_attempts <<
-           "\t failures=" << calibrator_estimate[ichan].add_data_failures 
+           "\t attempts=" << calibrator_estimate[ichan]->add_data_attempts <<
+           "\t failures=" << calibrator_estimate[ichan]->add_data_failures 
                << endl;
 
         model[ichan]->set_valid( false, "reference flux equals zero" );
