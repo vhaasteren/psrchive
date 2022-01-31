@@ -295,7 +295,7 @@ namespace Pulsar
     //! SystemCalibrator with whom common reception model is shared
     /* and common polarimetric transformations */
     Reference::To<SystemCalibrator> partner;
-    void setup_sharing ();
+    void setup_sharing (unsigned ichan);
     
     friend class SystemCalibratorPlotter;
     friend class MatrixTemplateMatching;

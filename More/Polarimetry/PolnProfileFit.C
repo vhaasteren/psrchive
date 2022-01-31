@@ -211,13 +211,14 @@ void PolnProfileFit::set_standard (const PolnProfile* _standard)
 	   << std_harmonic << " harmonics" << endl;
   }
 
-#ifdef _DEBUG
-  cerr << "PolnProfileFit::set_standard create ReceptionModel" << endl;
-#endif
-
   if (!equation)
+  {
+#ifdef _DEBUG
+    cerr << "PolnProfileFit::set_standard create ReceptionModel" << endl;
+#endif
     equation = new ReceptionModel;
-
+  }
+  
   // equation->set_fit_debug( fit_debug );
 
 #ifdef _DEBUG
