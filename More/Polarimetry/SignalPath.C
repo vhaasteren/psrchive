@@ -249,9 +249,10 @@ void SignalPath::build () try
 
   if (!equation)
   {
-    if (verbose)
-      cerr << "SignalPath::build new ReceptionModel" << endl;
     equation = new Calibration::ReceptionModel;
+    if (verbose)
+      cerr << "SignalPath::build new ReceptionModel"
+	" ptr=" << (void*) equation << endl;
   }
 
   if (solver)

@@ -101,8 +101,11 @@ void SystemCalibrator::share (SystemCalibrator* other)
   partner = other;
 }
 
-void SystemCalibrator::setup_sharing ()
+void SystemCalibrator::setup_sharing (unsigned ichan)
 {
+  if (verbose > 2)
+    cerr << "SystemCalibrator::setup_sharing ichan=" << ichan << endl;
+  
   if (!partner)
     throw Error (InvalidParam, "SystemCalibrator::set_sharing",
 		 "no sharing partner");
@@ -117,8 +120,7 @@ void SystemCalibrator::setup_sharing ()
 		 partner->model.size(), this->model.size());
 
   // TO DO other checks, like nchan, freq, bw, etc.
-  for (unsigned ichan=0; ichan < model.size(); ichan++)
-    model[ichan]->share( partner->model[ichan] );
+  model[ichan]->share( partner->model[ichan] );
 }
 
 void SystemCalibrator::set_calibrator (const Archive* archive)
@@ -1071,8 +1073,7 @@ void SystemCalibrator::submit_calibrator_data () try
     catch (Error& error)
     {
       cerr << "SystemCalibrator::submit_calibrator_data ichan="
-	   << ichan << " integrate_calibrator_solution error\n"
-	   << error << endl;
+	   << ichan << " error\n" << error << endl;
 
       if (calibrator_estimate[ichan])
         calibrator_estimate[ichan]->add_data_failures ++;
@@ -1207,6 +1208,12 @@ void SystemCalibrator::init_estimates
       continue;
 
     estimate[ichan] = new Calibration::SourceEstimate;
+
+    if (verbose > 2)
+      cerr << "SystemCalibrator::init_estimates ichan=" << ichan
+	   << " model=" << (void*) model[ichan]
+	   << " eq=" << (void*) model[ichan]->get_equation()
+	   << endl;
     
     estimate[ichan]->create_source( model[ichan]->get_equation() );
     estimate[ichan]->phase_bin = ibin;
@@ -1225,7 +1232,7 @@ catch (Error& error)
 void SystemCalibrator::prepare_calibrator_estimate ( Signal::Source s ) try
 {
   if (verbose > 2)
-    cerr << "SystemCalibrator::prepare_calibrator_estimate" << endl;
+    cerr << "SystemCalibrator::prepare_calibrator_estimate partner=" << (void*) partner.ptr() << endl;
 
   if (calibrator_estimate.size() == 0)
   {
@@ -1306,6 +1313,8 @@ void SystemCalibrator::submit_calibrator_data
 
   check_ichan ("submit_calibrator_data", data.ichan);
 
+  assert (epoch_added.size() == get_nchan());
+  
   if (!epoch_added[data.ichan])
   {
     /*
@@ -1329,7 +1338,7 @@ void SystemCalibrator::submit_calibrator_data
   measurements.set_transformation_index( product->get_index() );
 
   DEBUG("SystemCalibrator::submit_calibrator_data ichan=" << data.ichan);
-
+ 
   model[data.ichan]->get_equation()->add_data (measurements);
 
   backend->add_weight (1.0);
@@ -1464,6 +1473,9 @@ SystemCalibrator::get_CalibratorStokes () const
 
 void SystemCalibrator::create_model () try
 {
+  if (verbose > 2)
+    cerr << "SystemCalibrator::create_model" << endl;
+
 #if 0
   // this requirement could be made optional if necessary
   if (!has_Receiver())
@@ -1521,15 +1533,14 @@ void SystemCalibrator::create_model () try
 
     model[ichan] = new Calibration::SignalPath (type);
 
-    if (basis)
+    if (partner)
+      setup_sharing( ichan );
+    else if (basis)
       model[ichan]->set_basis (basis);
 
     init_model( ichan );
   }
 
-  if (partner)
-    setup_sharing ();
-  
   if (verbose)
     cerr << "SystemCalibrator::create_model exit" << endl;
 }
