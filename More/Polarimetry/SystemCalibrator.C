@@ -1464,11 +1464,13 @@ SystemCalibrator::get_CalibratorStokes () const
 
 void SystemCalibrator::create_model () try
 {
+#if 0
   // this requirement could be made optional if necessary
   if (!has_Receiver())
     throw Error (InvalidState, "SystemCalibrator::create_model",
                  "receiver not set");
-
+#endif
+  
   if (verbose)
     cerr << "SystemCalibrator::create_model receiver basis from"
             "\n\t filename = " << get_receiver_basis_filename() << endl;

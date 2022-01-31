@@ -200,6 +200,9 @@ void Pulsar::PulsarCalibrator::build (unsigned nchan) try
 
   mtm.resize (nchan);
 
+  if (model.size() == 0)
+    create_model ();
+
   for (unsigned ichan=0; ichan<nchan; ichan++) try
   {
     if (verbose > 2)
@@ -233,6 +236,9 @@ void Pulsar::PulsarCalibrator::build (unsigned nchan) try
     // the equation transformation will be managed by the SignalPath class
     mtm[ichan]->manage_equation_transformation = false;
 
+    // share the measurement equations between PolnProfileFit and SignalPath
+    mtm[ichan]->set_equation( model[ichan]->get_equation() );
+    
     mtm[ichan]->set_normalize_by_invariant (normalize_by_invariant);
 
     if (choose_maximum_harmonic)
@@ -246,14 +252,14 @@ void Pulsar::PulsarCalibrator::build (unsigned nchan) try
   }
   catch (Error& error)
   {
-    if (verbose > 2)
-      cerr << "Pulsar::PulsarCalibrator::build ichan=" << ichan 
-           << " error=" << error.get_message() << " (flagged invalid)" << endl;
+    // if (verbose > 2)
+      cerr << "Pulsar::PulsarCalibrator::build ichan=" << ichan
+	   << " flagged invalid. error=" << error  << endl;
     mtm[ichan] = 0;
   }
 
   if (verbose)
-    cerr << "Pulsar::PulsarCalibrator::set_standard exit" << endl;
+    cerr << "Pulsar::PulsarCalibrator::build exit" << endl;
 }
 catch (Error& error)
 {
@@ -283,12 +289,6 @@ void Pulsar::PulsarCalibrator::init_model (unsigned ichan) try
   if (ichan >= model.size())
     throw Error (InvalidParam, "Pulsar::PulsarCalibrator::init_model",
 		 "ichan=%u >= model.size()=%u", ichan, model.size());
-
-  // share the measurement equations between PolnProfileFit and SignalPath
-  if (mtm[ichan])
-    model[ichan]->set_equation( mtm[ichan]->get_equation() );
-  else
-    model[ichan]->set_valid( false );
 
   if (normalize_by_invariant)
     model[ichan]->set_constant_pulsar_gain ();
