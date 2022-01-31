@@ -136,8 +136,10 @@ namespace Pulsar
 
     std::vector< Reference::To<Calibration::FluxCalManager> > fluxcal;
 
+    typedef Reference::To<Calibration::SourceEstimate> SourceEstimate;
+
     //! Uncalibrated estimate of pulsar polarization as a function of phase
-    std::vector< std::vector< Reference::To<Calibration::SourceEstimate> > > pulsar;
+    std::vector< std::vector< SourceEstimate > > pulsar_estimate;
     std::vector< unsigned > phase_bins;
 
     //! The epochs of all loaded calibrators
