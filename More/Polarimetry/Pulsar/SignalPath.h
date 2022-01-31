@@ -228,7 +228,8 @@ namespace Calibration
 
     void set_valid (bool f, const char* reason = 0);
     bool get_valid () const { return valid; }
-
+    std::string get_invalid_reason () const { return invalid_reason; }
+    
     MEAL::Axis< Jones<double> >& get_projection () { return projection; }
 
  protected:
@@ -236,6 +237,9 @@ namespace Calibration
     //! validity flag
     bool valid;
 
+    //! in not valid, a reason
+    std::string invalid_reason;
+    
     //! The measurement equation
     Reference::To< Calibration::ReceptionModel > equation;
 
