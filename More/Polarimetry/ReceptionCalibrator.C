@@ -198,14 +198,14 @@ void ReceptionCalibrator::initial_observation (const Archive* data)
     load_calibrators ();
   }
 
-  assert( pulsar.size() == phase_bins.size() );
+  assert( pulsar_estimate.size() == phase_bins.size() );
 
   cerr << "ReceptionCalibrator::initial_observation"
     " initialize pulsar source estimates" << endl;
 
   // initialize any previously added states
-  for (unsigned istate=0; istate<pulsar.size(); istate++)
-    init_estimates ( pulsar[istate], phase_bins[istate] );
+  for (unsigned istate=0; istate<pulsar_estimate.size(); istate++)
+    init_estimates ( pulsar_estimate[istate], phase_bins[istate] );
 
   add_epoch( data->start_time () );
 }
@@ -282,17 +282,17 @@ void ReceptionCalibrator::add_state (unsigned phase_bin)
 
   phase_bins.push_back (phase_bin);
 
-  pulsar.resize( pulsar.size() + 1 );
+  pulsar_estimate.resize( pulsar_estimate.size() + 1 );
 
   if (has_calibrator())
-    init_estimates( pulsar.back(), phase_bin );
+    init_estimates( pulsar_estimate.back(), phase_bin );
 }
 
 
 //! Get the number of pulsar phase bin input polarization states
 unsigned ReceptionCalibrator::get_nstate_pulsar () const
 {
-  return pulsar.size();
+  return pulsar_estimate.size();
 }
 
 //! Add the specified pulsar observation to the set of constraints
@@ -341,8 +341,8 @@ void ReceptionCalibrator::add_pulsar
 {
   standard_data->set_profile( integration->new_PolnProfile (ichan) );
 
-  for (unsigned istate=0; istate < pulsar.size(); istate++)
-    add_data (measurements, pulsar.at(istate).at(ichan),
+  for (unsigned istate=0; istate < pulsar_estimate.size(); istate++)
+    add_data (measurements, pulsar_estimate.at(istate).at(ichan),
 	      integration->get_epoch(), ichan);
 }
 
@@ -380,9 +380,9 @@ void ReceptionCalibrator::add_data
 Calibration::SourceEstimate* ReceptionCalibrator::get_estimate (unsigned index,
 								unsigned ichan)
 {
-  for (unsigned istate=0; istate < pulsar.size(); istate++)
+  for (unsigned istate=0; istate < pulsar_estimate.size(); istate++)
   {
-    Calibration::SourceEstimate* estimate = pulsar.at(istate).at(ichan);
+    Calibration::SourceEstimate* estimate = pulsar_estimate.at(istate).at(ichan);
     if (estimate->input_index == index)
       return estimate;
   }
@@ -681,7 +681,7 @@ void ReceptionCalibrator::export_prepare () const
   const_cast<ReceptionCalibrator*>(this)->initialize();
 }
 
-void ReceptionCalibrator::initialize ()
+void ReceptionCalibrator::initialize () try
 {
   bool set_equal_ellipticities = equal_ellipticities;
   bool fit_gain = true;
@@ -748,13 +748,14 @@ void ReceptionCalibrator::initialize ()
     model[ichan]->set_valid (false, "Flux calibrator estimate update failed");
   }
 
-  for (unsigned istate=0; istate<pulsar.size(); istate++)
+  for (unsigned istate=0; istate<pulsar_estimate.size(); istate++)
   {
     if (report_input_failed)
-      SystemCalibrator::print_input_failed (pulsar[istate]);
+      SystemCalibrator::print_input_failed (pulsar_estimate[istate]);
 
-    for (unsigned ichan=0; ichan<pulsar[istate].size(); ichan++)
-      pulsar[istate][ichan]->update ();
+    for (unsigned ichan=0; ichan<pulsar_estimate[istate].size(); ichan++)
+      if (pulsar_estimate[istate][ichan]) 
+        pulsar_estimate[istate][ichan]->update ();
   }
 
   if (report_input_failed)
@@ -766,6 +767,10 @@ void ReceptionCalibrator::initialize ()
   */
 
   setup_calibrators ();
+}
+catch (Error& error)
+{
+  throw error += "ReceptionCalibrator::initialize";
 }
 
 void ReceptionCalibrator::check_ready (const char* method, bool unc)
@@ -812,10 +817,15 @@ void ReceptionCalibrator::solve_prepare ()
 Pulsar::Calibrator::Info* 
 ReceptionCalibrator::new_info_pulsar (unsigned istate) const
 {
-  SourceInfo* info = new SourceInfo( pulsar[istate] );
+  SourceInfo* info = new SourceInfo( pulsar_estimate[istate] );
 
-  info->set_title( "Stokes Parameters of Phase Bin " 
-		   + tostring(pulsar[istate][0]->phase_bin) );
+  for (unsigned i=0; i < pulsar_estimate[istate].size(); i++)
+    if (pulsar_estimate[istate][i])
+    {
+      info->set_title( "Stokes Parameters of Phase Bin " 
+		       + tostring(pulsar_estimate[istate][i]->phase_bin) );
+      break;
+    }
 
   return info;
 }
