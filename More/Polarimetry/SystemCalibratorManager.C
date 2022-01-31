@@ -75,8 +75,13 @@ void SystemCalibratorManager::solve ()
   assert (calibrator.size() > 0);
   
   for (auto cal: calibrator)
+  {
+    cerr << "SystemCalibratorManager::solve preparing name=" << cal->get_calibrator()->get_source () << endl;
     cal->solve_prepare ();
+  }
 
+  cerr << "SystemCalibratorManager::solve calling SystemCalibrator::solve" << endl;
+  
   get_model()->solve ();
 }
 
