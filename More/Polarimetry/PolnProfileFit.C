@@ -145,6 +145,19 @@ void PolnProfileFit::set_regions (const PhaseWeight& on,
   regions_set = true;
 }
 
+void PolnProfileFit::set_equation (Calibration::ReceptionModel* e)
+{
+  if (equation)
+    throw Error (InvalidState, "PolnProfileFit::set_equation",
+		 "equation already set; cannot be reset after construction");
+
+#ifdef _DEBUG
+  cerr << "PolnProfileFit::set_equation " << e << endl;
+#endif
+
+  equation = e;
+}
+
 //! Set the standard to which observations will be fit
 void PolnProfileFit::set_standard (const PolnProfile* _standard)
 {
@@ -152,7 +165,8 @@ void PolnProfileFit::set_standard (const PolnProfile* _standard)
 
   // until greater resize functionality is added to ReceptionModel,
   // best to just delete it and start fresh
-  equation = 0;
+  if (manage_equation_transformation)
+    equation = 0;
   
   if (!standard)
     return;
@@ -201,7 +215,8 @@ void PolnProfileFit::set_standard (const PolnProfile* _standard)
   cerr << "PolnProfileFit::set_standard create ReceptionModel" << endl;
 #endif
 
-  equation = new ReceptionModel;
+  if (!equation)
+    equation = new ReceptionModel;
 
   // equation->set_fit_debug( fit_debug );
 

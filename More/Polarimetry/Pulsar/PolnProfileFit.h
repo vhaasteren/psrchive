@@ -131,6 +131,7 @@ namespace Pulsar
     //! Get the measurement equation used to model the fit
     Calibration::ReceptionModel* get_equation ();
     const Calibration::ReceptionModel* get_equation () const;
+    void set_equation (Calibration::ReceptionModel*);
 
     //! Get the phase offset between the standard and the observation
     Estimate<double> get_phase () const;
