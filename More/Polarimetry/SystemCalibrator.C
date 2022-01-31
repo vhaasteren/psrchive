@@ -741,8 +741,13 @@ void SystemCalibrator::load_calibrators ()
       continue;
 
     if (!calibrator_estimate[ichan])
+    {
+      if (verbose > 2)
+	cerr << "SystemCalibrator::load_calibrators"
+	  " no estimate ichan=" << ichan << endl;
       continue;
-
+    }
+    
     Estimate<double> I = calibrator_estimate[ichan]->source->get_stokes()[0];
     if (I.get_value() == 0)
     {
@@ -1044,9 +1049,14 @@ void SystemCalibrator::submit_calibrator_data () try
 
     for (unsigned jchan=0; jchan<nchan; jchan++) try
     {
-      if (!calibrator_estimate[ichan])
+      if (!calibrator_estimate[jchan])
+      {
+	if (verbose > 2)
+	  cerr << "SystemCalibrator::add_calibrator"
+	    " no estimate ichan=" << jchan << endl;
         continue;
-
+      }
+      
       SourceObservation& data = calibrator_data[isub][jchan];
       
       ichan = data.ichan;
@@ -1360,6 +1370,10 @@ void SystemCalibrator::submit_calibrator_data
 void SystemCalibrator::integrate_calibrator_data
 ( const SourceObservation& data )
 {
+  if (!calibrator_estimate.at(data.ichan))
+    throw Error (InvalidState, "SystemCalibrator::integrate_calibrator_data",
+		 "no calibrator estimate for ichan=%u", data.ichan);
+  
   Jones< Estimate<double> > zero (0.0);
   if (data.response == zero)
     throw Error (InvalidState,
@@ -1466,6 +1480,9 @@ SystemCalibrator::get_CalibratorStokes () const
       
     ext->set_valid (ichan, valid);
     if (!valid)
+      continue;
+
+    if (!calibrator_estimate[ichan])
       continue;
     
     ext->set_stokes (ichan, calibrator_estimate[ichan]->source->get_stokes());
@@ -1709,7 +1726,7 @@ void SystemCalibrator::print_input_failed
     sources[ichan]->report_input_failed (*(input_failed[ichan]));
 }
 
-void SystemCalibrator::solve_prepare ()
+void SystemCalibrator::solve_prepare () try
 {
   if (is_prepared)
     return;
@@ -1730,7 +1747,7 @@ void SystemCalibrator::solve_prepare ()
     submit_calibrator_data ();
 
     if (verbose)
-      cerr << "SystemCalibrator::prepare submit_calibrator_data" << endl;
+      cerr << "SystemCalibrator::prepare submit_pulsar_data" << endl;
 
     submit_pulsar_data ();
 
@@ -1742,8 +1759,9 @@ void SystemCalibrator::solve_prepare ()
   
   if (set_initial_guess)
     for (unsigned ichan=0; ichan<calibrator_estimate.size(); ichan++)
-      calibrator_estimate[ichan]->update ();
-
+      if (calibrator_estimate[ichan])
+	calibrator_estimate[ichan]->update ();
+  
   MJD epoch = get_epoch();
 
   if (verbose)
@@ -1763,7 +1781,7 @@ void SystemCalibrator::solve_prepare ()
     if (!model[ichan]->get_valid())
       continue;
 
-    if (ichan < calibrator_estimate.size())
+    if (ichan < calibrator_estimate.size() && calibrator_estimate[ichan])
     {
       // sanity check
       Estimate<double> I = calibrator_estimate[ichan]->source->get_stokes()[0];
@@ -1798,6 +1816,10 @@ void SystemCalibrator::solve_prepare ()
   }
 
   is_prepared = true;
+}
+catch (Error& error)
+{
+  throw error += "SystemCalibrator::solve_prepare";
 }
 
 float SystemCalibrator::get_reduced_chisq (unsigned ichan) const
@@ -1936,7 +1958,7 @@ void SystemCalibrator::solve () try
   }
   catch (Error& error)
   {
-    // if (verbose)
+    if (verbose)
       cerr << "SystemCalibrator::solve get_covariance error"
 	         << error << endl;
     model[ichan]->set_valid( false, error.get_message().c_str() );

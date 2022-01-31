@@ -268,7 +268,7 @@ unsigned Pulsar::PulsarCalibrator::get_nchan () const
   return SystemCalibrator::get_nchan ();
 }
 
-void Pulsar::PulsarCalibrator::init_model (unsigned ichan)
+void Pulsar::PulsarCalibrator::init_model (unsigned ichan) try
 {
   if (verbose > 2)
     cerr << "Pulsar::PulsarCalibrator::init_model" << endl;
@@ -291,6 +291,10 @@ void Pulsar::PulsarCalibrator::init_model (unsigned ichan)
     model[ichan]->set_constant_pulsar_gain ();
 
   SystemCalibrator::init_model (ichan);
+}
+catch (Error& error)
+{
+  throw error += "PulsarCalibrator::init_model";
 }
 
 bool Pulsar::PulsarCalibrator::calibrator_match (const Archive* data, std::string& reason)
@@ -461,7 +465,7 @@ catch (Error& error)
   throw error += "Pulsar::PulsarCalibrator::add_pulsar";
 }
 
-void Pulsar::PulsarCalibrator::add_calibrator (const ReferenceCalibrator* p)
+void Pulsar::PulsarCalibrator::add_calibrator (const ReferenceCalibrator* p) try
 {
   if (verbose > 2)
     cerr << "Pulsar::PulsarCalibrator::add_calibrator" << endl;
@@ -477,6 +481,10 @@ void Pulsar::PulsarCalibrator::add_calibrator (const ReferenceCalibrator* p)
   }
 
   SystemCalibrator::add_calibrator (p);
+}
+catch (Error& error)
+{
+  throw error += "Pulsar::PulsarCalibrator::add_calibrator";
 }
 
 //! Return the transformation to be used for precalibration
@@ -538,7 +546,7 @@ MEAL::Complex2* Pulsar::PulsarCalibrator::new_transformation (unsigned ichan)
 }
 
 void Pulsar::PulsarCalibrator::setup (const Integration* data, unsigned ichan)
-{
+try {
   assert (ichan < transformation.size());
   assert (ichan < mtm.size());
 
@@ -570,6 +578,10 @@ void Pulsar::PulsarCalibrator::setup (const Integration* data, unsigned ichan)
     mtm[ichan]->set_transformation (transformation[ichan]);
   }
 }
+catch (Error& error)
+{
+  throw error += "Pulsar::PulsarCalibrator::setup";
+}
 
 string get_state (MEAL::Function* f)
 {
@@ -578,7 +590,7 @@ string get_state (MEAL::Function* f)
   return state;
 }
 
-void Pulsar::PulsarCalibrator::solve1 (const CoherencyMeasurementSet& data)
+void Pulsar::PulsarCalibrator::solve1 (const CoherencyMeasurementSet& data) try
 {
   unsigned ichan = data.get_ichan();
   
@@ -727,8 +739,12 @@ void Pulsar::PulsarCalibrator::solve1 (const CoherencyMeasurementSet& data)
     solution[ichan]->integrate( transformation[ichan] );
   }
 }
+catch (Error& error)
+{
+  throw error += "PulsarCalibrator::solve1";
+}
 
-void Pulsar::PulsarCalibrator::update_solution ()
+void Pulsar::PulsarCalibrator::update_solution () try
 {
   unsigned nchan = solution.size ();
   for (unsigned ichan=0; ichan < nchan; ichan++)
@@ -743,6 +759,10 @@ void Pulsar::PulsarCalibrator::update_solution ()
       solution[ichan]->update( transformation[ichan] );
     }
   }
+}
+catch (Error& error)
+{
+  throw error += "PulsarCalibrator::update_solution";
 }
 
 const Pulsar::PolnProfileFit*
