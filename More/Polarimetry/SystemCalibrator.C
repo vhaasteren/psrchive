@@ -885,7 +885,7 @@ void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
 
   if (verbose > 2)
     cerr << "SystemCalibrator::add_calibrator prepare calibrator source="
-	 << source << endl;
+	 << source << " nsubint=" << nsub << endl;
 
   prepare_calibrator_estimate( source );
 
@@ -926,21 +926,21 @@ void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
     {
       if ( solution->get_transformation_valid (ichan) )
       {
-       if (verbose > 2)
-         cerr << "SystemCalibrator::add_calibrator ichan="
-              << ichan << " saving response" << endl;
+	if (verbose > 2)
+	  cerr << "SystemCalibrator::add_calibrator ichan="
+	       << ichan << " saving response" << endl;
 
-       response[ichan] = solution->get_response(ichan);
+	response[ichan] = solution->get_response(ichan);
 
-       if (verbose > 2)
-         cerr << "SystemCalibrator::add_calibrator ichan="
-              << ichan << " saving transformation" << endl;
-
-       xform[ichan] = solution->get_transformation(ichan);
+	if (verbose > 2)
+	  cerr << "SystemCalibrator::add_calibrator ichan="
+	       << ichan << " saving transformation" << endl;
+	
+	xform[ichan] = solution->get_transformation(ichan);
       }
       else if (verbose > 2)
-       cerr << "SystemCalibrator::add_calibrator ichan="
-            << ichan << " transformation not valid" << endl;
+	cerr << "SystemCalibrator::add_calibrator ichan="
+	     << ichan << " transformation not valid" << endl;
     }
   }
 
@@ -1018,7 +1018,7 @@ void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
 	data.response = response[ichan];
 	data.xform = xform[ichan];
       }
-      
+
       calibrator_data.back().push_back (data);
     }
   }
@@ -1033,7 +1033,7 @@ void SystemCalibrator::submit_calibrator_data () try
 {
   unsigned nsub = calibrator_data.size();
   
-  if (verbose > 2)
+  // if (verbose > 2)
     cerr << "SystemCalibrator::add_calibrator nsub=" << nsub << endl;
 
   if (!nsub)
@@ -1051,17 +1051,17 @@ void SystemCalibrator::submit_calibrator_data () try
 
     for (unsigned jchan=0; jchan<nchan; jchan++) try
     {
-      if (!calibrator_estimate[jchan])
-      {
-	if (verbose > 2)
-	  cerr << "SystemCalibrator::add_calibrator"
-	    " no estimate ichan=" << jchan << endl;
-        continue;
-      }
-      
       SourceObservation& data = calibrator_data[isub][jchan];
       
       ichan = data.ichan;
+
+      if (!calibrator_estimate[ichan])
+      {
+	if (verbose > 2)
+	  cerr << "SystemCalibrator::add_calibrator"
+	    " no estimate ichan=" << ichan << endl;
+        continue;
+      }
       
       CoherencyMeasurementSet measurements;
 
@@ -1092,7 +1092,10 @@ void SystemCalibrator::submit_calibrator_data () try
       
 	integrate_calibrator_data( data );
       }
-
+      else if (verbose > 2)
+	cerr << "SystemCalibrator::submit_calibrator_data ichan="
+	     << ichan << " no response; not integrating" << endl;
+      
       if ( data.xform )
       {
 	if (verbose > 2)
@@ -1784,7 +1787,10 @@ void SystemCalibrator::solve_prepare () try
   if (set_initial_guess)
     for (unsigned ichan=0; ichan<calibrator_estimate.size(); ichan++)
       if (calibrator_estimate[ichan])
+      {
+        DEBUG("SystemCalibrator::prepare update calibrator estimate ichan=" << ichan);
 	calibrator_estimate[ichan]->update ();
+      }
   
   MJD epoch = get_epoch();
 
@@ -1818,6 +1824,8 @@ void SystemCalibrator::solve_prepare () try
            "\t failures=" << calibrator_estimate[ichan]->add_data_failures 
                << endl;
 
+	cerr << "invalid cal[" << ichan << "]=" << calibrator_estimate[ichan]->source->get_stokes() << endl;
+	
         model[ichan]->set_valid( false, "reference flux equals zero" );
       }
 
@@ -1884,7 +1892,8 @@ void SystemCalibrator::solve () try
   {
     if (!model[ order[ichan] ]->get_valid())
     {
-      cerr << "channel " << order[ichan] << " flagged invalid" << endl;
+      cerr << "channel " << order[ichan] << " flagged invalid"
+	" (" << model[ order[ichan] ]->get_invalid_reason() << ")" << endl;
       continue;
     }
 
