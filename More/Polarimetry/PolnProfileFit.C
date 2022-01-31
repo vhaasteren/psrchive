@@ -23,8 +23,10 @@
 #include "FTransform.h"
 
 // #define _DEBUG 1
+#include "debug.h"
 
 #include <memory>
+#include <cassert>
 
 using namespace std;
 using namespace Pulsar;
@@ -90,6 +92,7 @@ void PolnProfileFit::init ()
   standard_data = new StandardSpectra;
 
   phases = new MEAL::PhaseGradients<MEAL::Complex2>;
+  DEBUG("PolnProfileFit::init new phases=" << (void*) phases);
 
   // connect to the phase axis via the Univariate<> interface
   phases -> set_argument (0, &phase_axis);
@@ -151,9 +154,7 @@ void PolnProfileFit::set_equation (Calibration::ReceptionModel* e)
     throw Error (InvalidState, "PolnProfileFit::set_equation",
 		 "equation already set; cannot be reset after construction");
 
-#ifdef _DEBUG
-  cerr << "PolnProfileFit::set_equation " << e << endl;
-#endif
+  DEBUG("PolnProfileFit::set_equation " << e);
 
   equation = e;
 }
@@ -167,13 +168,13 @@ void PolnProfileFit::set_standard (const PolnProfile* _standard)
   // best to just delete it and start fresh
   if (manage_equation_transformation)
     equation = 0;
-  
+  else if (!equation)
+    return;
+    
   if (!standard)
     return;
 
-#ifdef _DEBUG
-  cerr << "PolnProfileFit::set_standard set profile" << endl;
-#endif
+  DEBUG ("PolnProfileFit::set_standard set profile");
 
   if (regions_set)
     standard_data->set_profile (standard);
@@ -185,9 +186,7 @@ void PolnProfileFit::set_standard (const PolnProfile* _standard)
   // number of complex phase bins in Fourier domain
   unsigned std_harmonic = standard->get_nbin() / 2;
 
-#ifdef _DEBUG
-  cerr << "PolnProfileFit::set_standard max harmonic" << endl;
-#endif
+  DEBUG ("PolnProfileFit::set_standard max harmonic");
 
   if (choose_maximum_harmonic)
   {
@@ -213,17 +212,13 @@ void PolnProfileFit::set_standard (const PolnProfile* _standard)
 
   if (!equation)
   {
-#ifdef _DEBUG
-    cerr << "PolnProfileFit::set_standard create ReceptionModel" << endl;
-#endif
+    DEBUG("PolnProfileFit::set_standard create ReceptionModel");
     equation = new ReceptionModel;
   }
   
   // equation->set_fit_debug( fit_debug );
 
-#ifdef _DEBUG
-  cerr << "PolnProfileFit::set_standard created" << endl;
-#endif
+  DEBUG("PolnProfileFit::set_standard created");
 
   if (manage_equation_transformation && transformation)
   {
@@ -235,28 +230,23 @@ void PolnProfileFit::set_standard (const PolnProfile* _standard)
     equation->set_transformation (transformation);
   }
 
-#ifdef _DEBUG
-  cerr << "PolnProfileFit::set_standard resize " << n_harmonic - 1 << endl;
-#endif
+  DEBUG("PolnProfileFit::set_standard resize " << n_harmonic - 1);
 
   uncertainty.resize (n_harmonic - 1);
+  input_index.resize (n_harmonic - 1);
 
   // initialize the model input states
 
   for (unsigned ibin=1; ibin<n_harmonic; ibin++)
   {
-#ifdef _DEBUG
-    cerr << "PolnProfileFit::set_standard ibin=" << ibin << endl;
-#endif
+    DEBUG( "PolnProfileFit::set_standard ibin=" << ibin);
 
     Stokes< complex<double> > standard_value;
 
     valvar( standard_data->get_stokes(ibin),
 	    standard_value, standard_variance );
 
-#ifdef _DEBUG
-    cerr << "PolnProfileFit::set_standard create Constant" << endl;
-#endif
+    DEBUG( "PolnProfileFit::set_standard create Constant");
 
     // each complex phase bin of the standard is treated as a known constant
     MEAL::Complex2Constant* jones;
@@ -270,15 +260,24 @@ void PolnProfileFit::set_standard (const PolnProfile* _standard)
 
     DEBUG("PolnProfileFit::set_standard set things" << ibin);
 
+    input_index[ibin-1] = equation->get_num_input();
+
     if (phases)
     {
       // each complex phase bin is phase related
       Reference::To<MEAL::Complex2> input = jones;
       Reference::To<MEAL::Complex2> ph = phases.get();
-      equation->add_input( input * ph );
+      Reference::To<MEAL::Complex2> product = input * ph;
+
+      DEBUG ("PolnProfileFit::set_standard add_input=" << (void*)product);
+
+      equation->add_input( product );
     }
     else
+    {
+      DEBUG("PolnProfileFit::set_standard no phases");
       equation->add_input( jones );
+    }
   }
 }
 
@@ -348,8 +347,9 @@ catch (Error& error)
 
 void PolnProfileFit::delete_observations ()
 {
-   // delete any previously set data
-  equation->delete_data ();
+  // delete any previously set data
+  if (equation)
+    equation->delete_data ();
 
   // (re)set the number of phases to zero
   if (phases)
@@ -379,11 +379,19 @@ void PolnProfileFit::set_measurement_set
          << measurement_set.get_transformation_index() << endl;
 }
 
-void PolnProfileFit::add_observation( const PolnProfile* observation )
+void PolnProfileFit::add_observation( const PolnProfile* observation ) try
 {
+  if (!equation)
+    throw Error (InvalidState, "PolnProfileFit::add_observation",
+		 "equation not set");
+
   CoherencyMeasurementSet measurements (measurement_set);
   add_observation (measurement_set, observation);
   equation->add_data( measurements );
+}
+catch (Error& error)
+{
+ throw error += "PolnProfileFit::add_observation";
 }
 
 void PolnProfileFit::add_observation (CoherencyMeasurementSet& measurements,
@@ -426,6 +434,9 @@ void PolnProfileFit::add_observation (CoherencyMeasurementSet& measurements,
 
   if (phases)
   {
+    if (verbose)
+      cerr << "PolnProfileFit::add_observation phases" << endl;
+
     if (!shared_phase || phases->get_ngradient() == 0)
     {
       phases->add_gradient();
@@ -478,8 +489,10 @@ void PolnProfileFit::add_observation (CoherencyMeasurementSet& measurements,
       else
 	cerr << "clone ok!" << endl;
 #endif
+
+      assert (input_index.size() > ibin-1);
       
-      CoherencyMeasurement measurement (ibin-1);
+      CoherencyMeasurement measurement (input_index[ibin-1]);
       measurement.set_stokes (val, error);
       
       double phase_shift = -2.0 * M_PI * double(ibin);
@@ -492,6 +505,8 @@ void PolnProfileFit::add_observation (CoherencyMeasurementSet& measurements,
   }
   catch (Error& error)
   {
+    DEBUG("PolnProfileFit::add_observation failed " << error);
+    
     if (gradient_added)
       phases->remove_gradient();
 

@@ -104,16 +104,23 @@ void Calibration::ReceptionModel::Solver::check_constraints () try
 
     equation->set_transformation_index (ipath);
     const MEAL::Function* path = equation->get_transformation ();
-      
+
+    string names;
+    
     for (unsigned iparam=0; iparam < path->get_nparam(); iparam++)
       if( path->get_infit(iparam) )
+      {
 	need_path = true;
-      
+	if (!names.empty())
+	  names += " ";
+	names += path->get_param_name(iparam);
+      }
+    
     if (need_path && !path_observed[ipath])
       throw Error (InvalidRange,
 		   "Calibration::ReceptionModel::Solver::check_constraints",
-		   "input path %u with free parameter(s) not observed",
-		   ipath);
+		   "input path %u (%x) with free (%s) not observed",
+		   ipath, (void*) path, names.c_str());
   }
 
   assert( state_observed.size() == equation->get_num_input() );
@@ -124,16 +131,24 @@ void Calibration::ReceptionModel::Solver::check_constraints () try
 
     equation->set_input_index (isource);
     const MEAL::Function* state = equation->get_input ();
-      
+
+    string names;
+    
     for (unsigned iparam=0; iparam < state->get_nparam(); iparam++)
       if( state->get_infit(iparam) )
+      {
 	need_source = true;
-      
+	if (!names.empty())
+	  names += " ";
+	names += state->get_param_name(iparam);
+      }
+    
     if (need_source && !state_observed[isource])
       throw Error (InvalidRange,
 		   "Calibration::ReceptionModel::Solver::check_constraints",
-		   "input source %u with free parameter(s) not observed",
-		   isource);
+		   "input source %u (%p=%s) not observed (free=%s)",
+		   isource, (void*) state, state->get_name().c_str(),
+		   names.c_str());
   }
 }
 catch (Error& error)
