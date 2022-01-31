@@ -8,6 +8,8 @@
 #include "Pulsar/SystemCalibratorManager.h"
 #include "Pulsar/Archive.h"
 
+#include <cassert>
+
 using namespace Pulsar;
 using namespace std;
 
