@@ -246,10 +246,11 @@ unsigned SystemCalibrator::get_nstate () const
 //! Return true if the state index is a pulsar
 unsigned SystemCalibrator::get_state_is_pulsar (unsigned istate) const
 {
-  if (!calibrator_estimate.size())
-    return true;
+  for (unsigned i=0; i < calibrator_estimate.size(); i++)
+    if (calibrator_estimate[i])
+      return istate != calibrator_estimate[i]->input_index;
 
-  return istate != calibrator_estimate[0]->input_index;
+  return true;
 }
 
 //! Get the number of pulsar polarization states in the model
@@ -739,6 +740,9 @@ void SystemCalibrator::load_calibrators ()
     if (!model[ichan]->get_valid())
       continue;
 
+    if (!calibrator_estimate[ichan])
+      continue;
+
     Estimate<double> I = calibrator_estimate[ichan]->source->get_stokes()[0];
     if (I.get_value() == 0)
     {
@@ -757,7 +761,8 @@ void SystemCalibrator::load_calibrators ()
   }
   catch (Error& error)
   {
-    model[ichan]->set_valid( false, error.get_message().c_str() );
+    if (model[ichan])
+      model[ichan]->set_valid( false, error.get_message().c_str() );
   }
 
   unsigned ok = 0;
@@ -1039,6 +1044,9 @@ void SystemCalibrator::submit_calibrator_data () try
 
     for (unsigned jchan=0; jchan<nchan; jchan++) try
     {
+      if (!calibrator_estimate[ichan])
+        continue;
+
       SourceObservation& data = calibrator_data[isub][jchan];
       
       ichan = data.ichan;
@@ -1088,7 +1096,8 @@ void SystemCalibrator::submit_calibrator_data () try
 	   << ichan << " integrate_calibrator_solution error\n"
 	   << error << endl;
 
-      calibrator_estimate[ichan]->add_data_failures ++;
+      if (calibrator_estimate[ichan])
+        calibrator_estimate[ichan]->add_data_failures ++;
       
       continue;
     }
@@ -1293,8 +1302,8 @@ void SystemCalibrator::create_calibrator_estimate () try
 
   unsigned nchan = get_nchan ();
 
-  for (unsigned ichan=0; ichan<nchan; ichan++)  
-    if (calibrator_estimate[ichan]->source)
+  for (unsigned ichan=0; ichan<nchan; ichan++)
+    if (calibrator_estimate[ichan] && calibrator_estimate[ichan]->source)
     {   
       calibrator_estimate[ichan]->source->set_stokes( cal_state );
       calibrator_estimate[ichan]->source->set_infit( 0, false );
