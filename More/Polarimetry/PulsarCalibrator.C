@@ -198,8 +198,12 @@ void Pulsar::PulsarCalibrator::build (unsigned nchan) try
   mtm.resize (nchan);
 
   if (model.size() == 0)
+  {
+    if (verbose > 2)
+      cerr << "Pulsar::PulsarCalibrator::build create model" << endl;
     create_model ();
-
+  }
+  
   for (unsigned ichan=0; ichan<nchan; ichan++) try
   {
     if (verbose > 2)
@@ -379,8 +383,13 @@ void Pulsar::PulsarCalibrator::add_pulsar
   assert (ichan < transformation.size());
 
   if (!transformation[ichan])
+  {
+    if (verbose > 2)
+      cerr << "PulsarCalibrator::add_pulsar ichan=" << ichan
+	   << " no transformation" << endl;
     return;
-
+  }
+  
   assert (ichan < mtm.size());
 
   if (solve_each)
