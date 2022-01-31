@@ -75,8 +75,12 @@ void SignalPath::set_valid (bool f, const char* reason)
 {
   valid = f;
 
-  if (!valid && reason && verbose)
-    cerr << "SignalPath::set_valid reason: " << reason << endl;
+  if (!valid && reason)
+  {
+    invalid_reason = reason;
+    if (verbose)
+      cerr << "SignalPath::set_valid reason: " << reason << endl;
+  }
 }
 
 void SignalPath::set_response (MEAL::Complex2* x)
