@@ -205,6 +205,9 @@ namespace Pulsar
     //! The phase gradient model for each observation added
     Reference::To< MEAL::PhaseGradients<MEAL::Complex2> > phases;
 
+    //! The index of each used harmonic in the measurement equation
+    std::vector<unsigned> input_index;
+    
     //! The phase axis
     MEAL::Axis<double> phase_axis;
 

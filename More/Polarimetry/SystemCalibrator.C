@@ -1128,6 +1128,10 @@ void SystemCalibrator::submit_pulsar_data () try
       // add pulsar data constraints to measurement equation
       submit_pulsar_data( data );
 
+      if (verbose > 2)
+	cerr << "SystemCalibrator::submit_pulsar_data ichan="
+	     << ichan << " integrate_pulsar_data" << endl;
+
       // add pulsar data to mean estimate used as initial guess
       integrate_pulsar_data( data );
     }
@@ -1161,15 +1165,20 @@ void SystemCalibrator::submit_pulsar_data
 
   if (!product->has_index())
   {
-#if _DEBUG
-    cerr << "SystemCalibrator::submit_pulsar_data call add_psr_path" << endl;
-#endif
+    DEBUG("SystemCalibrator::submit_pulsar_data call add_psr_path");
     model[mchan]->add_psr_path (backend);
   }
     
   measurements.set_transformation_index (product->get_index ());
-    
-  DEBUG("Pulsar::ReceptionCalibrator::submit_pulsar_data chan=" << mchan);
+
+#if _DEBUG
+  cerr << "SystemCalibrator::submit_pulsar_data source indeces:";
+  for (auto m: measurements)
+    cerr << " " << m.get_input_index();
+  cerr << endl;
+#endif
+  
+  DEBUG("SystemCalibrator::submit_pulsar_data chan=" << mchan);
   model[mchan]->get_equation()->add_data (measurements);
 
   model[mchan]->add_observation_epoch (epoch);
@@ -1177,6 +1186,7 @@ void SystemCalibrator::submit_pulsar_data
 }
 catch (Error& error)
 {
+  cerr << "SystemCalibrator::submit_pulsar_data error=" << error << endl;
   throw error += "SystemCalibrator::submit_pulsar_data";
 }
 
@@ -1253,8 +1263,9 @@ void SystemCalibrator::copy_calibrator_estimate ()
     throw Error (InvalidParam, "SystemCalibrator::copy_calibrator_estimate",
 		 "no sharing partner");
 
-  cerr << "SystemCalibrator::copy_calibrator_estimate size="
-       << partner->calibrator_estimate.size() << endl;
+  if (verbose > 2)
+    cerr << "SystemCalibrator::copy_calibrator_estimate size="
+	 << partner->calibrator_estimate.size() << endl;
   
   try
   {
