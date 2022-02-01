@@ -1562,10 +1562,11 @@ void SystemCalibrator::create_model () try
 
     model[ichan] = new Calibration::SignalPath (type);
 
+    if (basis)
+      model[ichan]->set_basis (basis);
+
     if (partner)
       setup_sharing( ichan );
-    else if (basis)
-      model[ichan]->set_basis (basis);
 
     init_model( ichan );
   }
