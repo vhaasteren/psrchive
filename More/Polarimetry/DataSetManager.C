@@ -24,8 +24,15 @@ DataSet::DataSet ()
 //! Return true if data can be added to this data set
 bool DataSet::matches (const Archive* archive)
 {
-  // empty, so anything matches
-  if (data.size() == 0)
+  const Archive* compare = 0;
+  
+  if (data.size() > 0)
+    compare = data[0];
+  else if (total)
+    compare = total;
+
+  if (!compare)
+    // empty, so anything matches
     return true;
 
   Archive::Match test;
@@ -33,10 +40,10 @@ bool DataSet::matches (const Archive* archive)
   test.set_check_bandwidth (true);
   test.set_check_source (true);
 
-  bool result = test.match (data[0], archive);
+  bool result = test.match (compare, archive);
 
   if (!result)
-    DEBUG( "DataSet::matches " << data[0]->get_filename() << " does not match " << archive->get_filename() << " " << test.get_reason());
+    DEBUG( "DataSet::matches " << compare->get_filename() << " does not match " << archive->get_filename() << " " << test.get_reason());
 
   return result;
 }
@@ -163,7 +170,7 @@ void DataSetManager::incorporate (const Archive* data, Method method)
       return;
     }
 
-  cerr << "DataSetManager::add starting new data set name="
+  cerr << "DataSetManager::incorporate starting new data set name="
        << data->get_source() << endl;
 
   DataSet* ds = new DataSet;
