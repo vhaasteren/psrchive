@@ -25,29 +25,41 @@ namespace Pulsar
     //! Return true if data can be added to this data set
     bool matches (const Archive* data);
 
-    //! Add data to this data set
+    //! Append data to list
     void add (const Archive* data);
 
+    //! Integrate data into total
+    void integrate (const Archive* data);
+    
     //! Get the name of the pulsar in this data set
     const std::string& get_name () { return name; }
 
+    //! Get the integrated total
+    Archive* get_total () { return total; }
+    
     //! Get the epoch of the first observation
     MJD get_start_epoch () const;
 
     //! Get the epoch of the last observation
     MJD get_end_epoch () const;
 
+    double get_integration_length () const { return total_integration_length; }
+    
     const std::vector< std::string >& get_calibrator_filenames () const
     { return calibrator_filenames; }
 
   protected:
 
     friend class DataSetManager;
-    
+
+    void update (const Archive* archive, const char* method);
+
     std::string name;
     double total_integration_length;
     
     std::vector< Reference::To<const Archive> > data;
+    Reference::To<Archive> total;
+    
     MJD start_time;
     MJD end_time;
 
@@ -70,8 +82,14 @@ namespace Pulsar
     //! Add to the array of system calibrators
     void manage (DataSet*);
 
+    //! Get the number of data sets
+    unsigned get_nset () const;
+    
     //! Get the data set that matches the archive
     DataSet* get (const Archive* data);
+
+    //! Get the ith data set
+    DataSet* get_set (unsigned i);
     
     //! Set the calibrator database
     void set_database (Pulsar::Database* db) { database = db; }
@@ -79,9 +97,13 @@ namespace Pulsar
     //! Return the reference epoch of the calibration experiment
     MJD get_epoch () const;
 
-    //! Add archive to the appropriate data set
+    //! Append archive to the appropriate data set
     /*! Add a new dataset if needed */
     void add (const Archive* data);
+
+    //! Integra archive into the appropriate data set
+    /*! Add a new dataset if needed */
+    void integrate (const Archive* data);
 
     //! Load empty archives from filenames
     void load ( std::vector<std::string>& filenames );
@@ -91,6 +113,8 @@ namespace Pulsar
 
     //! Get the epoch of the last observation
     MJD get_end_epoch () const;
+
+    double get_integration_length () const { return total_integration_length; }
 
     //! Add filenames of polarization reference source observations
     void add_polncals (DataSet*);
@@ -129,8 +153,13 @@ namespace Pulsar
 
     MJD start_time;
     MJD end_time;
-    
+
+    double total_integration_length;
+
     void find_flux_calibrators (Signal::Source, const char* short_names);
+
+    template <class Method>
+    void incorporate (const Archive* data, Method method);
 
     // total number of PolnCal observations
     unsigned npolncal;
