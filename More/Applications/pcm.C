@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *   Copyright (C) 2003 - 2018 by Willem van Straten
+ *   Copyright (C) 2003 - 2022 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -1208,7 +1208,7 @@ void pcm::setup ()
   unloader.set_filename( output_filename );
 }
 
-Reference::To<Pulsar::Archive> total;
+vector< Reference::To<Pulsar::Archive> > total;
 Reference::To<Pulsar::Archive> archive;
 
 void configure_model (Pulsar::SystemCalibrator* model)
@@ -1399,56 +1399,18 @@ void pcm::process (Pulsar::Archive* archive)
 
   model_manager->preprocess( archive );
   model_manager->add_observation( archive );
+}
 
-  if (archive->get_type() != Signal::Pulsar)
-    return;
-
-#if 0
-  if (verbose)
-    cerr << "pcm: calibrate with current best guess" << endl;
-
-  model_manager->precalibrate (archive);
-
-  if (solve_each)
-  {
-    string oldname = archive->get_filename();
-    string newname = replace_extension (oldname, ".calib");
-    archive->unload (newname);    
-    cerr << "pcm: unloaded " << newname << endl;
-  }
-
-  if (verbose)
-    cerr << "pcm: add to total" << endl;
-
-  if (!total)
-    total = archive;
+string append (string before, string between, string after, bool insert)
+{
+  if (insert)
+    return before + "_" + between + after;
   else
-    total->append (archive);
-    
-  total->tscrunch ();
-#endif
-
+    return before + after;
 }
 
 void pcm::finalize ()
 {
-  if (solve_each)
-  {
-    if (total)
-    {
-      cerr << "pcm: writing total calibrated pulsar archive" << endl;
-      total->unload ("total.ar");
-    }
-    return;
-  }
-
-  if (total)
-  {
-    cerr << "pcm: writing total uncalibrated pulsar archive" << endl;
-    total->unload ("first.ar");
-  }
-
-
 #if HAVE_PGPLOT
 
   try {
@@ -1461,24 +1423,6 @@ void pcm::finalize ()
       plotter.use_colour = !publication_plots;
 
       plot_state (model, "guess");
-    }
-    
-    if (plot_total && total)
-    {
-      cerr << "pcm: plotting uncalibrated total PSR" << endl;
-
-      cpgbeg (0, "uncalibrated.ps/CPS", 0, 0);
-      cpgask(1);
-      cpgslw(2);
-      cpgsvp (.1,.9, .1,.9);
-
-      total->fscrunch();
-
-      cerr << "pcm: plotting uncalibrated pulsar total stokes" << endl;
-      Pulsar::StokesSpherical plot;
-      plot.plot (total);
-
-      cpgend();
     }
 
     if (plot_residual)
@@ -1504,8 +1448,6 @@ void pcm::finalize ()
   }
 
 #endif // HAVE_PGPLOT
-
-  total = 0;
 
   try
   {
@@ -1597,6 +1539,8 @@ void pcm::finalize ()
     cerr << "pcm: calibrating archives (PSR and CAL)" << endl;
   }
 #endif
+
+  DataSetManager total_manager;
   
   for (unsigned i = 0; i < filenames.size(); i++) try
   {
@@ -1627,14 +1571,9 @@ void pcm::finalize ()
     if (calibrate_these.empty() && archive->get_type() == Signal::Pulsar)
     {
       if (verbose)
-        cerr << "pcm: correct and add to calibrated total" << endl;
+        cerr << "pcm: add to calibrated total" << endl;
 
-      if (!total)
-        total = archive;
-      else
-        total->append (archive);
-
-      total->tscrunch ();
+      total_manager.integrate (archive);
     }
   }
   catch (Error& error)
@@ -1642,41 +1581,58 @@ void pcm::finalize ()
     cerr << error << endl;
   }
 
-  if (total)
+  if (total_manager.get_integration_length())
   {
-    cerr << "pcm: writing total integrated pulsar archive" << endl;
-    total->unload ("total.ar");
-  }
+    unsigned ntotal = total_manager.get_nset ();
+    for (unsigned itotal=0; itotal < ntotal; itotal++) try
+    {
+      DataSet* dataset = total_manager.get_set (itotal);
+      
+      string name = dataset->get_name();
+      Archive* total = dataset->get_total();
+
+      cerr << "pcm: writing total integrated result for " << name << endl;
+
+      string filename = append ("total", name, ".ar", ntotal > 1);
+      total->unload (filename);
 
 #if HAVE_PGPLOT
 
-  if (plot_total && total)
-  {
-    cpgbeg (0, "calibrated.ps/CPS", 0, 0);
-    cpgask(1);
-    cpgslw(2);
-    cpgsvp (.1,.9, .1,.9);
+      if (plot_total)
+      {
+	string dev = append ("calibrated", name, ".ps/CPS", ntotal > 1);
+	
+	cpgbeg (0, dev.c_str(), 0, 0);
+	cpgask(1);
+	cpgslw(2);
+	cpgsvp (.1,.9, .1,.9);
 
-    total->fscrunch();
-    total->remove_baseline();
+	total->fscrunch();
+	total->remove_baseline();
 
-    cerr << "pcm: plotting calibrated pulsar total stokes" << endl;
-    Pulsar::StokesSpherical plot;
-    plot.plot (total);
+	cerr << "pcm: plotting calibrated result for " << name << endl;
+	Pulsar::StokesSpherical plot;
+	plot.plot (total);
 
-    cpgend ();
-  }
+	cpgend ();
+      }
 
-  if (total && phase_bins.size() != 0)
-  {
-    total->fscrunch ();
-    total->tscrunch ();
-    prepare->prepare (total);
+      if (phase_bins.size() != 0)
+      {
+	total->fscrunch ();
+	total->tscrunch ();
+	prepare->prepare (total);
 
-    plot_chosen (total, phase_bins, "selected");
-  }
-
+	string dev = append ("selected", name, "", ntotal > 1);
+	plot_chosen (total, phase_bins, dev);
+      }
 #endif // HAVE_PGPLOT
+    }
+    catch (Error& error)
+    {
+      cerr << error << endl;
+    }
+  }
 
   cerr << "pcm: finished" << endl;
 }

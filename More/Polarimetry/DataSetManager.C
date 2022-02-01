@@ -41,11 +41,17 @@ bool DataSet::matches (const Archive* archive)
   return result;
 }
   
-//! Add data to this data set
+//! Append data to this data set
 void DataSet::add (const Archive* archive)
 {
+  update (archive, "DataSet::add");
+  data.push_back (archive);
+}
+
+void DataSet::update (const Archive* archive, const char* method)
+{
   if (!matches (archive))
-    throw Error (InvalidParam, "DataSet::add", "archive does not match");
+    throw Error (InvalidParam, method, "archive does not match");
 
   name = archive->get_source();
 
@@ -58,8 +64,19 @@ void DataSet::add (const Archive* archive)
     start_time = start;
   if (data.size() == 0 || end > end_time)
     end_time = end;
+}
 
-  data.push_back (archive);
+//! Append data to this data set
+void DataSet::integrate (const Archive* archive)
+{
+  update (archive, "DataSet::add");
+
+  if (!total)
+    total = archive->clone();
+  else
+    total->append (archive);
+
+  total->tscrunch ();
 }
 
 //! Get the epoch of the first observation
@@ -85,7 +102,8 @@ DataSetManager::DataSetManager ()
   polncal_hours = 0;
   fluxcal_days = 7.0;
   check_coordinates = true;
-
+  
+  total_integration_length = 0;
   npolncal = 0;
 }
 
@@ -112,9 +130,24 @@ DataSet* DataSetManager::get (const Archive* data)
 	       "no data set matches " + data->get_filename());
 }
 
-//! Add archive to the appropriate data set
-void DataSetManager::add (const Archive* data)
+//! Get the number of data sets
+unsigned DataSetManager::get_nset () const
 {
+  return datasets.size();
+}
+    
+//! Get the ith data set
+DataSet* DataSetManager::get_set (unsigned i)
+{
+  return datasets[i];
+}
+
+//! Add archive to the appropriate data set
+template <class Method>
+void DataSetManager::incorporate (const Archive* data, Method method)
+{
+  total_integration_length += data->integration_length ();
+
   MJD start = data->start_time();
   MJD end = data->end_time();
 
@@ -126,7 +159,7 @@ void DataSetManager::add (const Archive* data)
   for (auto ds: datasets)
     if (ds->matches(data))
     {
-      ds->add(data);
+      (ds->*method) (data);
       return;
     }
 
@@ -134,11 +167,21 @@ void DataSetManager::add (const Archive* data)
        << data->get_source() << endl;
 
   DataSet* ds = new DataSet;
-  ds->add(data);
+  (ds->*method) (data);
   
   manage(ds);
 }
 
+void DataSetManager::add (const Archive* data)
+{
+  incorporate (data, &DataSet::add);
+}
+
+void DataSetManager::integrate (const Archive* data)
+{
+  incorporate (data, &DataSet::integrate);
+}
+     
 //! Get the epoch of the first observation
 MJD DataSetManager::get_start_epoch () const
 {
