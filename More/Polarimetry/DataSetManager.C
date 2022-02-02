@@ -43,8 +43,10 @@ bool DataSet::matches (const Archive* archive)
   bool result = test.match (compare, archive);
 
   if (!result)
+  {
     DEBUG( "DataSet::matches " << compare->get_filename() << " does not match " << archive->get_filename() << " " << test.get_reason());
-
+  }
+  
   return result;
 }
   
