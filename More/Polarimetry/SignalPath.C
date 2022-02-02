@@ -289,17 +289,6 @@ void SignalPath::build () try
   if (constant_pulsar_gain)
     instrument->set_infit (0, false);
 
-  if (!celestial)
-  {
-    //
-    // use the known transformation from the sky to the receptors
-    //
-    MEAL::Value<MEAL::Complex2>* sky = new MEAL::Value<MEAL::Complex2>;
-    projection.signal.connect (sky, &MEAL::Value<MEAL::Complex2>::set_value);
-
-    celestial = sky;
-  }
-  
   built = true;
 
   // backends are added after things are built, start with the first one
@@ -349,7 +338,9 @@ void SignalPath::add_psr_path (VariableBackendEstimate* backend)
   IndexedProduct* product = backend->get_psr_response();
   
   psr_path -> add_model( product );
-  psr_path -> add_model( celestial );
+
+  if (projection)
+    psr_path -> add_model( projection->get_transformation() );
 
   add_transformation ( psr_path );
 

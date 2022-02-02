@@ -21,6 +21,7 @@
 #include "MEAL/ProductRule.h"
 #include "MEAL/ChainRule.h"
 #include "MEAL/Univariate.h"
+#include "MEAL/Variable.h"
 #include "MEAL/Gain.h"
 #include "MEAL/Axis.h"
 #include "MEAL/Real4.h"
@@ -229,8 +230,12 @@ namespace Calibration
     void set_valid (bool f, const char* reason = 0);
     bool get_valid () const { return valid; }
     std::string get_invalid_reason () const { return invalid_reason; }
+
+    void set_projection (MEAL::Variable<MEAL::Complex2>* proj)
+    { projection = proj; }
     
-    MEAL::Axis< Jones<double> >& get_projection () { return projection; }
+    MEAL::Variable<MEAL::Complex2>* get_projection ()
+    { return projection; }
 
  protected:
 
@@ -263,11 +268,7 @@ namespace Calibration
     Reference::To< MEAL::ProductRule<MEAL::Complex2> > instrument;
 
     //! The transformation from the celestial sphere to the receptors
-    Reference::To<MEAL::Complex2> celestial;
-
-    //! The known transformations from the celestial sphere to the receptors
-    /*! The axis class is used to set this constant for each observation */
-    MEAL::Axis< Jones<double> > projection;
+    Reference::To< MEAL::Variable<MEAL::Complex2> > projection;
 
     //! ChainRule used to model response parameter variations
     Reference::To< MEAL::ChainRule<MEAL::Complex2> > response_chain;
