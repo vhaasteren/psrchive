@@ -571,6 +571,33 @@ void SystemCalibrator::add_pulsar (const Archive* data, unsigned isub) try
     projection->set_chan (ichan);
     Jones<double> known = projection->get_transformation();
 
+    /*
+      PLAN:
+
+      new pure virtual base class: "TransformationWithAbscissae" has a
+      MEAL::Complex2 that is incorporated into the SignalPath as the
+      projection with the idea that it should also have one or more
+      abscissa; SignalPath has a (pointer to)
+      TransformationWithAbscissae
+
+      new child class: "KnownTransformation" inherits
+      TransformationWithAbscissa and has a MEAL::Value<MEAL::Complex2> 
+      connected to its MEAL::Axis< Jones<double> >
+
+      VariableTransformation::get_transformation is replaced by pure virtual
+
+      TransformationWithAbscissae* new_transformation ();
+      void update_transformation (TransformationWithAbscissae*)
+
+      new class: "KnownVariableTransformation" inherits
+      VariableTransformation (and is inherited by
+      ManualVariableTranformation and VariableProjectionCorrect)
+      and implements new_transformation (returns new KnownTransformation)
+      and update_transformation (dynamic_cast to KnownTransformation*)
+
+      multiple pulsar SignalPaths will share the projection.
+    */
+    
     if (iono_faraday)
     {
       iono_faraday->set_frequency( integration->get_centre_frequency(ichan) );

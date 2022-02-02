@@ -13,7 +13,7 @@
 
 namespace Pulsar {
 
-  //! Analysis of the impact of instrumental boost on phase shift estimate
+  //! Manager of variable transformations
   class VariableTransformation : public Reference::Able
   {
 
