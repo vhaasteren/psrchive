@@ -1825,8 +1825,6 @@ void SystemCalibrator::solve_prepare () try
            "\t failures=" << calibrator_estimate[ichan]->add_data_failures 
                << endl;
 
-	cerr << "invalid cal[" << ichan << "]=" << calibrator_estimate[ichan]->source->get_stokes() << endl;
-	
         model[ichan]->set_valid( false, "reference flux equals zero" );
       }
 
