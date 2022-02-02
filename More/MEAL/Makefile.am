@@ -129,6 +129,7 @@ nobase_include_HEADERS = \
         MEAL/Univariate.h \
         MEAL/UnivariatePolicy.h \
 	MEAL/Value.h \
+	MEAL/Variable.h \
 	MEAL/Vectorize.h \
         MEAL/VectorRule.h \
         MEAL/VelocityModel.h \

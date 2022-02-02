@@ -1,20 +1,22 @@
 //-*-C++-*-
 /***************************************************************************
  *
- *   Copyright (C) 2019 by Willem van Straten
+ *   Copyright (C) 2019 - 2022 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
 
-#ifndef __Pulsar_VariableTransformation_h
-#define __Pulsar_VariableTransformation_h
+#ifndef __Pulsar_VariableTransformationManager_h
+#define __Pulsar_VariableTransformationManager_h
 
 #include "Pulsar/Archive.h"
+#include "MEAL/Variable.h"
+#include "MEAL/Complex2.h"
 
 namespace Pulsar {
-
+  
   //! Manager of variable transformations
-  class VariableTransformation : public Reference::Able
+  class VariableTransformationManager : public Reference::Able
   {
 
   protected:
@@ -28,8 +30,10 @@ namespace Pulsar {
   public:
 
     //! Default constructor
-    VariableTransformation ();
+    VariableTransformationManager ();
 
+    typedef MEAL::Variable<MEAL::Complex2> Transformation;
+    
     //! Set the Archive for which a tranformation will be computed
     virtual void set_archive (const Archive* _archive);
 
@@ -39,8 +43,11 @@ namespace Pulsar {
     //! Set the frequency channel for which a tranformation will be computed
     virtual void set_chan (unsigned _chan);
 
-    //! Get the transformation
-    virtual Jones<double> get_transformation () = 0;
+    //! Return a newly constructed Transformation instance
+    virtual Transformation* new_transformation () = 0;
+
+    //! Return a newly constructed Argument::Value for the given Transformation
+    virtual MEAL::Argument::Value* new_value (Transformation*) = 0;
 
     //! Get the description of the transformation
     virtual std::string get_description () const { return description; }
