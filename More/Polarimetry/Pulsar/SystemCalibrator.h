@@ -26,7 +26,7 @@ namespace Pulsar
   class ReferenceCalibrator;
   class FluxCalibrator;
   class CalibratorStokes;
-  class VariableTransformation;
+  class VariableTransformationManager;
 
   //! PolnCalibrator with estimated calibrator Stokes parameters
   /*! The SystemCalibrator is the virtual base class of polarization
@@ -121,7 +121,7 @@ namespace Pulsar
     virtual void set_impurity( MEAL::Real4* );
 
     //! Set the projection transformation
-    virtual void set_projection( VariableTransformation* );
+    virtual void set_projection( VariableTransformationManager* );
 
     //! Set the ionospheric rotation measure applied to all observations
     virtual void set_ionospheric_rotation_measure (double rm);
@@ -315,7 +315,7 @@ namespace Pulsar
     Reference::To<const FluxCalibrator> flux_calibrator;
     
     //! The projection transformation (overrides ProjectionCorrection)
-    Reference::To<VariableTransformation> projection;
+    Reference::To<VariableTransformationManager> projection;
 
     //! The ionospheric rotation measure applied to all observations
     double ionospheric_rotation_measure;

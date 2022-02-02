@@ -42,8 +42,9 @@ nobase_include_HEADERS = \
         Pulsar/IonosphereCalibrator.h \
         Pulsar/IRIonosphere.h \
 	Pulsar/IXRInfo.h \
+	Pulsar/KnownVariableTransformation.h \
         Pulsar/ManualPolnCalibrator.h \
-	Pulsar/ManualVariableTransformation.h \
+	Pulsar/VariableTransformationFile.h \
         Pulsar/MeanCoherency.h \
         Pulsar/MeanFeed.h \
         Pulsar/MeanInstrument.h \
@@ -106,7 +107,7 @@ nobase_include_HEADERS = \
 	Pulsar/VariableBackendEstimate.h \
 	Pulsar/VariableGain.h \
 	Pulsar/VariableProjectionCorrection.h \
-	Pulsar/VariableTransformation.h \
+	Pulsar/VariableTransformationManager.h \
 	Pulsar/VariationInfo.h
 
 libPolarimetry_la_SOURCES = \
@@ -157,8 +158,9 @@ libPolarimetry_la_SOURCES = \
         IonosphereCalibrator.C \
         IRIonosphere.C \
 	IXRInfo.C \
+	KnownVariableTransformation.C \
 	ManualPolnCalibrator.C \
-	ManualVariableTransformation.C \
+	VariableTransformationFile.C \
         MeanCoherency.C \
         MeanFeed.C \
         MeanInstrument.C \
@@ -222,7 +224,7 @@ libPolarimetry_la_SOURCES = \
 	VariableBackendEstimate.C \
 	VariableGain.C \
 	VariableProjectionCorrection.C \
-	VariableTransformation.C \
+	VariableTransformationManager.C \
 	VariationInfo.C
 
 if HAVE_GSL

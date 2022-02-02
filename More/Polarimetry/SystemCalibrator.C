@@ -134,7 +134,7 @@ void SystemCalibrator::set_calibrator (const Archive* archive)
   calibrator_stokes = archive->get<const CalibratorStokes>();
 }
 
-void SystemCalibrator::set_projection (VariableTransformation* _projection)
+void SystemCalibrator::set_projection (VariableTransformationManager* _projection)
 {
   projection = _projection;
 }
@@ -569,34 +569,8 @@ void SystemCalibrator::add_pulsar (const Archive* data, unsigned isub) try
     Argument::Value* time = model[mchan]->time.new_Value( epoch );
 
     projection->set_chan (ichan);
-    Jones<double> known = projection->get_transformation();
 
-    /*
-      PLAN:
-
-      new pure virtual base class: "TransformationWithAbscissae" has a
-      MEAL::Complex2 that is incorporated into the SignalPath as the
-      projection with the idea that it should also have one or more
-      abscissa; SignalPath has a (pointer to)
-      TransformationWithAbscissae
-
-      new child class: "KnownTransformation" inherits
-      TransformationWithAbscissa and has a MEAL::Value<MEAL::Complex2> 
-      connected to its MEAL::Axis< Jones<double> >
-
-      VariableTransformation::get_transformation is replaced by pure virtual
-
-      TransformationWithAbscissae* new_transformation ();
-      void update_transformation (TransformationWithAbscissae*)
-
-      new class: "KnownVariableTransformation" inherits
-      VariableTransformation (and is inherited by
-      ManualVariableTranformation and VariableProjectionCorrect)
-      and implements new_transformation (returns new KnownTransformation)
-      and update_transformation (dynamic_cast to KnownTransformation*)
-
-      multiple pulsar SignalPaths will share the projection.
-    */
+    Jones<double> known = Jones<double>::identity();
     
     if (iono_faraday)
     {
@@ -619,8 +593,13 @@ void SystemCalibrator::add_pulsar (const Archive* data, unsigned isub) try
       known /= sqrt( det(known) );
     }
 
+    /*
+      TO-DO TODO TO DO: need to add an auxiliary_known to all models
+    */
+    // projection->set_auxiliary_known (known);
+      
     // projection transformation
-    Argument::Value* xform = model[mchan]->get_projection().new_Value( known );
+    Argument::Value* xform = projection->new_value (model[mchan]->get_projection());
     
     // measurement set
     Calibration::CoherencyMeasurementSet measurements;
@@ -1634,7 +1613,14 @@ void SystemCalibrator::init_model (unsigned ichan)
       cerr << "SystemCalibrator::init_model impurity" << endl;
     model[ichan]->set_impurity( impurity->clone() );
   }
-
+  
+  if (projection)
+  {
+    if (verbose > 2)
+      cerr << "SystemCalibrator::init_model projection" << endl;
+    model[ichan]->set_projection( projection->new_transformation() );
+  }
+  
   model[ichan] -> set_refcal_through_frontend (refcal_through_frontend);
 
   if (foreach_calibrator)
@@ -2182,12 +2168,6 @@ void SystemCalibrator::precalibrate (Archive* data)
 	continue;
       }
 
-      /*
-	remove the projection from the signal path;
-	it will be included later, if necessary.
-      */
-
-      model[ichan]->get_projection().set_value( Jones<double>::identity() );
 
       try
       {
@@ -2221,12 +2201,8 @@ void SystemCalibrator::precalibrate (Archive* data)
 	continue;
       }
 
-      if ( data->get_type() == Signal::Pulsar )
-      {
-        projection->set_chan (ichan);
-	response[ichan] *= projection->get_transformation();
-      }
-
+      // TO DO TO-DO TODO: NEED TO HANDLE PROJECTION TRANSFORMATION
+      
       response[ichan] = inv( response[ichan] );
     }
 

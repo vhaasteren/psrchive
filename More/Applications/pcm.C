@@ -20,7 +20,7 @@
 #include "Pulsar/FluxCalibrator.h"
 #include "Pulsar/RobustStepFinder.h"
 
-#include "Pulsar/ManualVariableTransformation.h"
+#include "Pulsar/VariableTransformationFile.h"
 #include "Pulsar/ManualPolnCalibrator.h"
 
 #include "Pulsar/SystemCalibratorManager.h"
@@ -448,7 +448,7 @@ int main (int argc, char **argv)
   return ret;
 }
 
-Reference::To< Pulsar::VariableTransformation > projection;
+Reference::To< Pulsar::VariableTransformationManager > projection;
 Reference::To< MEAL::Real4 > impurity;
 Reference::To< MEAL::Complex2 > response;
 
@@ -794,7 +794,7 @@ void pcm::set_projection (const string& filename)
   cerr << "pcm: loading projection transformations from " << filename << endl;
 
   ManualPolnCalibrator* cal = new ManualPolnCalibrator (filename);
-  projection = new ManualVariableTransformation (cal);
+  projection = new VariableTransformationFile (cal);
 }
 
 flags foreach_calibrator;

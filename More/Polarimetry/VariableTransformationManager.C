@@ -5,18 +5,18 @@
  *
  ***************************************************************************/
 
-#include "Pulsar/VariableTransformation.h"
+#include "Pulsar/VariableTransformationManager.h"
 
 using namespace Pulsar;
 
 //! Default constructor
-VariableTransformation::VariableTransformation ()
+VariableTransformationManager::VariableTransformationManager ()
 {
   built = false;
 }
 
 //! Set the Archive for which a tranformation will be computed
-void VariableTransformation::set_archive (const Archive* _archive) 
+void VariableTransformationManager::set_archive (const Archive* _archive) 
 {
   if (archive && archive != _archive)
     built = false;
@@ -25,7 +25,7 @@ void VariableTransformation::set_archive (const Archive* _archive)
 }
 
 //! Set the sub-integration for which a tranformation will be computed
-void VariableTransformation::set_subint (unsigned _subint)
+void VariableTransformationManager::set_subint (unsigned _subint)
 { 
   if (subint != _subint)
     built = false;
@@ -34,7 +34,7 @@ void VariableTransformation::set_subint (unsigned _subint)
 }
 
 //! Set the frequency channel for which a tranformation will be computed
-void VariableTransformation::set_chan (unsigned _chan)
+void VariableTransformationManager::set_chan (unsigned _chan)
 {
   if (chan != _chan)
     built = false;

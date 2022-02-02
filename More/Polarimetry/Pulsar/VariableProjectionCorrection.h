@@ -9,13 +9,13 @@
 #ifndef __Pulsar_VariableProjectionCorrection_h
 #define __Pulsar_VariableProjectionCorrection_h
 
-#include "Pulsar/VariableTransformation.h"
+#include "Pulsar/KnownVariableTransformation.h"
 #include "Pulsar/ProjectionCorrection.h"
 
 namespace Pulsar {
 
-  //! Adapts a VariableTransformation to a ProjectionCorrection
-  class VariableProjectionCorrection : public VariableTransformation
+  //! Adapts a KnonwnVariableTransformation to a ProjectionCorrection
+  class VariableProjectionCorrection : public KnownVariableTransformation
   {
     mutable ProjectionCorrection correction;
     mutable Jones<double> transformation;
