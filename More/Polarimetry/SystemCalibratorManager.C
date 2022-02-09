@@ -76,11 +76,18 @@ void SystemCalibratorManager::solve ()
   
   for (auto cal: calibrator)
   {
-    cerr << "SystemCalibratorManager::solve preparing name=" << cal->get_calibrator()->get_source () << endl;
+    if (!cal->has_calibrator())
+      throw Error (InvalidState, "SystemCalibratorManager::solve",
+		   "SystemCalibrator for " + cal->get_name() + " has no data");
+    
+    cerr << "SystemCalibratorManager::solve preparing name="
+	 << cal->get_calibrator()->get_source () << endl;
+    
     cal->solve_prepare ();
   }
 
-  cerr << "SystemCalibratorManager::solve calling SystemCalibrator::solve" << endl;
+  cerr << "SystemCalibratorManager::solve calling SystemCalibrator::solve"
+       << endl;
   
   get_model()->solve ();
 }
