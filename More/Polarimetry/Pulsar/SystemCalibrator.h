@@ -69,6 +69,12 @@ namespace Pulsar
     //! Return the Calibrator information
     Calibrator::Info* get_Info () const;
 
+    //! Set the name associated with this SystemCalibrator instance
+    void set_name (const std::string& name);
+
+    //! Get the name associated with this SystemCalibrator instance
+    std::string get_name () const;
+    
     //! Return the reference epoch of the calibration experiment
     MJD get_epoch () const;
 
@@ -300,6 +306,8 @@ namespace Pulsar
     friend class SystemCalibratorPlotter;
     friend class MatrixTemplateMatching;
 
+    std::string instance_name;
+    
     //! Prepare the model
     virtual void prepare (const Archive* data);
 

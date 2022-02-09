@@ -132,6 +132,18 @@ void SystemCalibrator::set_calibrator (const Archive* archive)
 
   extension = archive->get<const PolnCalibratorExtension>();
   calibrator_stokes = archive->get<const CalibratorStokes>();
+
+  instance_name = archive->get_source ();
+}
+
+void SystemCalibrator::set_name (const std::string& name)
+{
+  instance_name = name;
+}
+
+std::string SystemCalibrator::get_name () const
+{
+  return instance_name;
 }
 
 void SystemCalibrator::set_projection (VariableTransformationManager* _projection)

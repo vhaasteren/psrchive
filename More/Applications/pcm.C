@@ -397,7 +397,7 @@ float alignment_threshold = 4.0; // sigma
 float auto_alignment_threshold = 0.0; // sigma
 
 // total intensity profile of first archive, used to check for phase jumps
-Reference::To<Pulsar::Profile> phase_std;
+Reference::To<DataSetManager> phase_std_manager;
 
 // Each flux calibrator observation may have unique values of I, Q & U
 bool multiple_flux_calibrators = false;
@@ -1177,6 +1177,9 @@ void pcm::setup ()
   if (!mem_mode)
     alignment_threshold = 0.0;
 
+  if (alignment_threshold || auto_alignment_threshold)
+    phase_std_manager = new DataSetManager;
+
   load_calibrator_database();
 
   if (!prepare)
@@ -1301,8 +1304,25 @@ void configure_model (Pulsar::SystemCalibrator* model)
 
 void check_phase (Pulsar::Archive* archive)
 {
+  if (!phase_std_manager)
+    throw Error (InvalidState, "check_phase", "no phase standard manager");
+  
   Reference::To<Pulsar::Archive> temp = archive->total();
-  Estimate<double> shift = temp->get_Profile(0,0,0)->shift (*phase_std);
+
+  DataSet* dataset = phase_std_manager->get (archive);
+  Archive* total = dataset->get_total();
+
+  /*
+    test for phase shift only if phase_std is not from current archive.
+    this test will fail if binfile is a symbollic link.
+  */
+
+  if (archive->get_filename() == total->get_filename())
+    return;
+  
+  Profile* phase_std = total->get_Profile(0,0,0);
+  
+  Estimate<double> shift = phase_std->shift (temp->get_Profile(0,0,0));
 
   double abs_shift = fabs( shift.get_value() );
   
@@ -1388,26 +1408,25 @@ void pcm::process (Pulsar::Archive* archive)
     }
   }
 
-  /*
-    test for phase shift only if phase_std is not from current archive.
-    this test will fail if binfile is a symbollic link.
-  */
-  if ( phase_std && find (binfiles.begin(), binfiles.end(),
-			  archive->get_filename()) == binfiles.end() )
+  if ( phase_std_manager )
   {
     if (verbose)
-      cerr << "pcm: creating checking phase" << endl;
+      cerr << "pcm: checking phase" << endl;
 
     check_phase (archive);
   }
 
-  if ((alignment_threshold || auto_alignment_threshold) && !phase_std)
+  if (phase_std_manager)
   {
-    cerr << "pcm: creating phase reference" << endl;
+    DataSet* dataset = phase_std_manager->get (archive);
 
-    // store an fscrunched and tscrunched clone for phase reference
-    Reference::To<Archive> temp = archive->total();
-    phase_std = temp->get_Profile (0,0,0);
+    if (!dataset)
+    {
+      cerr << "pcm: creating phase reference" << endl;
+
+      // store an fscrunched and tscrunched clone for phase reference
+      phase_std_manager->integrate (archive->total());
+    }
   }
 
   cerr << "pcm: adding observation" << endl;
@@ -1744,8 +1763,10 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile,
     autobin = load (binfile);
     auto_select (*model, autobin, maxbins);
       
-    if (alignment_threshold)
-      phase_std = autobin->get_Profile (0,0,0);
+    if (phase_std_manager)
+      phase_std_manager->integrate( autobin );
+    
+    model->set_name (autobin->get_source ());
   }
   catch (Error& error)
   {
@@ -1755,11 +1776,10 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile,
 
   if (!autobin)
     throw Error (InvalidState, "pcm::measurement_equation_modeling",
-		 "need to update code to work without auto phase bin");
+		 "need to update MEM code to work without -c option");
   
   cerr << "pcm: set calibrators" << endl;
 
-  // BILLY
   DataSet* dataset = data_manager->get (autobin);
   vector<string> filenames = dataset->get_calibrator_filenames ();
 
