@@ -1625,35 +1625,59 @@ void SystemCalibrator::init_model (unsigned ichan)
   if (verbose > 2)
     cerr << "SystemCalibrator::init_model ichan=" << ichan << endl;
 
-  if (response_fixed.size())
+  if (!partner)
   {
-    if (!response)
-      response = Pulsar::new_transformation (type);
+    if (response_fixed.size())
+    {
+      if (!response)
+	response = Pulsar::new_transformation (type);
 
-    for (unsigned i=0; i < response_fixed.size(); i++)
-      response->set_infit ( response_fixed[i], false );
-  }
+      for (unsigned i=0; i < response_fixed.size(); i++)
+	response->set_infit ( response_fixed[i], false );
+    }
   
-  if (response)
-  {
-    if (verbose > 2)
-      cerr << "SystemCalibrator::init_model response name="
-	   << response->get_name() << endl;
-    model[ichan]->set_response( response->clone() );
-  }
+    if (response)
+    {
+      if (verbose > 2)
+	cerr << "SystemCalibrator::init_model response name="
+	     << response->get_name() << endl;
+      model[ichan]->set_response( response->clone() );
+    }
 
-  if (impurity)
-  {
-    if (verbose > 2)
-      cerr << "SystemCalibrator::init_model impurity" << endl;
-    model[ichan]->set_impurity( impurity->clone() );
-  }
+    if (impurity)
+    {
+      if (verbose > 2)
+	cerr << "SystemCalibrator::init_model impurity" << endl;
+      model[ichan]->set_impurity( impurity->clone() );
+    }
   
-  if (projection)
-  {
-    if (verbose > 2)
-      cerr << "SystemCalibrator::init_model projection" << endl;
-    model[ichan]->set_projection( projection->new_transformation() );
+    if (projection)
+    {
+      if (verbose > 2)
+	cerr << "SystemCalibrator::init_model projection" << endl;
+      model[ichan]->set_projection( projection->new_transformation() );
+    }
+
+    for (auto rv : response_variation)
+      model[ichan]->set_response_variation( rv.first, rv.second->clone() );
+
+    if (gain_variation)
+      model[ichan]->set_gain_variation( gain_variation->clone() );
+
+    if (diff_gain_variation)
+      model[ichan]->set_diff_gain_variation( diff_gain_variation->clone() );
+  
+    if (diff_phase_variation)
+      model[ichan]->set_diff_phase_variation( diff_phase_variation->clone() );
+
+    for (unsigned i=0; i < gain_steps.size(); i++)
+      model[ichan]->add_gain_step (gain_steps[i]);
+
+    for (unsigned i=0; i < diff_gain_steps.size(); i++)
+      model[ichan]->add_diff_gain_step (diff_gain_steps[i]);
+
+    for (unsigned i=0; i < diff_phase_steps.size(); i++)
+      model[ichan]->add_diff_phase_step (diff_phase_steps[i]);
   }
   
   model[ichan] -> set_refcal_through_frontend (refcal_through_frontend);
@@ -1663,30 +1687,6 @@ void SystemCalibrator::init_model (unsigned ichan)
 
   if (stepeach_calibrator)
     model[ichan]->set_stepeach_calibrator( stepeach_calibrator );
-
-  std::map< unsigned, Reference::To<Univariate<Scalar> > >::iterator ptr;
-  for (ptr = response_variation.begin(); ptr != response_variation.end(); ptr++)
-  {
-    model[ichan]->set_response_variation( ptr->first, ptr->second->clone() );
-  }
-
-  if (gain_variation)
-    model[ichan]->set_gain_variation( gain_variation->clone() );
-
-  if (diff_gain_variation)
-    model[ichan]->set_diff_gain_variation( diff_gain_variation->clone() );
-  
-  if (diff_phase_variation)
-    model[ichan]->set_diff_phase_variation( diff_phase_variation->clone() );
-
-  for (unsigned i=0; i < gain_steps.size(); i++)
-    model[ichan]->add_gain_step (gain_steps[i]);
-
-  for (unsigned i=0; i < diff_gain_steps.size(); i++)
-    model[ichan]->add_diff_gain_step (diff_gain_steps[i]);
-
-  for (unsigned i=0; i < diff_phase_steps.size(); i++)
-    model[ichan]->add_diff_phase_step (diff_phase_steps[i]);
 
   if (solver)
     model[ichan]->set_solver( solver->clone() );
