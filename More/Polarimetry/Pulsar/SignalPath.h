@@ -231,8 +231,7 @@ namespace Calibration
     bool get_valid () const { return valid; }
     std::string get_invalid_reason () const { return invalid_reason; }
 
-    void set_projection (MEAL::Variable<MEAL::Complex2>* proj)
-    { projection = proj; }
+    void set_projection (MEAL::Variable<MEAL::Complex2>* proj);
     
     MEAL::Variable<MEAL::Complex2>* get_projection ()
     { return projection; }

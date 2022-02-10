@@ -67,6 +67,8 @@ void SignalPath::share (SignalPath* other)
   equation = other->equation;
   response = other->response;
   impurity = other->impurity;
+  projection = other->projection;
+  
   sharing = true;
   other->sharing = true;
 }
@@ -137,6 +139,15 @@ void SignalPath::set_basis (MEAL::Complex2* x)
   // if the instrument has already been constructed, add the basis to it
   if (instrument && basis)
     *instrument *= basis;
+}
+
+void SignalPath::set_projection (MEAL::Variable<MEAL::Complex2>* proj)
+{
+  if (sharing)
+    throw Error (InvalidState, "SignalPath::set_projection",
+		 "cannot set projection when sharing with another SignalPath");
+
+  projection = proj;
 }
 
 void SignalPath::set_solver (ReceptionModel::Solver* s)
