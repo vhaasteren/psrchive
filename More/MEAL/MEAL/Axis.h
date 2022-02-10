@@ -57,8 +57,6 @@ namespace MEAL {
       //! Apply the value 
       void apply () const 
       { 
-	if (verbose) std::cerr << "MEAL::Axis<Type>::Value::apply value="
-			       << value << std::endl;
 	axis->set_value (value);
       }
 

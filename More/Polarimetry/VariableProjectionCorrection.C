@@ -44,6 +44,8 @@ void VariableProjectionCorrection::build () const try
   correction.set_archive (archive);
   transformation = correction (subint);
   description = correction.get_summary();
+
+  built = true;
 }
 catch (Error& error)
 {

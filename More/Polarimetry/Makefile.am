@@ -55,6 +55,7 @@ nobase_include_HEADERS = \
         Pulsar/MeasurementEquation.h \
 	Pulsar/ModelParametersReport.h \
 	Pulsar/ModeSeparation.h \
+	Pulsar/NancayProjectionCorrection.h \
         Pulsar/ObservationUncertainty.h \
         Pulsar/OffPulseCalibrator.h \
         Pulsar/Parallactic.h \
@@ -172,6 +173,7 @@ libPolarimetry_la_SOURCES = \
         MeasurementEquation.C \
 	ModelParametersReport.C \
 	ModeSeparation.C \
+	NancayProjectionCorrection.C \
         ObservationUncertainty.C \
         OffPulseCalibrator.C \
         Parallactic.C \

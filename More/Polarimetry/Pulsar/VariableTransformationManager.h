@@ -25,7 +25,7 @@ namespace Pulsar {
     unsigned chan;
 
     mutable std::string description;
-    bool built;
+    mutable bool built;
 
   public:
 
