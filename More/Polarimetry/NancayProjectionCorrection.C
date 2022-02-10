@@ -10,6 +10,7 @@
 #include "MountProjection.h"
 
 using namespace Pulsar;
+using namespace std;
 
 Poly2D::Poly2D (unsigned ncoeff, unsigned mcoeff)
 {
@@ -51,15 +52,25 @@ void Poly2D::set_abscissa_offset (unsigned dim, double offset)
 }
 
 NancayProjectionCorrection::NancayTransformation::NancayTransformation ()
-: gain (4, 2),      // cubic in hour angle, linear in declination
-  diff_gain (4, 2)
+: gain (2, 1),      // linear in hour angle, constant in declination
+  diff_gain (2, 1)
 {
   auto chain = new MEAL::ChainRule<MEAL::Complex2>;
+  auto single = new Calibration::SingleAxis;
 
-  chain->set_model (new Calibration::SingleAxis);
-  chain->set_constraint (0, &gain);
-  gain.set_param (0, 1.0);
-  gain.set_infit (0, false);
+  // disable variation of absolute gain
+  single->set_infit (0, false);
+
+  // disable variation of differential phase
+  single->set_infit (2, false);
+  
+  chain->set_model (single);
+
+  /*
+    chain->set_constraint (0, &gain);
+    gain.set_param (0, 1.0);
+    gain.set_infit (0, false);
+  */
   
   chain->set_constraint (1, &diff_gain);
   diff_gain.set_param (0, 0.0);
@@ -82,7 +93,7 @@ void NancayProjectionCorrection::NancayTransformation::set_argument
   gain.set_abscissa (1, arg.declination);
   
   diff_gain.set_abscissa (0, arg.hour_angle);
-  diff_gain.set_abscissa (0, arg.declination);
+  diff_gain.set_abscissa (1, arg.declination);
 
   correction.set_value (arg.correction);
 }
@@ -131,6 +142,6 @@ NancayProjectionCorrection::new_value (VariableTransformationManager::Transforma
   arg.correction = projection.get_transformation ();
   arg.hour_angle = projection.get_correction()->get_mount()->get_hour_angle();
   arg.declination = archive->get_coordinates().dec().getRadians();
-    
+
   return nancay->new_Value( arg );
 }
