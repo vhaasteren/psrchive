@@ -24,6 +24,9 @@ namespace Pulsar {
 
   public:
 
+    //! Get the projection correction
+    ProjectionCorrection* get_correction () { return &correction; }
+    
     //! Get the transformation
     Jones<double> get_transformation ();
 

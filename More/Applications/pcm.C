@@ -22,6 +22,7 @@
 
 #include "Pulsar/VariableTransformationFile.h"
 #include "Pulsar/ManualPolnCalibrator.h"
+#include "Pulsar/NancayProjectionCorrection.h"
 
 #include "Pulsar/SystemCalibratorManager.h"
 #include "Pulsar/SystemCalibratorUnloader.h"
@@ -791,10 +792,18 @@ void pcm::set_impurity (const string& filename)
 
 void pcm::set_projection (const string& filename)
 {
-  cerr << "pcm: loading projection transformations from " << filename << endl;
+  if (filename == "Nancay")
+  {
+    cerr << "pcm: using Nançay projection correction" << endl;
+    projection = new NancayProjectionCorrection;
+  }
+  else
+  {
+    cerr << "pcm: loading projection transformations from " << filename << endl;
 
-  ManualPolnCalibrator* cal = new ManualPolnCalibrator (filename);
-  projection = new VariableTransformationFile (cal);
+    ManualPolnCalibrator* cal = new ManualPolnCalibrator (filename);
+    projection = new VariableTransformationFile (cal);
+  }
 }
 
 flags foreach_calibrator;

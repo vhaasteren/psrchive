@@ -50,6 +50,9 @@ namespace Pulsar
     //! Return true if the given sub-integration requires correction
     bool required (unsigned isub) const;
 
+    //! Return the projection correction calculator
+    Mount* get_mount ();
+    
     //! Return a summary of parameters relevant to get_rotation
     std::string get_summary () const;
 
@@ -90,6 +93,9 @@ namespace Pulsar
 
     //! The projection correction calculator
     mutable Reference::To<MountProjection> projection;
+
+    //! The type of mount
+    mutable Reference::To<Mount> mount;
 
     //! Flag set when the receiver projection should be corrected
     mutable bool should_correct_projection;

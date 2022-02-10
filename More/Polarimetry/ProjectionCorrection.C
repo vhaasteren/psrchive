@@ -83,7 +83,7 @@ void Pulsar::ProjectionCorrection::set_archive (const Archive* _archive)
     throw Error (InvalidState, "Pulsar::ProjectionCorrection::set_archive",
 		 "no Telescope extension available");
 
-  Mount* mount = mount_factory (telescope->get_mount());
+  mount = mount_factory (telescope->get_mount());
   if (!mount)
     return;
 
@@ -101,11 +101,21 @@ void Pulsar::ProjectionCorrection::set_archive (const Archive* _archive)
   mount->set_observatory_longitude (lon);
   mount->set_source_coordinates ( archive->get_coordinates() );
 
-  Directional* directional = dynamic_cast<Directional*> (mount);
+  Directional* directional = dynamic_cast<Directional*> (mount.get());
   if (directional)
     para.set_directional (directional);
 
-  projection = dynamic_cast<MountProjection*> (mount);
+  projection = dynamic_cast<MountProjection*> (mount.get());
+}
+
+//! Return the projection correction calculator
+Mount* Pulsar::ProjectionCorrection::get_mount ()
+{
+  if (!mount)
+    throw Error (InvalidState, "ProjectionCorrection::get_mount",
+		 "Mount attribute not set");
+  
+  return mount;
 }
 
 bool equal_pi (const Angle& a, const Angle& b, float tolerance = 0.01)
