@@ -120,9 +120,6 @@ namespace Pulsar
     //! Normalize each Stokes vector by the mean on-pulse invariant 
     void set_normalize_by_invariant (bool set = true);
 
-    //! Solve equation for each frequency
-    void solve ();
-    
   protected:
     
     //! Standard data interface
@@ -153,9 +150,6 @@ namespace Pulsar
 
     //! The number of channels that may be simultaneously solved
     unsigned nthread;
-
-    //! Set the initial guesses and update the reference epoch
-    void initialize ();
 
     //! Initialize the SignalPath of the specified channel
     void init_model (unsigned ichan);
@@ -208,6 +202,7 @@ namespace Pulsar
 				const MJD& epoch, unsigned ichan);
       
     //! Prepare the measurement equations for fitting
+    /*! Set the initial guesses and update the reference epoch */
     void solve_prepare ();
 
     //! Prepare to export the solution

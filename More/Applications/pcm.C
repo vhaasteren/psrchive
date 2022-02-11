@@ -206,9 +206,11 @@ void plot_chosen (Pulsar::Archive* archive, const vector<unsigned>& bins,
   cpgend();
 }
 
-void plot_onpulse (Pulsar::ReceptionCalibrator& model, Pulsar::Archive* archive)
+void plot_onpulse (Pulsar::ReceptionCalibrator& model, Pulsar::Archive* archive,
+		   string base = "onpulse")
 {
-  cpgbeg (0, "onpulse.ps/CPS", 0, 0);
+  string device = base + ".ps/cps";
+  cpgbeg (0, device.c_str(), 0, 0);
 
   cpgslw(2);
   cpgsvp (.1,.9, .1,.9);
@@ -224,6 +226,17 @@ void plot_onpulse (Pulsar::ReceptionCalibrator& model, Pulsar::Archive* archive)
 #endif
 
 Reference::To<Calibration::StandardPrepare> prepare;
+
+// name(s) of file(s) from which phase bins will be chosen
+vector<string> binfiles;
+
+string append (string before, string between, string after, bool insert)
+{
+  if (insert)
+    return before + "_" + between + after;
+  else
+    return before + after;
+}
 
 void auto_select (Pulsar::ReceptionCalibrator& model,
                   Pulsar::Archive* archive,
@@ -254,9 +267,13 @@ void auto_select (Pulsar::ReceptionCalibrator& model,
 
   model.set_standard_data( archive );
 
+  string name = archive->get_source ();
+
 #if HAVE_PGPLOT
-  plot_chosen (archive, bins);
-  plot_onpulse (model, archive);
+  string dev = append ("chosen", name, "", binfiles.size() > 1);
+  plot_chosen (archive, bins, dev);
+  dev = append ("onpulse", name, "", binfiles.size() > 1);
+  plot_onpulse (model, archive, dev);
 #endif
 }
 
@@ -698,9 +715,6 @@ unsigned nthread = 1;
 // name of file containing list of filenames to be calibrated
 string calibrate_these;
 
-// name(s) of file(s) from which phase bins will be chosen
-vector<string> binfiles;
-
 // name of least squares minimization algorithm
 string least_squares;
 
@@ -794,7 +808,6 @@ void pcm::set_foreach_cal (const string& code)
   cerr << "pcm: for each calibrator, a unique value of ";
   foreach_calibrator.set( code[0] );
 }
-
 
 void pcm::set_stepeach_cal (const string& code)
 {
@@ -1442,14 +1455,6 @@ void pcm::process (Pulsar::Archive* archive)
 
   model_manager->preprocess( archive );
   model_manager->add_observation( archive );
-}
-
-string append (string before, string between, string after, bool insert)
-{
-  if (insert)
-    return before + "_" + between + after;
-  else
-    return before + after;
 }
 
 void pcm::finalize ()
