@@ -52,30 +52,25 @@ void Poly2D::set_abscissa_offset (unsigned dim, double offset)
 }
 
 NancayProjectionCorrection::NancayTransformation::NancayTransformation ()
-: gain (3, 2),      // quadratic in hour angle, linear in declination
-  diff_gain (3, 2)
+: diff_phase (3, 2),      // quadratic in hour angle, linear in declination
+  diff_gain  (3, 2)
 {
   auto chain = new MEAL::ChainRule<MEAL::Complex2>;
   auto single = new Calibration::SingleAxis;
 
   // disable variation of absolute gain
   single->set_infit (0, false);
-
-  // disable variation of differential phase
-  single->set_infit (2, false);
   
   chain->set_model (single);
-
-  /*
-    chain->set_constraint (0, &gain);
-    gain.set_param (0, 1.0);
-    gain.set_infit (0, false);
-  */
   
   chain->set_constraint (1, &diff_gain);
   diff_gain.set_param (0, 0.0);
   diff_gain.set_infit (0, false);
-  
+
+  chain->set_constraint (2, &diff_phase);
+  diff_phase.set_param (0, 0.0);
+  diff_phase.set_infit (0, false);
+
   add_model (chain);
   
   // corrects the known Kraus-type::parallactic_angle and Pointing::feed_angle
@@ -89,12 +84,12 @@ NancayProjectionCorrection::NancayTransformation::~NancayTransformation ()
 void NancayProjectionCorrection::NancayTransformation::set_argument
 (const Argument& arg)
 {
-  gain.set_abscissa (0, arg.hour_angle);
-  gain.set_abscissa (1, arg.declination);
-  
   diff_gain.set_abscissa (0, arg.hour_angle);
   diff_gain.set_abscissa (1, arg.declination);
 
+  diff_phase.set_abscissa (0, arg.hour_angle);
+  diff_phase.set_abscissa (1, arg.declination);
+  
   correction.set_value (arg.correction);
 }
 

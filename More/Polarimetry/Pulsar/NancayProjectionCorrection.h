@@ -56,8 +56,8 @@ namespace Pulsar {
     {
     protected:
 
-      //! Variation of gain with hour angle and declination
-      Poly2D gain;
+      //! Variation of differential phase with hour angle and declination
+      Poly2D diff_phase;
 
       //! Variation of differential gain with hour angle and declination
       Poly2D diff_gain;
