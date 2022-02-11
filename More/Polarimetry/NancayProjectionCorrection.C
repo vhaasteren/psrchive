@@ -52,8 +52,8 @@ void Poly2D::set_abscissa_offset (unsigned dim, double offset)
 }
 
 NancayProjectionCorrection::NancayTransformation::NancayTransformation ()
-: gain (2, 1),      // linear in hour angle, constant in declination
-  diff_gain (2, 1)
+: gain (3, 2),      // quadratic in hour angle, linear in declination
+  diff_gain (3, 2)
 {
   auto chain = new MEAL::ChainRule<MEAL::Complex2>;
   auto single = new Calibration::SingleAxis;
