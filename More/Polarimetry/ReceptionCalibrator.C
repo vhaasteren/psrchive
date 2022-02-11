@@ -667,29 +667,23 @@ catch (Error& error)
   throw error += "Pulsar::ReceptionCalibrator::add_calibrator (ReferenceCalibrator)";
 }
 
-void ReceptionCalibrator::solve ()
+void ReceptionCalibrator::export_prepare () const
+{
+  const_cast<ReceptionCalibrator*>(this)->solve_prepare();
+}
+
+void ReceptionCalibrator::solve_prepare () try
 {
   if (!get_prepared())
     check_ready ("Pulsar::ReceptionCalibrator::solve");
 
-  initialize ();
-  SystemCalibrator::solve ();
-}
-
-void ReceptionCalibrator::export_prepare () const
-{
-  const_cast<ReceptionCalibrator*>(this)->initialize();
-}
-
-void ReceptionCalibrator::initialize () try
-{
   bool set_equal_ellipticities = equal_ellipticities;
   bool fit_gain = true;
 
   if (calibrator_estimate.size() == 0)
   {
     cerr <<
-      "Pulsar::ReceptionCalibrator::initialize WARNING: \n\t"
+      "Pulsar::ReceptionCalibrator::solve_prepare WARNING: \n\t"
       "Without a ReferenceCalibrator observation, there remains \n\t";
     if (degenerate_V_boost)
     {
@@ -728,16 +722,23 @@ void ReceptionCalibrator::initialize () try
 
   if (previous_cal)
   {
-    cerr << "Pulsar::ReceptionCalibrator::initialize using previous solution"
+    cerr << "Pulsar::ReceptionCalibrator::solve_prepare using previous solution"
 	 << endl;
     for (unsigned ichan=0; ichan<model.size(); ichan++)
       calibrator_estimate[ichan]->source
 	-> set_stokes( (Stokes< Estimate<double> >)
 		       previous_cal->get_stokes (ichan) );
   }
- 
+  
   SystemCalibrator::solve_prepare ();
 
+  for (unsigned ichan=0; ichan < model.size(); ichan++)
+    if (output_report && model[ichan]->get_valid())
+    {
+      string name = "fit_goodness_" + tostring(ichan) + ".txt";
+      model[ichan]->get_equation()->add_postfit_report( new Calibration::FitGoodnessReport (name) );
+    }
+    
   for (unsigned ichan=0; ichan<fluxcal.size(); ichan++) try
   {
     if (fluxcal[ichan])
@@ -770,7 +771,7 @@ void ReceptionCalibrator::initialize () try
 }
 catch (Error& error)
 {
-  throw error += "ReceptionCalibrator::initialize";
+  throw error += "ReceptionCalibrator::solve_prepare";
 }
 
 void ReceptionCalibrator::check_ready (const char* method, bool unc)
@@ -799,19 +800,6 @@ void ReceptionCalibrator::valid_mask
 
   for (unsigned ichan=0; ichan < model.size(); ichan++)
     model[ichan]->set_valid( model[ichan]->get_valid() && src[ichan].valid );
-}
-
-
-void ReceptionCalibrator::solve_prepare ()
-{
-  SystemCalibrator::solve_prepare ();
-
-  for (unsigned ichan=0; ichan < model.size(); ichan++)
-    if (output_report && model[ichan]->get_valid())
-    {
-      string name = "fit_goodness_" + tostring(ichan) + ".txt";
-      model[ichan]->get_equation()->add_postfit_report( new Calibration::FitGoodnessReport (name) );
-    }
 }
 
 Pulsar::Calibrator::Info* 

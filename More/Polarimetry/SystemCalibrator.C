@@ -1264,7 +1264,7 @@ void SystemCalibrator::init_estimates
     estimate[ichan]->create_source( model[ichan]->get_equation() );
     estimate[ichan]->phase_bin = ibin;
 
-    string name_prefix = "psr";
+    string name_prefix = instance_name;
     name_prefix += "_" + tostring(ibin);
 
     estimate[ichan]->source->set_param_name_prefix( name_prefix );
