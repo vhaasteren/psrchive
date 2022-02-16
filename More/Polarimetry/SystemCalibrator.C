@@ -754,42 +754,45 @@ void SystemCalibrator::load_calibrators ()
   {
     model[ichan]->set_valid( false, "update failed" );
   }
-  
-  for (unsigned ichan=0; ichan<nchan; ichan++) try
-  {
-    if (!model[ichan]->get_valid())
-      continue;
 
-    if (!calibrator_estimate[ichan])
+  if (calibrator_estimate.size() == nchan)
+  {  
+    for (unsigned ichan=0; ichan<nchan; ichan++) try
     {
-      if (verbose > 2)
-	cerr << "SystemCalibrator::load_calibrators"
-	  " no estimate ichan=" << ichan << endl;
-      continue;
-    }
+      if (!model[ichan]->get_valid())
+	continue;
+
+      if (!calibrator_estimate[ichan])
+      {
+	if (verbose > 2)
+	  cerr << "SystemCalibrator::load_calibrators"
+	    " no estimate ichan=" << ichan << endl;
+	continue;
+      }
     
-    Estimate<double> I = calibrator_estimate[ichan]->source->get_stokes()[0];
-    if (I.get_value() == 0)
-    {
-      cerr << "SystemCalibrator::load_calibrators"
-       " reference flux equals zero \n"
-       "\t attempts=" << calibrator_estimate[ichan]->add_data_attempts <<
-       "\t failures=" << calibrator_estimate[ichan]->add_data_failures << endl;
-
-      throw Error (InvalidState, "SystemCalibrator::load_calibrators",
-                   "reference flux equals zero");
+      Estimate<double> I = calibrator_estimate[ichan]->source->get_stokes()[0];
+      if (I.get_value() == 0)
+      {
+	cerr << "SystemCalibrator::load_calibrators"
+	  " reference flux equals zero \n"
+	  "\t attempts=" << calibrator_estimate[ichan]->add_data_attempts <<
+	  "\t failures=" << calibrator_estimate[ichan]->add_data_failures << endl;
+	
+	throw Error (InvalidState, "SystemCalibrator::load_calibrators",
+		     "reference flux equals zero");
+      }
+      
+      if (fabs(I.get_value()-1.0) > I.get_error() && verbose)
+	cerr << "SystemCalibrator::load_calibrators warning"
+	  " ichan=" << ichan << " reference flux=" << I << " != 1" << endl;
     }
-
-    if (fabs(I.get_value()-1.0) > I.get_error() && verbose)
-      cerr << "SystemCalibrator::load_calibrators warning"
-        " ichan=" << ichan << " reference flux=" << I << " != 1" << endl;
+    catch (Error& error)
+    {
+      if (model[ichan])
+	model[ichan]->set_valid( false, error.get_message().c_str() );
+    }
   }
-  catch (Error& error)
-  {
-    if (model[ichan])
-      model[ichan]->set_valid( false, error.get_message().c_str() );
-  }
-
+  
   unsigned ok = 0;
   for (unsigned ichan=0; ichan<nchan; ichan++)
     if (model[ichan]->get_valid())
