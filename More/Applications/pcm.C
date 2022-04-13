@@ -1318,6 +1318,15 @@ void configure_model (Pulsar::SystemCalibrator* model)
   for (unsigned i=0; i < diff_phase_steps.size(); i++)
     model->add_diff_phase_step (diff_phase_steps[i]);
 
+  model->set_step_after_cal( step_after_cal );
+
+  if (refcal_through_frontend)
+    cerr << "pcm: reference source illuminates frontend" << endl;
+  else
+    cerr << "pcm: reference source coupled after frontend" << endl;
+
+  model->set_refcal_through_frontend( refcal_through_frontend );
+
   if (!least_squares.empty())
     model->set_solver( new_solver(least_squares) );
 
@@ -1721,8 +1730,6 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile,
 
   model->set_normalize_by_invariant( normalize_by_invariant );
 
-  model->set_step_after_cal( step_after_cal );
-
   if (independent_gains)
     cerr << "pcm: each observation has a unique gain" << endl;
 
@@ -1734,13 +1741,6 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile,
     cerr << "pcm: risking physically unrealizable Stokes parameters" << endl;
 
   model->physical_coherency = physical_coherency;
-
-  if (refcal_through_frontend)
-    cerr << "pcm: reference source illuminates frontend" << endl;
-  else
-    cerr << "pcm: reference source coupled after frontend" << endl;
-
-  model->set_refcal_through_frontend( refcal_through_frontend );
 
   if (multiple_flux_calibrators)
     cerr <<

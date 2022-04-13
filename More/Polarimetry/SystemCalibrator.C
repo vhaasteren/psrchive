@@ -931,21 +931,21 @@ void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
     {
       if ( solution->get_transformation_valid (ichan) )
       {
-	if (verbose > 2)
-	  cerr << "SystemCalibrator::add_calibrator ichan="
-	       << ichan << " saving response" << endl;
+       if (verbose > 2)
+         cerr << "SystemCalibrator::add_calibrator ichan="
+              << ichan << " saving response" << endl;
 
-	response[ichan] = solution->get_response(ichan);
+       response[ichan] = solution->get_response(ichan);
 
-	if (verbose > 2)
-	  cerr << "SystemCalibrator::add_calibrator ichan="
-	       << ichan << " saving transformation" << endl;
-	
-	xform[ichan] = solution->get_transformation(ichan);
+       if (verbose > 2)
+         cerr << "SystemCalibrator::add_calibrator ichan="
+              << ichan << " saving transformation" << endl;
+
+       xform[ichan] = solution->get_transformation(ichan);
       }
       else if (verbose > 2)
-	cerr << "SystemCalibrator::add_calibrator ichan="
-	     << ichan << " transformation not valid" << endl;
+       cerr << "SystemCalibrator::add_calibrator ichan="
+            << ichan << " transformation not valid" << endl;
     }
   }
 
@@ -1494,7 +1494,10 @@ SystemCalibrator::get_CalibratorStokes () const
   Reference::To<CalibratorStokes> ext = new CalibratorStokes;
     
   ext->set_nchan (nchan);
-    
+
+  if (!refcal_through_frontend)
+    ext->set_coupling_point (CalibratorStokes::BeforeIdeal);
+  
   for (unsigned ichan=0; ichan < nchan; ichan++) try
   {
     bool valid = get_transformation_valid(ichan);

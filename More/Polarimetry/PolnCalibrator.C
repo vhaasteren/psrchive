@@ -1,12 +1,22 @@
 /***************************************************************************
  *
- *   Copyright (C) 2003-2011 by Willem van Straten
+ *   Copyright (C) 2003 - 2022 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "Pulsar/PolnCalibrator.h"
 #include "Pulsar/PolnCalibratorExtension.h"
+
+#ifdef HAVE_SPLINTER
+#include "Pulsar/CalibrationInterpolator.h"
+#endif
+
+#include "Pulsar/CalibrationInterpolatorExtension.h"
 
 #include "Pulsar/Receiver.h"
 #include "Pulsar/BasisCorrection.h"
@@ -25,6 +35,7 @@
 #include "templates.h"
 #include "median_smooth.h"
 #include "strutil.h"
+#include "debug.h"
 
 #ifdef sun
 #include <ieeefp.h>
@@ -70,6 +81,18 @@ Pulsar::PolnCalibrator::PolnCalibrator (const Archive* archive)
   // store the calibrator archive
   set_calibrator (archive);
 
+  if (archive->get<CalibrationInterpolatorExtension> ())
+  {
+#ifdef HAVE_SPLINTER
+    DEBUG("PolnCalibrator ctor set variation");
+    set_variation( new CalibrationInterpolator (this) );
+#else
+    throw Error (InvalidState, "PolnCalibrator ctor",
+		 "Archive has CalibrationInterpolatorExtension\n\t"
+		 "but SPLINTER library not available to interpret it");
+#endif
+  }
+
   // store the related Extension, if any
   poln_extension = archive->get<PolnCalibratorExtension>();
   if (poln_extension)
@@ -112,7 +135,7 @@ void Pulsar::PolnCalibrator::set_calibrator (const Archive* archive)
   built = false;
   observation_nchan = 0;
   transformation.resize(0);
-  
+
   Calibrator::set_calibrator (archive);
 }
 
@@ -355,11 +378,18 @@ void Pulsar::PolnCalibrator::calculate_transformation () try
     cerr << "Pulsar::PolnCalibrator::calculate_transformation" << endl;
 
   if (!poln_extension)
+  {
+    cerr << "Pulsar::PolnCalibrator::calculate_transformation no poln_extension" << endl;
+
     throw Error (InvalidState,
 		 "Pulsar::PolnCalibrator::calculate_transformation",
 		 "no PolnCalibratorExtension available");
+  }
 
   unsigned nchan = poln_extension->get_nchan();
+
+  DEBUG("PolnCalibrator::calculate_transformation this=" << (void*)this << " nchan=" << nchan);
+
   transformation.resize (nchan);
 
   if (poln_extension->get_has_covariance())
@@ -759,6 +789,12 @@ void Pulsar::PolnCalibrator::calibration_setup (Archive* arch)
 
   if (response.size() != arch->get_nchan()) try
   {
+    if (variation)
+    {
+      DEBUG("PolnCalibrator::calibration_setup calling Variation::update");
+      variation->update (arch->get_Integration(0));
+    }
+    
     build( arch->get_nchan() );
   }
   catch (Error& error)
@@ -788,7 +824,22 @@ void Pulsar::PolnCalibrator::calibrate (Archive* arch) try
     if (verbose > 2)
       cerr << "Pulsar::PolnCalibrator::calibrate Archive::transform" <<endl;
 
-    arch->transform (response);
+    unsigned nsubint = arch->get_nsubint();
+    
+    for (unsigned isub=0; isub < nsubint; isub++)
+    {
+      Integration* subint = arch->get_Integration (isub);
+
+      if (variation)
+      {
+	bool rebuild_needed = variation->update (subint);
+	if (rebuild_needed)
+	  build (subint->get_nchan());
+      }
+      
+      subint->expert()->transform (response);
+    }
+    
     arch->set_poln_calibrated (true);
 
 #if CORRECT_BASIS
