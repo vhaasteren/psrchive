@@ -377,6 +377,9 @@ namespace Pulsar {
   std::ostream& operator << (std::ostream& os, Database::Sequence);
     
   std::istream& operator >> (std::istream& is, Database::Sequence&);
+
+  bool less_than (const Pulsar::Database::Entry* A, 
+		  const Pulsar::Database::Entry* B);
 }
 
 #endif
