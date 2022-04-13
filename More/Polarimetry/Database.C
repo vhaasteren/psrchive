@@ -503,6 +503,17 @@ bool Database::Entry::less_than (const Entry* that) const
   return this->get_effective_time() < that->get_effective_time();
 }
 
+// compare two Database::Entry instances using Entry::less_than
+bool Pulsar::less_than (const Pulsar::Database::Entry* A, 
+			const Pulsar::Database::Entry* B)
+{
+  if (A==NULL || B==NULL)
+    throw Error (InvalidParam, "Pulsar::less_than (Database::Entry* A,B)",
+                 "null pointer passed as argument");
+
+  return A->less_than (B);
+}
+
 ostream& Pulsar::operator << (ostream& os, Database::Sequence sequence)
 {
   switch (sequence) {

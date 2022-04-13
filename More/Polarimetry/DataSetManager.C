@@ -250,11 +250,11 @@ void DataSetManager::add_polncals (DataSet* dataset)
   
   Pulsar::Database::Criteria criteria;
   criteria = database->criteria (archive, Signal::PolnCal);
-  criteria.entry.time = mid;
+  criteria.entry->time = mid;
   criteria.check_coordinates = check_coordinates;
   criteria.minutes_apart = search_hours * 60.0;
 
-  vector<Pulsar::Database::Entry> cals;
+  vector<const Pulsar::Database::Entry*> cals;
   database->all_matching (criteria, cals);
 
   if (cals.size() == 0)
@@ -266,12 +266,12 @@ void DataSetManager::add_polncals (DataSet* dataset)
     return;
   }
     
-  sort (cals.begin(), cals.end());
+  sort (cals.begin(), cals.end(), &Pulsar::less_than);
   
   for (auto cal: cals)
   {
     string filename = database->get_filename( cal );
-    cerr << "DataSetManager::find_polncals " << cal.filename << endl;
+    cerr << "DataSetManager::find_polncals " << cal->filename << endl;
     dataset->calibrator_filenames.push_back (filename);
     npolncal ++;
   }
@@ -313,7 +313,7 @@ void DataSetManager::find_flux_calibrators  (Signal::Source obsType,
     " searching for " << short_name << "-source flux calibrator observations"
     " within " << search_days << " days of midtime" << endl;
 
-  vector<Pulsar::Database::Entry> cals;
+  vector<const Pulsar::Database::Entry*> cals;
   database->all_matching (criteria, cals);
     
   if (cals.size() == 0)
@@ -321,13 +321,13 @@ void DataSetManager::find_flux_calibrators  (Signal::Source obsType,
       " no " << obsType << " observations found; closest match was \n\n"
 	 << database->get_closest_match_report () << endl;
 
-  sort (cals.begin(), cals.end());
+  sort (cals.begin(), cals.end(), &Pulsar::less_than);
   
   for (unsigned i = 0; i < cals.size(); i++)
   {
     string filename = database->get_filename( cals[i] );
     cerr << "DataSetManager::find_flux_calibrators adding "
-	 << cals[i].filename << endl;
+	 << cals[i]->filename << endl;
     fiducial->calibrator_filenames.push_back (filename);
   }
 }
