@@ -139,6 +139,9 @@ public:
   //! Assume that the specified parameter is not degenerate
   void assume_not_degenerate (const string& text);
 
+  //! Disable the output of various plots
+  void disable_plotting ();
+  
   // Construct a calibrator model for MEM mode
   SystemCalibrator* measurement_equation_modeling (const string& binfile,
 						   unsigned nbin);
@@ -177,6 +180,9 @@ void plot_state (SystemCalibrator* model, const string& state);
 
 // Print the variations of the Jones matrices
 void print_time_variation (SystemCalibrator* model);
+
+static bool plot_chosen_bins = true; 
+static bool plot_onpulse_bins = true; 
 
 #if HAVE_PGPLOT
 
@@ -270,10 +276,17 @@ void auto_select (Pulsar::ReceptionCalibrator& model,
   string name = archive->get_source ();
 
 #if HAVE_PGPLOT
-  string dev = append ("chosen", name, "", binfiles.size() > 1);
-  plot_chosen (archive, bins, dev);
-  dev = append ("onpulse", name, "", binfiles.size() > 1);
-  plot_onpulse (model, archive, dev);
+  if (plot_chosen_bins)
+  {
+    string dev = append ("chosen", name, "", binfiles.size() > 1);
+    plot_chosen (archive, bins, dev);
+  }
+  
+  if (plot_onpulse_bins)
+  {
+    string dev = append ("onpulse", name, "", binfiles.size() > 1);
+    plot_onpulse (model, archive, dev);
+  }
 #endif
 }
 
@@ -913,6 +926,12 @@ void pcm::assume_not_degenerate (const string& text)
   }
 }
 
+void pcm::disable_plotting ()
+{
+  plot_onpulse_bins = false;
+  plot_chosen_bins = false;
+}
+
 //! Add command line options
 void pcm::add_options (CommandLine::Menu& menu)
 {
@@ -953,6 +972,10 @@ void pcm::add_options (CommandLine::Menu& menu)
   arg = menu.add (unload_each_calibrated, 'N');
   arg->set_help ("do not unload calibrated data files");
 
+  arg = menu.add (this, &pcm::disable_plotting, "noplots");
+  arg->set_help ("do not plot chosen.ps and onpulse.ps");
+
+  
   menu.add ("\n" "Input options:");
 
   arg = menu.add (calfile, 'C', "file");
@@ -1673,8 +1696,11 @@ void pcm::finalize ()
 	total->tscrunch ();
 	prepare->prepare (total);
 
-	string dev = append ("selected", name, "", ntotal > 1);
-	plot_chosen (total, phase_bins, dev);
+	if (plot_chosen_bins)
+	{
+	  string dev = append ("selected", name, "", ntotal > 1);
+	  plot_chosen (total, phase_bins, dev);
+	}
       }
 #endif // HAVE_PGPLOT
     }
