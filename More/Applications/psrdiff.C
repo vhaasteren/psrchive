@@ -50,6 +50,9 @@ void usage ()
 }
 
 static bool verbose = false;
+static bool fscrunch = false;
+static bool tscrunch = false;
+static bool pscrunch = false;
 
 void diff_two (const std::string& fileA, const std::string& fileB);
 
@@ -71,9 +74,9 @@ int main (int argc, char** argv) try
 
   // perform likelihood analysis
   bool likelihood = false;
-  
+
   char c;
-  while ((c = getopt(argc, argv, "c:dhLM:qs:vV")) != -1) 
+  while ((c = getopt(argc, argv, "c:dfhLM:pqs:tvV")) != -1) 
 
     switch (c)
     {
@@ -83,6 +86,10 @@ int main (int argc, char** argv) try
 
     case 'd':
       plot = true;
+      break;
+
+    case 'f':
+      fscrunch = true;
       break;
 
     case 'h':
@@ -97,8 +104,16 @@ int main (int argc, char** argv) try
       metafile = optarg;
       break;
 
+    case 'p':
+      pscrunch = true;
+      break;
+
     case 's':
       std_filename = optarg;
+      break;
+
+    case 't':
+      tscrunch = true;
       break;
 
     case 'q':
@@ -372,6 +387,27 @@ void diff_two (const std::string& fileA, const std::string& fileB)
 {
   Reference::To<Pulsar::Archive> A = Pulsar::Archive::load (fileA);
   Reference::To<Pulsar::Archive> B = Pulsar::Archive::load (fileB);
+
+  if (fscrunch)
+  {
+    unsigned nchanA = A->get_nchan();
+    unsigned nchanB = B->get_nchan();
+
+    if (nchanA > nchanB)
+      A->fscrunch_to_nchan (nchanB);
+    if (nchanB > nchanA)
+      B->fscrunch_to_nchan (nchanA);
+
+    if (nchanA != nchanB)
+    {
+      /* if either of the above two cases are true, then it may be
+         necessary to align the profiles to the arrival time of the
+         header centre frequency in order to compensate for any
+         mismatch in weighted centre frequencies */
+      A->dedisperse ();
+      B->dedisperse ();
+    }
+  }
 
   std::string reason;
   if (!A->mixable(B,reason))

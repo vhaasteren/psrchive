@@ -1279,7 +1279,7 @@ void remove_channels (const Pulsar::Archive* arch,
   Pulsar::ChannelSubsetMatch chan_match;
 
   if (Calibrator::verbose > 2)
-    cerr << "Database::generatePolnCalibrator " 
+    cerr << "Database::generatePolnCalibrator remove_channels" 
 	 << "BW mismatch, trying channel truncation... " << endl;
 
   unsigned nremoved = 0;
@@ -1310,7 +1310,7 @@ void remove_channels (const Pulsar::Archive* arch,
   }
 
   if (Calibrator::verbose > 2) 
-    cerr << "Database::generatePolnCalibrator removed " 
+    cerr << "Database::generatePolnCalibrator remove_channels removed " 
 	 << nremoved << " channels." << endl;
 
   // Test that the final numbers of channels match up
@@ -1436,7 +1436,11 @@ Database::generatePolnCalibrator (Archive* arch,
   if (!arch)
     throw Error (InvalidParam, "Database::generatePolnCalibrator",
 		 "no Pulsar::Archive given");
-  
+
+  if (!type)
+    throw Error (InvalidParam, "Database::generatePolnCalibrator",
+                 "no Calibrator::Type given");
+
   if (Calibrator::verbose > 2)
     cerr << "Database::generatePolnCalibrator type="
 	 << type->get_name() << endl;
@@ -1482,7 +1486,10 @@ Database::generatePolnCalibrator (Archive* arch,
     
     Criteria cal_criteria = criteria (arch, type);
     const Entry* cal_entry = best_match (cal_criteria);
-    entry = cal_criteria.best (entry, cal_entry);
+    if (entry)
+      entry = cal_criteria.best (entry, cal_entry);
+    else
+      entry = cal_entry;
   }
   catch (Error& error)
   {
@@ -1490,7 +1497,7 @@ Database::generatePolnCalibrator (Archive* arch,
       cerr << "Database::generatePolnCalibrator search for "
            << type->get_name() << " failed. closest = " << get_closest_match_report();
 
-    if (entry->obsType == Signal::Unknown)
+    if (!entry || entry->obsType == Signal::Unknown)
     {
       error << "\n\tneither raw nor processed calibrator archives found.\n"
                "\n\tRAW -- closest match: \n\n" << polncal_match_report <<
@@ -1498,6 +1505,8 @@ Database::generatePolnCalibrator (Archive* arch,
       throw error += "Database::generatePolnCalibrator";
     }
   }
+
+  assert (entry != NULL);
 
   if (lastPolnCal.entry && lastPolnCal.entry->equals(entry))
   {
@@ -1585,6 +1594,8 @@ Database::generateHybridCalibrator (ReferenceCalibrator* arcal,
                  get_closest_match_report ());
   }
 
+  assert (entry != NULL);
+
   if (lastHybridCal.entry && lastHybridCal.entry->equals(entry))
   {
     if (Calibrator::verbose > 2)
@@ -1632,6 +1643,9 @@ Database::generateHybridCalibrator (ReferenceCalibrator* arcal,
 //! Returns the full pathname of the Entry filename
 string Database::get_filename (const Entry* entry) const
 {
+  if (!entry)
+    return "N/A";
+
   if (entry->filename[0] == '/')
     return entry->filename;
   else

@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([PSRCHIVE],[2022-01-14+],[psrchive-developers@lists.sourceforge.net])
+AC_INIT([PSRCHIVE],[2022-05-14+],[psrchive-developers@lists.sourceforge.net])
 
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([config])
@@ -30,7 +30,7 @@ fi
 
 # ensure that epsic source is configured
 if test -f $srcdir/config/epsic.sh; then
-  $srcdir/config/epsic.sh
+  $srcdir/config/epsic.sh $srcdir
 fi
 
 ################################################################################
@@ -84,9 +84,6 @@ AC_C_BIGENDIAN
 # Enable large-file support
 AC_SYS_LARGEFILE
 
-# Check which version of the pulsar catalog is installed
-SWIN_PSRCAT
-
 #
 # Disable the debugging information option, -g
 #
@@ -139,13 +136,14 @@ PSR_LIB_ARMADILLO
 #
 SWIN_DOWNLOAD
 AC_CONFIG_FILES([packages/Makefile
+	packages/armadillo.csh
+	packages/splinter.csh
 	packages/cfitsio.csh
 	packages/fftw.csh
 	packages/pgplot.csh
 	packages/psrcat.csh
 	packages/tempo.csh
-	packages/tempo2.csh
-	packages/epsic.csh])
+	packages/tempo2.csh])
 
 AC_CONFIG_COMMANDS(executable,[chmod a+x packages/*.csh])
 
@@ -230,11 +228,30 @@ else
 #
 # Checks for graphics libraries
 #
-SWIN_LIB_PGPLOT
+SWIN_LIB_GIZA
+
+if test x"$have_giza" == xyes; then
+
+  echo "Replacing PGPLOT with giza"
+
+  # replace PGPLOT with GIZA
+  PGPLOT_CFLAGS=$GIZA_CFLAGS
+  PGPLOT_LIBS=$GIZA_LIBS
+  AC_SUBST(PGPLOT_CFLAGS)
+  AC_SUBST(PGPLOT_LIBS)
+  have_pgplot="yes"
+  AM_CONDITIONAL(HAVE_PGPLOT, [test x"$have_pgplot" == xyes])
+
+else
+
+  SWIN_LIB_PGPLOT
+
+fi  # have_giza
+
 BNV_HAVE_QT
 SWIN_LIB_QTDRIV
 
-fi
+fi  # enable_lean
 
 #
 # For developers: preserve file modification times

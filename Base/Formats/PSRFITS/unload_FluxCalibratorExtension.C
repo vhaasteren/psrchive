@@ -44,11 +44,18 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr,
     dimensions[0] = nchan;
     dimensions[1] = nreceptor;
 
+    if (verbose > 2)
+      cerr << "FITSArchive::unload FluxCalibratorExtension nchan=" << nchan
+           << " nreceptor=" << nreceptor << endl;
+
     for (ichan=0; ichan < nchan; ichan++)
       for (ireceptor=0; ireceptor < nreceptor; ireceptor++)
 	temp[ichan + nchan*ireceptor] = fce->get_S_sys (ichan, ireceptor);
 
     unload_Estimates (fptr, temp, "S_SYS", &dimensions);
+
+    if (verbose > 2)
+      cerr << "FITSArchive::unload FluxCalibratorExtension S_SYS written" << endl;
 
     for (ichan=0; ichan < nchan; ichan++)
       for (ireceptor=0; ireceptor < nreceptor; ireceptor++)
@@ -56,13 +63,26 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr,
 
     unload_Estimates(fptr, temp, "S_CAL", &dimensions);
 
+    if (verbose > 2)
+      cerr << "FITSArchive::unload FluxCalibratorExtension S_CAL written" << endl;
+
     /*
       2019-Sep-05 Willem van Straten
       Optionally write new SCALE and RATIO parameters produced by fluxcal -g
     */
 
     if (!fce->has_scale())
+    {
+      // Remove these extra columns if we are not using them
+      psrfits_delete_col(fptr, "SCALE");
+      psrfits_delete_col(fptr, "SCALEERR");
+      psrfits_delete_col(fptr, "RATIO");
+      psrfits_delete_col(fptr, "RATIOERR");
       return;
+    }
+
+    if (verbose > 2)
+      cerr << "FITSArchive::unload FluxCalibratorExtension has scale" << endl;
 
     for (ichan=0; ichan < nchan; ichan++)
       for (ireceptor=0; ireceptor < nreceptor; ireceptor++)
@@ -80,5 +100,5 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr,
   catch (Error& error) {
     throw error += "Pulsar::FITSArchive::unload FluxCalibratorExtension";
   }
-
 }
+

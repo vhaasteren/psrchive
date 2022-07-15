@@ -27,7 +27,7 @@ using namespace std;
 Pulsar::FluxPlot::FluxPlot ()
 {
   isubint = ichan = ipol = 0;
-  logarithmic = false;
+  logarithmic = 0;
 
   peak_zoom = 0;
   peak_centre_origin = true;
@@ -51,6 +51,14 @@ TextInterface::Parser* Pulsar::FluxPlot::get_interface ()
   return new Interface (this);
 }
 
+//! Compute the maximum flux 
+float Pulsar::FluxPlot::get_flux_maximum (const Profile* data)
+{
+  float max = data->max();
+  // cerr << "FluxPlot::get_flux_maximum max=" << max << endl;
+  return max;
+}
+
 /*! The ProfileVectorPlotter class computes the minimum and maximum values
   to be plotted */
 void Pulsar::FluxPlot::prepare (const Archive* data)
@@ -65,7 +73,7 @@ void Pulsar::FluxPlot::prepare (const Archive* data)
 
   ProfileWeightFunction* baseline = data->get_strategy()->baseline();
 
-  if (logarithmic)
+  if (logarithmic != 0)
   {
     // logarithmic axis
     frame->get_y_axis()->add_opt ('L');
@@ -76,17 +84,32 @@ void Pulsar::FluxPlot::prepare (const Archive* data)
     // increase the space between the label and the axis
     frame->get_y_axis()->set_displacement (3.0);
 
-    Reference::To<PhaseWeight> weight = baseline->operate(plotter.profiles[0]);
+    double offset = 0;
+    double scale = 1;
+    double threshold = 0;
 
-    // the standard deviation of an exponential distribution equals its mean
-    double rms = weight->get_rms ();
-    float log_noise = log(rms) / log(10.0);
+    if (logarithmic == 1)
+    {
+      Reference::To<PhaseWeight> weight = baseline->operate(plotter.profiles[0]);
+
+      double rms = weight->get_rms ();
+      float log_noise = log(rms) / log(10.0);
+      offset = -log_noise;
+      threshold = rms;
+    }
+    else if (logarithmic == -1)
+    {
+      float max = get_flux_maximum (plotter.profiles[0]);
+      threshold = 0;   // no cutoff
+      offset = -log(max) / log(10.0);
+    }
 
     for (unsigned iprof=0; iprof < plotter.profiles.size(); iprof++)
     {
       Reference::To<Profile> temp = plotter.profiles[iprof]->clone();
-      temp->logarithm (10.0, rms);
-      temp->offset( -log_noise );
+      temp->logarithm (10.0, threshold);
+      temp->offset( offset );
+      temp->scale( scale );
       plotter.profiles[iprof] = temp;
     }
   }
@@ -286,8 +309,10 @@ template<typename T> T sqr (T x) { return x*x; }
 //! Return the label for the y-axis
 std::string Pulsar::FluxPlot::get_ylabel (const Archive* data)
 {
-  if (logarithmic)
+  if (logarithmic == 1)
     return "Signal-to-Noise Ratio";
+  else if (logarithmic == -1)
+    return "Power";
   else if (data->get_scale() == Signal::Jansky)
     return "Flux Density (mJy)";
   else

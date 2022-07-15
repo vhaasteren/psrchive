@@ -395,19 +395,20 @@ void SystemCalibrator::preprocess (Archive* data)
   {
     if (!has_Receiver())
       set_Receiver(data);
-
-    BackendCorrection correct_backend;
-    if( correct_backend.required (data) )
-    {
-      if (verbose)
-	cerr << "SystemCalibrator::preprocess"
-                " correct backend" << endl;
-      correct_backend (data);
-    }
-    else if (verbose)
-      cerr << "SystemCalibrator::preprocess"
-              " backend correction not required" << endl;
   }
+
+  BackendCorrection correct_backend;
+
+  if( correct_backend.required (data) )
+  {
+    if (verbose)
+      cerr << "SystemCalibrator::preprocess"
+              " correct backend" << endl;
+    correct_backend (data);
+  }
+  else if (verbose)
+    cerr << "SystemCalibrator::preprocess"
+            " backend correction not required" << endl;
 }
 
 //! Add the observation to the set of constraints
@@ -704,6 +705,11 @@ void SystemCalibrator::set_response_fixed (const std::vector<unsigned>& params)
   response_fixed = params;
 }
 
+void SystemCalibrator::set_calibrator_preprocessor (Processor* opt)
+{
+  calibrator_preprocessor = opt;
+}
+
 void SystemCalibrator::load_calibrators ()
 {
   if (calibrator_filenames.size() == 0)
@@ -717,6 +723,11 @@ void SystemCalibrator::load_calibrators ()
 
     Reference::To<Archive> archive;
     archive = Archive::load(calibrator_filenames[ifile]);
+
+    if (calibrator_preprocessor)
+      calibrator_preprocessor->process (archive);
+
+    preprocess (archive);
     add_calibrator (archive);    
   }
   catch (Error& error)
@@ -732,6 +743,10 @@ void SystemCalibrator::load_calibrators ()
 
   for (unsigned ichan=0; ichan<nchan; ichan++) try
   {
+    if (!model[ichan])
+      throw Error (InvalidState, "SystemCalibrator::load_calibrators",
+                   "model[%d] == NULL", ichan);
+
     if (model[ichan]->get_valid())
       model[ichan]->update ();
   }
@@ -873,7 +888,7 @@ void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
                  "invalid source=" + Source2string(cal->get_type()));
 
   string reason;
-  if (!get_calibrator()->calibrator_match (cal, reason))
+  if (!calibrator_match (cal, reason))
     throw Error (InvalidParam, "SystemCalibrator::add_calibrator",
 		 "mismatch between \n\t" 
 		 + get_calibrator()->get_filename() +
@@ -958,8 +973,8 @@ void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
     MJD epoch = integration->get_epoch();
 
     if (verbose)
-      cerr << "SystemCalibrator::add_calibrator"
-	" outlier_threshold=" << cal_outlier_threshold << endl;
+      cerr << "SystemCalibrator::add_calibrator nchan=" << nchan
+	<< " outlier_threshold=" << cal_outlier_threshold << endl;
     
     ReferenceCalibrator::get_levels (integration, nchan, cal_hi, cal_lo,
 				     cal_outlier_threshold);
@@ -1011,9 +1026,10 @@ void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
       Estimate<double> calp = data.observation.abs_vect ();
       if (calp.get_value() < cal_polarization_threshold * calI.get_value())
       {
-        cerr << "Pulsar::SystemCalibrator::add_calibrator ichan=" << ichan
-             << " signal less than " << cal_polarization_threshold 
-             << " polarized" << endl;
+        if (Archive::verbose > 1)
+          cerr << "Pulsar::SystemCalibrator::add_calibrator ichan=" << ichan
+               << " signal less than " << cal_polarization_threshold 
+               << " polarized" << endl;
         continue;
       }
 
@@ -1407,7 +1423,10 @@ void SystemCalibrator::integrate_calibrator_data
                  "SystemCalibrator::integrate_calibrator_data",
                  "Jones matrix equals zero");
 
-  Jones< Estimate<double> > apply = invert_basis * data.response;
+  Jones< Estimate<double> > apply = data.response;
+
+  if (refcal_through_frontend)
+    apply = invert_basis * data.response;
 
   if (verbose)
     cerr << "SystemCalibrator::integrate_calibrator_data"
@@ -2131,6 +2150,11 @@ void SystemCalibrator::calculate_transformation ()
   }
 }
 
+bool SystemCalibrator::calibrator_match (const Archive* data, std::string& reason)
+{
+  return get_calibrator()->calibrator_match (data, reason);
+}
+
 //! Calibrate the polarization of the given archive
 void SystemCalibrator::precalibrate (Archive* data)
 {
@@ -2138,7 +2162,7 @@ void SystemCalibrator::precalibrate (Archive* data)
     cerr << "SystemCalibrator::precalibrate" << endl;
 
   string reason;
-  if (!get_calibrator()->calibrator_match (data, reason))
+  if (!calibrator_match (data, reason))
     throw Error (InvalidParam, "PulsarCalibrator::precalibrate",
 		 "mismatch between calibrator\n\t" 
 		 + get_calibrator()->get_filename() +

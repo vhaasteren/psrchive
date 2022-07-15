@@ -26,7 +26,8 @@ namespace Pulsar {
   class CalibratorExtension;
 
   //! Polarization and flux calibrators
-  class Calibrator : public Reference::Able {
+  class Calibrator : public Reference::Able
+  {
     
   public:
 
@@ -51,6 +52,9 @@ namespace Pulsar {
     //! Destructor
     virtual ~Calibrator ();
 
+    //! Returns the number of Calibrator instances currently in existence
+    static unsigned get_instance_count ();
+
     //! Calibrate the Pulsar::Archive
     virtual void calibrate (Archive* archive) = 0;
 
@@ -59,6 +63,9 @@ namespace Pulsar {
 
     //! Get the number of frequency channels in the calibrator
     virtual unsigned get_nchan () const = 0;
+
+    //! Get the weight associated with the specified channel
+    virtual float get_weight (unsigned ichan) const = 0;
 
     //! Return a new Calibrator Extension
     virtual CalibratorExtension* new_Extension () const = 0;

@@ -56,6 +56,9 @@ namespace Pulsar {
     //! Compute the error in flux
     virtual float get_flux_error (const Profile* data);
 
+    //! Compute the maximum flux
+    virtual float get_flux_maximum (const Profile* data);
+
     //! Draw the error box
     virtual void plot_error_box (const Archive* data);
 
@@ -75,8 +78,8 @@ namespace Pulsar {
     Index get_pol () const { return ipol; }
 
     //! Plot on a logarithmic scale, normalized by noise
-    void set_logarithmic (bool val) { logarithmic = val; }
-    bool get_logarithmic () const { return logarithmic; }
+    void set_logarithmic (int val) { logarithmic = val; }
+    int get_logarithmic () const { return logarithmic; }
 
     //! Automatically zoom in on the pulse peak
     void set_peak_zoom (float zoom) { peak_zoom = zoom; }
@@ -133,7 +136,7 @@ namespace Pulsar {
     Index ichan;
     Index ipol;
 
-    bool logarithmic;
+    int logarithmic;
 
     int plot_ebox;
     float peak_zoom;
