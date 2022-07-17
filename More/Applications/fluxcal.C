@@ -127,8 +127,8 @@ void configuration_report (Reference::To<Pulsar::StandardCandles>);
 // print all fluxes to cerr
 void print_fluxes (Reference::To<Pulsar::StandardCandles>, double freq);
 
-int main (int argc, char** argv) try {
-
+int main (int argc, char** argv) try
+{
   Pulsar::Option<bool> self_calibrate ("fluxcal::self_calibrate", false);
 
   bool offpulse_calibrator = false;
