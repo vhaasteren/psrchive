@@ -68,7 +68,8 @@ void SignalPath::share (SignalPath* other)
   response = other->response;
   impurity = other->impurity;
   projection = other->projection;
-  
+  faraday_rotation = other->faraday_rotation;
+
   sharing = true;
   other->sharing = true;
 }
@@ -148,6 +149,15 @@ void SignalPath::set_projection (MEAL::Variable<MEAL::Complex2>* proj)
 		 "cannot set projection when sharing with another SignalPath");
 
   projection = proj;
+}
+
+void SignalPath::set_faraday_rotation (MEAL::Variable<MEAL::Complex2>* rot)
+{
+  if (sharing)
+    throw Error (InvalidState, "SignalPath::set_faraday_rotation",
+                 "cannot set Faraday rotation when sharing with another SignalPath");
+
+  faraday_rotation = rot;
 }
 
 void SignalPath::set_solver (ReceptionModel::Solver* s)
@@ -352,6 +362,9 @@ void SignalPath::add_psr_path (VariableBackendEstimate* backend)
 
   if (projection)
     psr_path -> add_model( projection->get_transformation() );
+
+  if (faraday_rotation)
+    psr_path -> add_model( faraday_rotation->get_transformation() );
 
   add_transformation ( psr_path );
 

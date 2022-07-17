@@ -231,10 +231,13 @@ namespace Calibration
     bool get_valid () const { return valid; }
     std::string get_invalid_reason () const { return invalid_reason; }
 
-    void set_projection (MEAL::Variable<MEAL::Complex2>* proj);
-    
+    void set_projection (MEAL::Variable<MEAL::Complex2>*);
     MEAL::Variable<MEAL::Complex2>* get_projection ()
     { return projection; }
+
+    void set_faraday_rotation (MEAL::Variable<MEAL::Complex2>*);
+    MEAL::Variable<MEAL::Complex2>* get_faraday_rotation ()
+    { return faraday_rotation; }
 
  protected:
 
@@ -268,6 +271,9 @@ namespace Calibration
 
     //! The transformation from the celestial sphere to the receptors
     Reference::To< MEAL::Variable<MEAL::Complex2> > projection;
+
+    //! Ionospheric and interstellar Faraday rotation
+    Reference::To< MEAL::Variable<MEAL::Complex2> > faraday_rotation;
 
     //! ChainRule used to model response parameter variations
     Reference::To< MEAL::ChainRule<MEAL::Complex2> > response_chain;

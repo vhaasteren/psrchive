@@ -107,6 +107,7 @@ nobase_include_HEADERS = \
         Pulsar/TotalCovariance.h \
 	Pulsar/VariableBackend.h \
 	Pulsar/VariableBackendEstimate.h \
+	Pulsar/VariableFaradayRotation.h \
 	Pulsar/VariableGain.h \
 	Pulsar/VariableProjectionCorrection.h \
 	Pulsar/VariableTransformationManager.h \
@@ -226,6 +227,7 @@ libPolarimetry_la_SOURCES = \
         TotalCovariance.C \
 	VariableBackend.C \
 	VariableBackendEstimate.C \
+	VariableFaradayRotation.C \
 	VariableGain.C \
 	VariableProjectionCorrection.C \
 	VariableTransformationManager.C \
