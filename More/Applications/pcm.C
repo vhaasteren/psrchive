@@ -1235,11 +1235,19 @@ void pcm::setup ()
 vector< Reference::To<Pulsar::Archive> > total;
 Reference::To<Pulsar::Archive> archive;
 
+#include "Pulsar/VariableFaradayRotation.h"
+
 void configure_model (Pulsar::SystemCalibrator* model)
 {
   model->set_nthread (nthread);
   model->set_report_projection (true);
-  model->set_ionospheric_rotation_measure (ionospheric_rm);
+
+  if (ionospheric_rm)
+  {
+    auto rot = new VariableFaradayRotation;
+    rot->set_ionospheric_rotation_measure (ionospheric_rm);
+    model->set_faraday_rotation (rot);
+  }
 
   if (pcm_solution)
     model->set_previous_solution (pcm_solution);

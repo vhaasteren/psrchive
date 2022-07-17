@@ -10,13 +10,12 @@
 
 #include "Pulsar/BackendCorrection.h"
 #include "Pulsar/BasisCorrection.h"
+
 #include "Pulsar/VariableProjectionCorrection.h"
+#include "Pulsar/VariableFaradayRotation.h"
 
 #include "Pulsar/VariableBackendEstimate.h"
 #include "Pulsar/SystemCalibratorStepFinder.h"
-
-#include "Pulsar/Faraday.h"
-#include "Pulsar/AuxColdPlasmaMeasures.h"
 
 #include "Pulsar/CalibratorTypes.h"
 #include "Pulsar/FluxCalibrator.h"
@@ -56,8 +55,6 @@ SystemCalibrator::SystemCalibrator (Archive* archive)
 
   solve_in_reverse_channel_order = false;
 
-  correct_interstellar_Faraday_rotation = false;
-
   refcal_through_frontend = true;
 
   set_initial_guess = true;
@@ -87,9 +84,8 @@ SystemCalibrator::SystemCalibrator (Archive* archive)
   match_check_nchan = true;
   
   projection = new VariableProjectionCorrection;
+  faraday_rotation = new VariableFaradayRotation;
 
-  ionospheric_rotation_measure = 0.0;
-  
   step_after_cal = false;
 
   if (archive)
@@ -151,9 +147,9 @@ void SystemCalibrator::set_projection (VariableTransformationManager* _projectio
   projection = _projection;
 }
 
-void SystemCalibrator::set_ionospheric_rotation_measure (double rm)
+void SystemCalibrator::set_faraday_rotation (VariableTransformationManager* rot)
 {
-  ionospheric_rotation_measure = rm;
+  faraday_rotation = rot;
 }
 
 void SystemCalibrator::set_normalize_by_invariant (bool flag)
@@ -500,59 +496,15 @@ void SystemCalibrator::add_pulsar (const Archive* data, unsigned isub) try
   MJD epoch = integration->get_epoch ();
   add_epoch (epoch);
 
-  projection->set_archive(data);
-  projection->set_subint(isub);
+  projection->set_archive (data);
+  projection->set_subint (isub);
 
   if (report_projection || verbose)
     cerr << projection->get_description ();
 
-  // correct ionospheric Faraday rotation
-  Reference::To<Faraday> iono_faraday;
-  double iono_rm = ionospheric_rotation_measure;
-  
-  if (iono_rm != 0.0)
-  {
-    cerr << " correcting ionospheric Faraday rotation - RM=" << iono_rm << endl;
-  }
-  else if (! integration->get_auxiliary_birefringence_corrected ())
-  {
-    const AuxColdPlasmaMeasures* aux
-      = integration->get<AuxColdPlasmaMeasures> ();
+  faraday_rotation->set_archive (data);
+  faraday_rotation->set_subint (isub);
 
-    if (aux)
-    {
-      iono_rm = aux->get_rotation_measure();
-
-      if (iono_rm != 0)
-	cerr << " correcting auxiliary Faraday rotation - RM=" 
-	     << aux->get_rotation_measure () << endl;
-    }
-  }
-
-  if (iono_rm != 0.0)
-  {
-    iono_faraday = new Faraday;
-    iono_faraday->set_rotation_measure( iono_rm );
-
-    // correct ionospheric Faraday rotation wrt infinite frequency
-    iono_faraday->set_reference_wavelength( 0.0 );
-  }
-
-  Reference::To<Faraday> ism_faraday;
-  if ( correct_interstellar_Faraday_rotation &&
-       ( data->get_rotation_measure() != 0.0 ) )
-  {
-    cerr << " correcting interstellar Faraday rotation - RM=" 
-	   << data->get_rotation_measure () << endl;
-    
-    ism_faraday = new Faraday;
-    ism_faraday->set_rotation_measure( data->get_rotation_measure() );
-
-    // correct interstellar Faraday rotation wrt centre frequency
-    ism_faraday->set_reference_frequency( data->get_centre_frequency() );
-  }
-  
-  
   // an identifier for this set of data
   string identifier = data->get_filename() + " " + tostring(isub);
 
@@ -581,49 +533,26 @@ void SystemCalibrator::add_pulsar (const Archive* data, unsigned isub) try
     // epoch abscissa
     Argument::Value* time = model[mchan]->time.new_Value( epoch );
 
-    projection->set_chan (ichan);
-
-    Jones<double> known = Jones<double>::identity();
-    
-    if (iono_faraday)
-    {
-      iono_faraday->set_frequency( integration->get_centre_frequency(ichan) );
-      known *= iono_faraday->evaluate();
-    }
-
-    if (ism_faraday)
-    {
-      ism_faraday->set_frequency( integration->get_centre_frequency(ichan) );
-      known *= ism_faraday->evaluate();
-    }
-
-    if (normalize_by_invariant)
-    {
-      /* Any gain variations in observed Stokes parameters should have
-         been normalized away; therefore, do not allow the gain of the 
-         known transformation to vary with time */
-
-      known /= sqrt( det(known) );
-    }
-
-    /*
-      TO-DO TODO TO DO: need to add an auxiliary_known to all models
-    */
-    // projection->set_auxiliary_known (known);
-      
     // projection transformation
-    Argument::Value* xform = projection->new_value (model[mchan]->get_projection());
-    
+    projection->set_chan (ichan);
+    Argument::Value* proj = projection->new_value (model[mchan]->get_projection());
+
+    // Faraday rotation
+    faraday_rotation->set_chan (ichan);
+    Argument::Value* rotation = faraday_rotation->new_value (model[mchan]->get_faraday_rotation());
+
     // measurement set
     Calibration::CoherencyMeasurementSet measurements;
     
     measurements.set_identifier( identifier );
     measurements.add_coordinate( time );
-    measurements.add_coordinate( xform );
+    measurements.add_coordinate( proj );
+    measurements.add_coordinate( rotation );
 
     measurements.set_ichan( ichan );
     measurements.set_epoch( epoch );
     measurements.set_name( data->get_source() );
+
     try
     {
       if (verbose > 2)

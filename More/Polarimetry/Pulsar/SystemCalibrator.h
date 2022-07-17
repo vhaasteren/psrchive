@@ -133,9 +133,9 @@ namespace Pulsar
     //! Set the projection transformation
     virtual void set_projection( VariableTransformationManager* );
 
-    //! Set the ionospheric rotation measure applied to all observations
-    virtual void set_ionospheric_rotation_measure (double rm);
-    
+    //! Set the ionospheric and interstellar Faraday rotation transformation
+    virtual void set_faraday_rotation( VariableTransformationManager* );
+
     //! Set the time variation of absolute gain
     virtual void set_gain( MEAL::Univariate<MEAL::Scalar>* );
 
@@ -332,9 +332,9 @@ namespace Pulsar
     //! The projection transformation (overrides ProjectionCorrection)
     Reference::To<VariableTransformationManager> projection;
 
-    //! The ionospheric rotation measure applied to all observations
-    double ionospheric_rotation_measure;
-    
+    //! The ionospheric and interstellar Faraday rotation transformation
+    Reference::To<VariableTransformationManager> faraday_rotation;
+
     //! The CalibratorStokesExtension of the Archive passed during construction
     mutable Reference::To<const CalibratorStokes> calibrator_stokes;
 
