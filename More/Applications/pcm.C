@@ -1760,15 +1760,12 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile,
 
   if (flux_cal)
     model->set_flux_calibrator (flux_cal);
-  
-  cerr << "pcm: set calibrators" << endl;
-  model->set_calibrators (calibrator_filenames);
-  model->set_calibrator_preprocessor (standard_options);
+
+  // archive from which pulse phase bins will be chosen
+  Reference::To<Pulsar::Archive> autobin;
 
   if (!binfile.empty()) try 
   {
-    // archive from which pulse phase bins will be chosen
-    Reference::To<Pulsar::Archive> autobin;
     autobin = Archive::load (binfile);
 
     auto_select (*model, autobin, maxbins);
@@ -1798,7 +1795,9 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile,
     cerr << "pcm: loading calibrator filenames from " << calfile << endl;
     stringfload (&filenames, calfile);
   }
-  
+
+  cerr << "pcm: set calibrators" << endl;
+  model->set_calibrator_preprocessor (standard_options);
   model->set_calibrators (filenames);
 
   if (phmin != phmax)
