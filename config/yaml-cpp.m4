@@ -23,8 +23,9 @@ AC_DEFUN([PSR_LIB_YAMLCPP],
       with_yamlcpp_dir=
     fi
 
-    YAMLCPP_CFLAGS="`pkg-config --cflags yaml-cpp`"
-    YAMLCPP_LIBS="`pkg-config --libs yaml-cpp`"
+    PKGS="$prefix/share/pkgconfig:$PKG_CONFIG_PATH"
+    YAMLCPP_CFLAGS="`PKG_CONFIG_PATH=$PKGS pkg-config --cflags yaml-cpp`"
+    YAMLCPP_LIBS="`PKG_CONFIG_PATH=$PKGS pkg-config --libs yaml-cpp`"
 
     have_yamlcpp="not found"
 
