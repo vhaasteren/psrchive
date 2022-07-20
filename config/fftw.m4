@@ -23,7 +23,7 @@ AC_DEFUN([SWIN_LIB_FFTW],
       with_fftw3f_dir=
     fi
 
-    PKGS="$prefix/share/pkgconfig:$PKG_CONFIG_PATH"
+    PKGS="$prefix/lib/pkgconfig:$PKG_CONFIG_PATH"
     FFTW_CFLAGS="`PKG_CONFIG_PATH=$PKGS pkg-config --cflags fftw3f`"
     FFTW_LIBS="`PKG_CONFIG_PATH=$PKGS pkg-config --libs fftw3f`"
 
