@@ -23,8 +23,9 @@ AC_DEFUN([SWIN_LIB_CFITSIO],
       with_cfitsio_dir=
     fi
 
-    CFITSIO_CFLAGS="`pkg-config --cflags cfitsio`"
-    CFITSIO_LIBS="`pkg-config --libs cfitsio`"
+    PKGS="$prefix/share/pkgconfig:$PKG_CONFIG_PATH"
+    CFITSIO_CFLAGS="`PKG_CONFIG_PATH=$PKGS pkg-config --cflags cfitsio`"
+    CFITSIO_LIBS="`PKG_CONFIG_PATH=$PKGS pkg-config --libs cfitsio`"
 
     have_cfitsio="not found"
 
