@@ -496,14 +496,20 @@ void SystemCalibrator::add_pulsar (const Archive* data, unsigned isub) try
   MJD epoch = integration->get_epoch ();
   add_epoch (epoch);
 
-  projection->set_archive (data);
-  projection->set_subint (isub);
+  if (projection)
+  {
+    projection->set_archive (data);
+    projection->set_subint (isub);
 
-  if (report_projection || verbose)
-    cerr << projection->get_description ();
+    if (report_projection || verbose)
+      cerr << projection->get_description ();
+  }
 
-  faraday_rotation->set_archive (data);
-  faraday_rotation->set_subint (isub);
+  if (faraday_rotation)
+  {
+    faraday_rotation->set_archive (data);
+    faraday_rotation->set_subint (isub);
+  }
 
   // an identifier for this set of data
   string identifier = data->get_filename() + " " + tostring(isub);
@@ -533,25 +539,30 @@ void SystemCalibrator::add_pulsar (const Archive* data, unsigned isub) try
     // epoch abscissa
     Argument::Value* time = model[mchan]->time.new_Value( epoch );
 
-    // projection transformation
-    projection->set_chan (ichan);
-    Argument::Value* proj = projection->new_value (model[mchan]->get_projection());
-
-    // Faraday rotation
-    faraday_rotation->set_chan (ichan);
-    Argument::Value* rotation = faraday_rotation->new_value (model[mchan]->get_faraday_rotation());
-
     // measurement set
     Calibration::CoherencyMeasurementSet measurements;
-    
+
     measurements.set_identifier( identifier );
     measurements.add_coordinate( time );
-    measurements.add_coordinate( proj );
-    measurements.add_coordinate( rotation );
-
     measurements.set_ichan( ichan );
     measurements.set_epoch( epoch );
     measurements.set_name( data->get_source() );
+
+    if (projection)
+    {
+      // projection transformation
+      projection->set_chan (ichan);
+      measurements.add_coordinate
+         ( projection->new_value (model[mchan]->get_projection()) );
+    }
+
+    if (faraday_rotation)
+    {
+      // Faraday rotation
+      faraday_rotation->set_chan (ichan);
+       measurements.add_coordinate
+         ( faraday_rotation->new_value (model[mchan]->get_faraday_rotation()) );
+    }
 
     try
     {
@@ -572,8 +583,8 @@ void SystemCalibrator::add_pulsar (const Archive* data, unsigned isub) try
   }
   catch (Error& error)
   {
-    cerr << "SystemCalibrator::add_pulsar ichan="
-	 << ichan << " error\n" << error.get_message() << endl;
+    cerr << "SystemCalibrator::add_pulsar ichan=" << ichan 
+         << " error" << error << endl;
   }
 
   if (verbose > 2)
@@ -1586,7 +1597,16 @@ void SystemCalibrator::init_model (unsigned ichan)
     {
       if (verbose > 2)
 	cerr << "SystemCalibrator::init_model projection" << endl;
-      model[ichan]->set_projection( projection->new_transformation() );
+      model[ichan]->set_projection
+        ( projection->new_transformation() );
+    }
+
+    if (faraday_rotation)
+    {
+      if (verbose > 2)
+        cerr << "SystemCalibrator::init_model Faraday rotation" << endl;
+      model[ichan]->set_faraday_rotation
+        ( faraday_rotation->new_transformation() );
     }
 
     for (auto rv : response_variation)
