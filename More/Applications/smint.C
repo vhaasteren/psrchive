@@ -23,6 +23,8 @@
 #include "Pulsar/Integration.h"
 #include "Pulsar/PolnCalibratorExtension.h"
 #include "Pulsar/FluxCalibratorExtension.h"
+
+#include "Pulsar/CalibrationInterpolator.h"
 #include "Pulsar/CalibrationInterpolatorExtension.h"
 #include "Pulsar/CalibratorTypes.h"
 #include "Pulsar/CalibratorStokes.h"
@@ -99,15 +101,14 @@ protected:
   bool minimize_tmse;
 
   // determine smoothing by m-fold cross-validation
+  bool cross_validate;
+
   CrossValidatedSmoothing* cross_validated_smoothing;
 
 #if HAVE_SPLINTER
   CrossValidatedSmooth2D* cross_validated_smoothing_2D;
 #endif
-  
-  void setup_cross_validation ();
-  bool cross_validate;
-  
+
   bool unload_solution;
   bool unload_smoothed;
   
@@ -123,7 +124,6 @@ protected:
   bool interpolate;
   bool bootstrap_uncertainty;
 
-  
   bool use_smoothing_spline ();
   
   unsigned freq_order;
@@ -182,11 +182,11 @@ protected:
   MJD max_epoch;
       
   // load profile data from Integration
-  void load (vector<set>& data, Integration* subint);
+  void load_data (vector<set>& data, Integration* subint);
 
   // load data from a container into one or more set::table
   template<class Container>
-  void load (vector<set>& data, Container* ext, const MJD& epoch);
+  void load_data (vector<set>& data, Container* ext, const MJD& epoch);
 
   // add parameters, from istart to iend inclusive, only if they have been measured
   template<class Container>
@@ -268,6 +268,26 @@ protected:
                    unsigned npts, double xmin, double xmax);
 #endif
 
+  void load_previous_solution (const string& filename);
+
+  Reference::To<Archive> previous_solution;
+  Reference::To<CalibrationInterpolator> previous_interpolator;
+
+  void compare (const Archive*);
+
+  template<class Container>
+  void compare (const Archive* arch, const char* name);
+
+  template<class Container>
+  void compare_data (const Container* ext, const Container* prev);
+
+  template <class Extension>
+  void update (const Extension* ext)
+  { previous_interpolator->update (ext); }
+
+  // no update required - CalibratorStokes depends on PolnCalibratorExtension
+  void update (const CalibratorStokes* ext) { }
+
 #endif
 
 };
@@ -300,27 +320,16 @@ smint::smint ()
   interpolate = true;
 
   cross_validate = false;
-  cross_validated_smoothing = 0;
+  cross_validated_smoothing = new CrossValidatedSmoothing;
 
 #if HAVE_SPLINTER
-  cross_validated_smoothing_2D = 0;
+  cross_validated_smoothing_2D = new CrossValidatedSmooth2D;
 #endif
   
   bootstrap_uncertainty = false;
 
   unload_solution = true;
   unload_smoothed = false;
-}
-
-void smint::setup_cross_validation ()
-{
-  cross_validated_smoothing = new CrossValidatedSmoothing;
-
-#if HAVE_SPLINTER
-  cross_validated_smoothing_2D = new CrossValidatedSmooth2D;
-#endif
-
-  cross_validate = true;
 }
 
 /*!
@@ -365,14 +374,40 @@ void smint::add_options (CommandLine::Menu& menu)
   arg = menu.add (find_median_nfree, "mnf");
   arg->set_help ("compute p-spline smoothing using median nfree");
 
-  arg = menu.add (this, &smint::setup_cross_validation, "cross");
+  arg = menu.add (cross_validate, "cross");
   arg->set_help ("compute p-spline smoothing using m-fold cross-validation");
+
+#if HAVE_SPLINTER
+
+  arg = menu.add (cross_validated_smoothing_2D, &CrossValidatedSmooth2D::set_npartition, "cross-m");
+  arg->set_help ("number of cross-validation partitions/iterations, m"
+                 " (default: " + tostring(cross_validated_smoothing_2D->get_npartition()) + ")");
+
+  arg = menu.add (cross_validated_smoothing_2D, &CrossValidatedSmooth2D::set_validation_fraction, "cross-f");
+  arg->set_help ("fraction of data used to validate on each iteration"
+                 " (default: " + tostring(cross_validated_smoothing_2D->get_validation_fraction ()) + ")");
+
+  arg = menu.add (cross_validated_smoothing_2D, &CrossValidatedSmooth2D::set_iqr_threshold, "cross-iqr");
+  arg->set_help ("inter-quartile range threshold"
+                 " (default: " + tostring(cross_validated_smoothing_2D->get_iqr_threshold ()) + ")");
+
+  arg = menu.add (cross_validated_smoothing_2D, &CrossValidatedSmooth2D::set_gof_step_threshold, "cross-gof");
+  arg->set_help ("step in goodness-of-fit threshold"
+                 " (default: " + tostring(cross_validated_smoothing_2D->get_gof_step_threshold ()) + ")");
+
+#endif
 
   // add a blank line and a header to the output of -h
   menu.add ("\n" "Iterative outlier excision options:");
 
   arg = menu.add (interquartile_range, "iqr", "double");
   arg->set_help ("outlier threshold as inter-quartile range");
+
+  // add a blank line and a header to the output of -h
+  menu.add ("\n" "Comparison and verification options:");
+
+  arg = menu.add (this, &smint::load_previous_solution, "gof", "solution");
+  arg->set_help ("compare data to spline solution");
 
 #if HAVE_PGPLOT
   // add a blank line and a header to the output of -h
@@ -396,7 +431,7 @@ bool smint::use_smoothing_spline ()
 */
 
 template<class Container>
-void smint::load (vector<set>& data, Container* ext, const MJD& epoch)
+void smint::load_data (vector<set>& data, Container* ext, const MJD& epoch)
 {
   for (unsigned i=0; i<data.size(); i++)
   {
@@ -484,6 +519,12 @@ void smint::check_reference (Pulsar::Archive* archive, Container* ext)
 
 void smint::process (Pulsar::Archive* archive)
 {
+  if (previous_solution)
+  {
+    compare (archive);
+    return;
+  }
+
   if (archive->get_nsubint() == 1)
   {
     if (!archive->get_dedispersed())
@@ -493,7 +534,7 @@ void smint::process (Pulsar::Archive* archive)
       cerr << "smint: WARNING data are not corrected for Faraday rotation" << endl;
 
     cerr << "smint::process sub-integration" << endl;
-    load (profile_data, archive->get_Integration(0));
+    load_data (profile_data, archive->get_Integration(0));
     cerr << "smint::process loaded sub-integration" << endl;
 
     convert_epochs = false;
@@ -571,7 +612,7 @@ void smint::process (Pulsar::Archive* archive)
     }
 
     MJD epoch = fext->get_epoch();
-    load (fcal_data, fext, epoch);
+    load_data (fcal_data, fext, epoch);
 
   }
 
@@ -593,7 +634,7 @@ void smint::process (Pulsar::Archive* archive)
 
     MJD epoch = ext->get_epoch();
 
-    load (pcal_data, ext, epoch);
+    load_data (pcal_data, ext, epoch);
 
     Reference::To< CalibratorStokes > cal;
     cal = archive->get<CalibratorStokes>();
@@ -605,14 +646,14 @@ void smint::process (Pulsar::Archive* archive)
         add_if_has_data (cal_stokes_data, cal.get(), 0, 2);
       }
     
-      load (cal_stokes_data, cal.get(), epoch);
+      load_data (cal_stokes_data, cal.get(), epoch);
     }
   }
 
   input_filenames.push_back( archive->get_filename() );
 }
 
-void smint::load (vector<set>& data, Integration* subint)
+void smint::load_data (vector<set>& data, Integration* subint)
 {
   const unsigned nchan = subint->get_nchan();
   const unsigned nbin = subint->get_nbin();
@@ -955,6 +996,9 @@ void smint::prepare_solution (Archive* archive)
 
 void smint::finalize ()
 {
+  if (previous_solution)
+    return;
+
   cerr << "smint::finalize" << endl;
 
   Reference::To<Archive> solution;
@@ -1164,7 +1208,7 @@ void smint::fit_pspline (SmoothingSpline& spline,
   if (minimize_tmse)
     spline.set_msre (1.0);
 
-  if (cross_validated_smoothing)
+  if (cross_validate)
   {
     cross_validated_smoothing->set_spline (&spline);
     cross_validated_smoothing->fit (data_x, data_y);
@@ -1432,14 +1476,14 @@ void smint::fit_pspline (SplineSmooth2D& spline, vector<row>& table)
     result->add_parameter (param);
   }
   
-  if (cross_validated_smoothing_2D)
+  if (cross_validate)
   {
     if (spline_filename != "")
     {
       string filename = spline_filename + ".gof";
       cross_validated_smoothing_2D->set_gof_filename (filename);
     }
-    
+
     cross_validated_smoothing_2D->set_spline (&spline);
     cross_validated_smoothing_2D->fit (data_x, data_y);
 
@@ -1691,6 +1735,71 @@ void smint::plot_model (SplineSmooth2D& spline, double x0,
 
 #endif  // HAVE_PGPLOT
 
+void smint::load_previous_solution (const string& filename) try
+{
+  previous_solution = Pulsar::Archive::load (filename);
+  previous_interpolator = new CalibrationInterpolator (previous_solution);
+}
+catch (Error& error)
+{
+  throw error += "smint::load_previous_solution";
+}
+
+template <class Extension>
+void smint::compare (const Archive* arch, const char* name)
+{
+  const Extension* ext = arch->get<Extension>();
+  if (!ext)
+    throw Error (InvalidState, "smint::compare", 
+                 arch->get_filename()
+                 + " does not have " + name);
+
+  this->update (ext);
+
+  const Extension* prev = previous_solution->get<Extension>();
+  if (!prev)
+    throw Error (InvalidState, "smint::compare", 
+                 previous_solution->get_filename()
+                 + " does not have " + name);
+
+  cerr << "compare " << name << " of " << arch->get_filename () << " with "
+       << previous_solution->get_filename () << endl;
+    
+  compare_data (ext, prev);
+}
+
+void smint::compare (const Archive* arch)
+{
+  if (previous_interpolator->get_type()->is_a<CalibratorTypes::Flux>())
+  {
+    compare<FluxCalibratorExtension> (arch, "FluxCalibratorExtension");
+  }
+  else
+  {
+    compare<PolnCalibratorExtension> (arch, "PolnCalibratorExtension");
+    compare<CalibratorStokes> (arch, "CalibratorStokes");
+  }
+}
+
+template<class Container>
+void smint::compare_data (const Container* ext, const Container* prev)
+{
+  unsigned nchan = ext->get_nchan();
+  unsigned nparam = ext->get_nparam();
+
+  for (unsigned iparam=0; iparam < nparam; iparam++)
+  {
+
+    for (unsigned ichan=0; ichan < nchan; ichan++)
+    {
+      Estimate<float> val (0.0, 0.0);
+
+      if (ext->get_valid(ichan))
+        val = ext->get_Estimate (iparam, ichan);
+
+    }
+  }
+}
 
 /*!
 
