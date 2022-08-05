@@ -23,6 +23,7 @@
 #include "Pulsar/VariableTransformationFile.h"
 #include "Pulsar/ManualPolnCalibrator.h"
 #include "Pulsar/NancayProjectionCorrection.h"
+#include "Pulsar/ConfigurableProjectionCorrection.h"
 
 #include "Pulsar/SystemCalibratorManager.h"
 #include "Pulsar/SystemCalibratorUnloader.h"
@@ -797,16 +798,27 @@ void pcm::set_projection (const string& filename)
 {
   if (filename == "Nancay")
   {
-    cerr << "pcm: using Nançay projection correction" << endl;
+    cerr << "pcm: using Nancay projection correction" << endl;
     projection = new NancayProjectionCorrection;
+    return;
   }
-  else
-  {
-    cerr << "pcm: loading projection transformations from " << filename << endl;
 
-    ManualPolnCalibrator* cal = new ManualPolnCalibrator (filename);
-    projection = new VariableTransformationFile (cal);
+  try {
+    projection = new ConfigurableProjectionCorrection (filename);
+    cerr << "pcm: projection configuration loaded from " << filename << endl;
+    return;
   }
+  catch (Error& error)
+  {
+    if (verbose)
+      cerr << "pcm: failed to load ConfigurableProjection from "
+           << filename << endl;
+  }
+
+  cerr << "pcm: loading projection transformations from " << filename << endl;
+
+  ManualPolnCalibrator* cal = new ManualPolnCalibrator (filename);
+  projection = new VariableTransformationFile (cal);
 }
 
 flags foreach_calibrator;
