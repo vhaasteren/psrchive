@@ -16,6 +16,7 @@ nobase_include_HEADERS = \
         Pulsar/CoherencyMeasurement.h \
         Pulsar/CoherencyMeasurementSet.h \
 	Pulsar/ComplexRVMFit.h \
+	Pulsar/ConfigurableProjectionCorrection.h \
 	Pulsar/ConstantGainInfo.h \
         Pulsar/ConvertMJD.h \
         Pulsar/Database.h \
@@ -130,6 +131,7 @@ libPolarimetry_la_SOURCES = \
         CoherencyMeasurement.C \
         CoherencyMeasurementSet.C \
 	ComplexRVMFit.C \
+	ConfigurableProjectionCorrection.C \
 	ConstantGainInfo.C \
         ConvertMJD.C \
         Database.C \
@@ -255,8 +257,6 @@ endif
 
 SUBDIRS = iri2001
 
-libPolarimetry_la_LIBADD = iri2001/libiri.la @GSL_LIBS@
-
 bin_PROGRAMS = rmrot simpol
 
 rmrot_SOURCES = rmrot.C
@@ -296,10 +296,12 @@ LDADD = libPolarimetry.la \
 	$(top_builddir)/More/MEAL/libMEAL.la \
 	$(top_builddir)/Base/libpsrbase.la \
 	$(top_builddir)/Util/libpsrutil.la \
-	$(top_builddir)/Util/epsic/src/libepsic.la 
+	$(top_builddir)/Util/epsic/src/libepsic.la \
+	@YAMLCPP_LIBS@
 
+libPolarimetry_la_LIBADD = iri2001/libiri.la @GSL_LIBS@ @YAMLCPP_LIBS@
 
 include $(top_srcdir)/config/Makefile.include
 
-AM_CPPFLAGS += @GSL_CFLAGS@
+AM_CPPFLAGS += @GSL_CFLAGS@ @YAMLCPP_CFLAGS@
 
