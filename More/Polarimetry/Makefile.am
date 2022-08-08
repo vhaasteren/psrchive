@@ -106,11 +106,13 @@ nobase_include_HEADERS = \
 	Pulsar/UnloadJones.h \
         Pulsar/TemplateUncertainty.h \
         Pulsar/TotalCovariance.h \
+	Pulsar/TransformationFactory.h \
 	Pulsar/VariableBackend.h \
 	Pulsar/VariableBackendEstimate.h \
 	Pulsar/VariableFaradayRotation.h \
 	Pulsar/VariableGain.h \
 	Pulsar/VariableProjectionCorrection.h \
+	Pulsar/VariableTransformation.h \
 	Pulsar/VariableTransformationManager.h \
 	Pulsar/VariationInfo.h
 
@@ -166,7 +168,6 @@ libPolarimetry_la_SOURCES = \
 	IXRInfo.C \
 	KnownVariableTransformation.C \
 	ManualPolnCalibrator.C \
-	VariableTransformationFile.C \
         MeanCoherency.C \
         MeanFeed.C \
         MeanInstrument.C \
@@ -227,11 +228,14 @@ libPolarimetry_la_SOURCES = \
 	UnloadJones.C \
         TemplateUncertainty.C \
         TotalCovariance.C \
+	TransformationFactory.C \
 	VariableBackend.C \
 	VariableBackendEstimate.C \
 	VariableFaradayRotation.C \
 	VariableGain.C \
 	VariableProjectionCorrection.C \
+	VariableTransformation.C \
+	VariableTransformationFile.C \
 	VariableTransformationManager.C \
 	VariationInfo.C
 

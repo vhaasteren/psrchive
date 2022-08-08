@@ -10,6 +10,7 @@
 #endif
 
 #include "Pulsar/ConfigurableProjectionCorrection.h"
+#include "Pulsar/TransformationFactory.h"
 #include "Pulsar/SingleAxis.h"
 #include "MountProjection.h"
 
@@ -71,50 +72,6 @@ ConfigurableProjectionCorrection::ConfigurableProjectionCorrection (const string
 #endif
 }
 
-ConfigurableProjectionCorrection::ConfigurableTransformation::ConfigurableTransformation ()
-{
-  auto chain = new MEAL::ChainRule<MEAL::Complex2>;
-  auto single = new Calibration::SingleAxis;
-
-  // disable variation of absolute gain
-  single->set_infit (0, false);
-  
-  chain->set_model (single);
-
-  for (auto f : function)
-  {
-    chain->set_constraint (f.first, f.second);
-  
-    f.second->set_param (0, 0.0);
-    f.second->set_infit (0, false);
-  }
-
-  add_model (chain);
-  
-  // corrects the known projection transformation
-  add_model (&correction);
-}
-
-ConfigurableProjectionCorrection::ConfigurableTransformation::~ConfigurableTransformation ()
-{
-}
-
-void ConfigurableProjectionCorrection::ConfigurableTransformation::set_argument
-(const Argument& arg)
-{
-  unsigned nargs = arg.arguments.size();
-
-  for (auto f : function)
-  { 
-    for (unsigned iarg=0; iarg < nargs; iarg++)
-    {
-      f.second->set_abscissa (iarg, arg.arguments[iarg]);
-    }
-  }
- 
-  correction.set_value (arg.correction);
-}
-
 //! Set the Archive for which a tranformation will be computed
 void ConfigurableProjectionCorrection::set_archive (const Archive* _archive)
 {
@@ -140,30 +97,59 @@ void ConfigurableProjectionCorrection::set_chan (unsigned _chan)
 ConfigurableProjectionCorrection::Transformation*
 ConfigurableProjectionCorrection::new_transformation ()
 {
-  return new ConfigurableProjectionCorrection::Transformation;
+  auto xform = new ConfigurableProjectionCorrection::Transformation;
+
+  // TODO: here is where the transformation is configured
+
+  Calibration::VariableTransformation* cfg = xform->get_transformation ();
+
+#if 0
+  for (auto f : function)
+  {
+    chain->set_constraint (f.first, f.second);
+
+    f.second->set_param (0, 0.0);
+    f.second->set_infit (0, false);
+  }
+#endif
+
+  return xform;
 }
+
+using Calibration::VariableTransformation;
 
 //! Return a newly constructed Argument::Value for the given Transformation
 MEAL::Argument::Value*
 ConfigurableProjectionCorrection::new_value (VariableTransformationManager::Transformation* xform)
 {
   MEAL::Argument* argument = xform->get_argument ();
-  ConfigurableArgument* cfgarg = dynamic_cast<ConfigurableArgument*> (argument);
 
-  if (!cfgarg)
+  typedef MEAL::Axis< Calibration::VariableTransformation::Argument > VariableArgument;
+
+  VariableArgument* vararg = dynamic_cast<VariableArgument*> (argument);
+
+  if (!vararg)
     throw Error (InvalidParam, "ConfigurableProjectionCorrection::new_value",
-		 "Transformation does not have a ConfigurableArgument");
+		 "Transformation does not have a VariableArgument");
 
-  Argument arg;
+  Calibration::VariableTransformation::Argument arg;
 
   arg.correction = projection.get_transformation ();
 
-  unsigned narg = parameters.size();
-  arg.arguments.resize( narg );
-  for (unsigned iarg=0; iarg < narg; iarg++)
-    arg.arguments[iarg] = get_value( parameters[iarg] );
+  for (auto param : parameters)
+  {
+    unsigned index = param.first;
 
-  return cfgarg->new_Value( arg );
+    unsigned narg = param.second.size();
+    vector<double> args (narg);
+
+    for (unsigned iarg=0; iarg < narg; iarg++)
+      args[iarg] = get_value( param.second[iarg] );
+
+    arg.arguments[index] = args;
+  }
+
+  return vararg->new_Value( arg );
 }
 
 //! Return the value associated with the parameter name
