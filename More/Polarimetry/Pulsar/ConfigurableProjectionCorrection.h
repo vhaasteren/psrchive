@@ -10,14 +10,12 @@
 #define __Pulsar_ConfigurableProjectionCorrection_h
 
 #include "Pulsar/VariableProjectionCorrection.h"
+#include "Pulsar/VariableTransformation.h"
 
-#include "MEAL/Multivariate.h"
-#include "MEAL/ProductRule.h"
-#include "MEAL/ChainRule.h"
 #include "MEAL/Axis.h"
 
-namespace Pulsar {
-
+namespace Pulsar 
+{
   //! Manager of variable transformations
   class ConfigurableProjectionCorrection : public VariableTransformationManager
   {
@@ -26,56 +24,28 @@ namespace Pulsar {
     //! Construct from a configuration file
     ConfigurableProjectionCorrection (const std::string& filename);
 
-    class Argument
-    {
-    public:
-
-      //! the known projection correction
-      Jones<double> correction;
-
-      //! the arguments for each abscissa
-      std::vector<double> arguments;
-    };
-
-    typedef MEAL::Axis< Argument > ConfigurableArgument;
-
-    class ConfigurableTransformation : public MEAL::ProductRule<MEAL::Complex2>
-    {
-    protected:
-
-      std::map< unsigned, Reference::To< MEAL::Multivariate<MEAL::Scalar> > > function;
-
-      //! the known projection correction
-      MEAL::Value<MEAL::Complex2> correction;
-
-      //! the channel index
-      unsigned ichan;
-      
-    public:
-      ConfigurableTransformation ();
-      ~ConfigurableTransformation ();
-      void set_argument (const Argument&);
-    };
+    // typedef MEAL::Axis< VariableTransformation::Argument > VariableArgument;
 
     class Transformation : public VariableTransformationManager::Transformation
     {
     protected:
       
-      //! The transformation argument
-      ConfigurableArgument argument;
-      //! The transformation
-      ConfigurableTransformation transformation;
+      //! The variable transformation argument
+      MEAL::Axis< Calibration::VariableTransformation::Argument > argument;
+
+      //! The variable transformation
+      Calibration::VariableTransformation transformation;
       
     public:
 
       Transformation ()
       {
 	argument.signal.connect (&transformation,
-				 &ConfigurableTransformation::set_argument);
+				 &Calibration::VariableTransformation::set_argument);
       }
       
       //! The transformation
-      MEAL::Complex2* get_transformation () { return &transformation; }
+      Calibration::VariableTransformation* get_transformation () { return &transformation; }
       
       //! Its argument
       MEAL::Argument* get_argument () { return &argument; }  
@@ -104,9 +74,16 @@ namespace Pulsar {
     //! Known/fixed projection correction
     VariableProjectionCorrection projection;
 
-    //! Names of parameters assigned to each abscissa
-    std::vector<std::string> parameters;
-    
+    //! Map of model index (key) to constraining function (value)
+    /*! This attribute is cloned in each new VariableTransformation */
+    std::map< unsigned, Reference::To< MEAL::Multivariate<MEAL::Scalar> > > function;
+
+    //! Model inserted between instrument and projection
+    /*! This attribute is cloned in each new VariableTransformation */
+    Reference::To< MEAL::Complex2> model;
+
+    //! Names of Archive attributes assigned to each abscissa/dimension
+    std::map< unsigned, std::vector<std::string> > parameters;
   };
 }
 
