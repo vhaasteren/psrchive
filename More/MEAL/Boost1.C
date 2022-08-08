@@ -4,6 +4,7 @@
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
+
 #include "MEAL/Boost1.h"
 #include "MEAL/OneParameter.h"
 #include "Pauli.h"
@@ -15,6 +16,7 @@ void MEAL::Boost1::init ()
 {
   OneParameter* param = new OneParameter (this);
   param->set_name ("boost");
+  param->set_description ("Hyperbolic angle");
 }
 
 MEAL::Boost1::Boost1 (const Vector<3,double>& _axis) 

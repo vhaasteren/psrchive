@@ -184,6 +184,10 @@ namespace MEAL {
     const ParameterPolicy* get_parameter_policy () const
     { return parameter_policy; }
 
+    //! Provide access to the parameter_policy attribute
+    ParameterPolicy* get_parameter_policy ()
+    { return parameter_policy; }
+
     //! Some wrappers may not have a parameter policy
     bool has_parameter_policy () const { return parameter_policy; }
 
