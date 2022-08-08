@@ -20,6 +20,8 @@ namespace MEAL
   //! Provides a text interface to get and set Function attributes
   class Function::Interface : public TextInterface::To<Function>
   {
+    std::string name;
+    std::string description;
 
   public:
 
@@ -27,7 +29,11 @@ namespace MEAL
     Interface ( Function* = 0 );
 
     //! Get the interface name
-    std::string get_interface_name() const { return "Function::Interface"; }
+    std::string get_interface_name() const { return name; }
+
+    //! Get a short description of this interface
+    std::string get_interface_description () const { return description; }
+
   };
 
 }
