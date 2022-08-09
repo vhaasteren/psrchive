@@ -14,8 +14,11 @@ if ( ! -d splinter ) then
 
 endif
 
-mkdir -p yaml-cpp/build
-cd yaml-cpp/build
+cd yaml-cpp
+git pull
+
+mkdir -p build
+cd build
 cmake -DCMAKE_INSTALL_PREFIX=@prefix@ -DCMAKE_CXX_FLAGS="$CXXFLAGS -fPIC" ..
 
 make
