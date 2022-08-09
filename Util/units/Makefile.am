@@ -27,7 +27,6 @@ include_HEADERS = \
 	ndIndex.h \
 	OwnStream.h \
         pad.h \
-        random.h \
         ReferenceAble.h \
         Reference.h \
         ReferenceTo.h \
@@ -45,6 +44,7 @@ include_HEADERS = \
 	TextInterfaceAttribute.h \
 	TextInterfaceElement.h \
 	TextInterfaceEmbed.h \
+	TextInterfaceEstimate.h \
 	TextInterfaceInterpreter.h \
 	TextInterfaceName.h \
 	TextInterfaceParser.h \
