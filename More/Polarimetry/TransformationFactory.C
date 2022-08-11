@@ -15,6 +15,8 @@
 #include "TextInterfaceParser.h"
 #include "interface_factory.h"
 
+#include <assert.h>
+
 using namespace MEAL;
 using namespace std;
 
