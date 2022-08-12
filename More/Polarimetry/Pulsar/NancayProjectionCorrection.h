@@ -11,30 +11,11 @@
 
 #include "Pulsar/VariableProjectionCorrection.h"
 
-#include "MEAL/Polynomial.h"
+#include "MEAL/Polynomial2D.h"
 #include "MEAL/ProductRule.h"
-#include "MEAL/ChainRule.h"
 #include "MEAL/Axis.h"
 
 namespace Pulsar {
-
-  class Poly2D : public MEAL::ChainRule<MEAL::Scalar>
-  {
-    MEAL::Polynomial poly;
-    
-    //! Polynomial variation of polynomial coefficients
-    std::vector<MEAL::Polynomial> coefficients;
-
-  public:
-
-    Poly2D (unsigned ncoeff, unsigned mcoeff);
-    
-    //! Set the abscissa value
-    virtual void set_abscissa (unsigned dim, double value);
-
-    //! Set the abscissa offset
-    void set_abscissa_offset (unsigned dim, double x0);
-  };
 
   //! Manager of variable transformations
   class NancayProjectionCorrection : public VariableTransformationManager
@@ -57,10 +38,10 @@ namespace Pulsar {
     protected:
 
       //! Variation of differential phase with hour angle and declination
-      Poly2D diff_phase;
+      MEAL::Polynomial2D diff_phase;
 
       //! Variation of differential gain with hour angle and declination
-      Poly2D diff_gain;
+      MEAL::Polynomial2D diff_gain;
       
       //! the known projection correction
       MEAL::Value<MEAL::Complex2> correction;
