@@ -248,7 +248,7 @@ TESTS = \
 	test_UnitTangent test_ComplexCorrelation	 \
 	test_Spinor test_CrossCoherency test_JonesMueller test_bessi0
 
-check_PROGRAMS = $(TESTS) test_Function_load 
+check_PROGRAMS = $(TESTS) test_Function_load test_NvariateScalarFactory
 
 test_copy_SOURCES		= test_copy.C
 test_Axis_SOURCES		= test_Axis.C
@@ -272,6 +272,7 @@ test_ComplexCorrelation_SOURCES = test_ComplexCorrelation.C
 test_Spinor_SOURCES		= test_Spinor.C
 test_CrossCoherency_SOURCES	= test_CrossCoherency.C
 test_JonesMueller_SOURCES	= test_JonesMueller.C
+test_NvariateScalarFactory_SOURCES = test_NvariateScalarFactory.C
 
 ##############################################################################
 #
