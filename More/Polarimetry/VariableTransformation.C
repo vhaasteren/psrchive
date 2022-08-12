@@ -102,7 +102,7 @@ void VariableTransformation::set_argument (const Argument& argset)
     unsigned nargs = arg.second.size();
 
     for (unsigned iarg=0; iarg < nargs; iarg++)
-      f->set_abscissa (iarg, arg.second[iarg]);
+      f->set_abscissa_value (iarg, arg.second[iarg]);
   }
 
   correction.set_value (argset.correction);
