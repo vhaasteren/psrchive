@@ -33,6 +33,7 @@ MEAL::NvariateScalarFactory::operator () (const std::string& text)
 
 #include "MEAL/Gaussian.h"
 #include "MEAL/Polynomial.h"
+#include "MEAL/Polynomial2D.h"
 #include "MEAL/PowerLaw.h"
 #include "MEAL/ScalarArgument.h"
 #include "MEAL/ScaledVonMises.h"
@@ -45,6 +46,7 @@ static void instances_build ()
 
   instances->push_back( new Gaussian );
   instances->push_back( new Polynomial );
+  instances->push_back( new Polynomial2D );
   instances->push_back( new PowerLaw );
   instances->push_back( new ScalarArgument );
   instances->push_back( new ScaledVonMises );

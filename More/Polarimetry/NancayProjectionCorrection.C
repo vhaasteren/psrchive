@@ -12,45 +12,6 @@
 using namespace Pulsar;
 using namespace std;
 
-Poly2D::Poly2D (unsigned ncoeff, unsigned mcoeff)
-{
-  poly.resize (ncoeff);
-  set_model (&poly);
-
-  coefficients.resize (ncoeff - 1);
-  for (unsigned i=0; i < coefficients.size(); i++)
-  {
-    coefficients[i].resize (mcoeff);
-    set_constraint (i+1, &coefficients[i]);
-  }
-}
-   
-//! Set the abscissa value
-void Poly2D::set_abscissa (unsigned dim, double value)
-{
-  if (dim == 0)
-    poly.set_abscissa (value);
-  else if (dim == 1)
-    for (unsigned i=0; i < coefficients.size(); i++)
-      coefficients[i].set_abscissa (value);
-  else
-    throw Error (InvalidParam, "Poly2D::set_abscissa",
-		 "invalid dim=%u > 1", dim);
-}
-
-//! Set the abscissa offset
-void Poly2D::set_abscissa_offset (unsigned dim, double offset)
-{
-  if (dim == 0)
-    poly.set_abscissa_offset (offset);
-  else if (dim == 1)
-    for (unsigned i=0; i < coefficients.size(); i++)
-      coefficients[i].set_abscissa_offset (offset);
-  else
-    throw Error (InvalidParam, "Poly2D::set_abscissa",
-		 "invalid dim=%u > 1", dim);
-}
-
 NancayProjectionCorrection::NancayTransformation::NancayTransformation ()
 : diff_phase (3, 2),      // quadratic in hour angle, linear in declination
   diff_gain  (3, 2)
@@ -84,11 +45,11 @@ NancayProjectionCorrection::NancayTransformation::~NancayTransformation ()
 void NancayProjectionCorrection::NancayTransformation::set_argument
 (const Argument& arg)
 {
-  diff_gain.set_abscissa (0, arg.hour_angle);
-  diff_gain.set_abscissa (1, arg.declination);
+  diff_gain.set_abscissa_value (0, arg.hour_angle);
+  diff_gain.set_abscissa_value (1, arg.declination);
 
-  diff_phase.set_abscissa (0, arg.hour_angle);
-  diff_phase.set_abscissa (1, arg.declination);
+  diff_phase.set_abscissa_value (0, arg.hour_angle);
+  diff_phase.set_abscissa_value (1, arg.declination);
   
   correction.set_value (arg.correction);
 }
