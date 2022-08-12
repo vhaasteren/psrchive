@@ -63,6 +63,8 @@ nobase_include_HEADERS = \
         MEAL/NormalizeStokes.h \
         MEAL/NotCached.h \
 	MEAL/Null.h \
+	MEAL/Nvariate.h \
+	MEAL/NvariateScalarFactory.h \
         MEAL/OneParameter.h \
 	MEAL/OrthogonalModes.h \
 	MEAL/OrthoRVM.h \
@@ -181,6 +183,7 @@ libMEAL_la_SOURCES = \
 	MultivariatePolicy.C \
         NormalizeStokes.C \
 	Null.C \
+	NvariateScalarFactory.C \
         OneParameter.C \
 	OrthogonalModes.C \
 	OrthoRVM.C \
