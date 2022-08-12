@@ -77,6 +77,7 @@ nobase_include_HEADERS = \
         MEAL/PhysicalCoherency.h \
         MEAL/Polar.h \
         MEAL/Polynomial.h \
+	MEAL/Polynomial2D.h \
         MEAL/PositionAngles.h \
         MEAL/PowerLaw.h \
 	MEAL/ProductRule.h \
@@ -193,6 +194,7 @@ libMEAL_la_SOURCES = \
         PhysicalCoherency.C \
         Polar.C \
         Polynomial.C \
+	Polynomial2D.C \
         PositionAngles.C \
         PowerLaw.C \
         Projection.C \

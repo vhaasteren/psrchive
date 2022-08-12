@@ -95,10 +95,10 @@ template<class T>
 MEAL::Multivariate<T>& MEAL::Multivariate<T>::operator = (const Multivariate& copy)
 { 
   if (&copy == this)
-    return this;
+    return *this;
 
   for (unsigned idim=0; idim < ndim; idim++)
-    set_abscissa( idim, copy.get_abscissa(idim) );
+    set_abscissa_value( idim, copy.get_abscissa_value(idim) );
 
   T::operator=( copy );
 
