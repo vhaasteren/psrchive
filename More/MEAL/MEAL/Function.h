@@ -94,7 +94,7 @@ namespace MEAL {
     virtual void copy (const Function* model);
 
     //! Textual interface to Function attributes
-    class Interface;
+    template<class T> class Interface;
 
     //! Return a text interface that can be used to access this instance
     virtual TextInterface::Parser* get_interface ();
