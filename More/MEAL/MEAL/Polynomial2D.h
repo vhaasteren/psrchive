@@ -20,6 +20,7 @@ namespace MEAL {
   //! Two-dimensional polynomial function 
   class Polynomial2D : public Multivariate<Scalar>
   {
+    std::pair<unsigned, unsigned> ncoef;
 
   public:
 
@@ -33,6 +34,18 @@ namespace MEAL {
     Polynomial2D* clone () const { return new Polynomial2D(*this); }
 
     std::string get_name() const;
+
+    //! Textual interface to Function attributes
+    class Interface;
+
+    //! Return a text interface that can be used to access this instance
+    TextInterface::Parser* get_interface ();
+
+    const std::pair<unsigned,unsigned>& get_ncoef () const 
+    { return ncoef; }
+
+    void set_ncoef (const std::pair<unsigned,unsigned>& nc)
+    { resize (nc.first, nc.second); }
 
     void resize (unsigned ncoeff, unsigned mcoeff);
 

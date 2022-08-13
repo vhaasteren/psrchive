@@ -34,6 +34,9 @@ MEAL::Polynomial2D::Polynomial2D (unsigned ncoeff, unsigned mcoeff)
 
 void MEAL::Polynomial2D::resize (unsigned ncoeff, unsigned mcoeff)
 {
+  ncoef.first = ncoeff;
+  ncoef.second = mcoeff;
+
   poly.resize (ncoeff);
 
   if (ncoeff == 0)
@@ -90,12 +93,7 @@ MEAL::Polynomial2D::operator = (const Polynomial2D& copy)
   if (this == &copy)
     return *this;
 
-  unsigned ncoeff = copy.poly.get_nparam();
-  unsigned mcoeff = 0;
-  if (copy.coefficients.size() > 0) 
-    mcoeff = copy.coefficients[0].get_nparam();
-
-  resize ( ncoeff, mcoeff );
+  set_ncoef( copy.get_ncoef() );
 
   poly = copy.poly;
   for (unsigned i=0; i < coefficients.size(); i++)
@@ -114,4 +112,28 @@ std::string MEAL::Polynomial2D::get_name() const
 // {
 //   Function::parse(line); // avoid using inherited GroupRule::parse()
 // }
+
+#include "MEAL/FunctionInterface.h"
+#include "pairutil.h"
+
+class MEAL::Polynomial2D::Interface : public Function::Interface<MEAL::Polynomial2D>
+{
+  public:
+    //! Default constructor that takes an optional instance
+    Interface ( Polynomial2D* = 0 );
+};
+
+MEAL::Polynomial2D::Interface::Interface ( Polynomial2D* s_instance )
+: Function::Interface<MEAL::Polynomial2D> ( s_instance )
+{
+  add( &Polynomial2D::get_ncoef,
+       &Polynomial2D::set_ncoef,
+       "ncoef", "Number of coefficients in each dimension" );
+}
+
+//! Return a text interface that can be used to access this instance
+TextInterface::Parser* MEAL::Polynomial2D::get_interface ()
+{
+  return new Interface (this);
+}
 
