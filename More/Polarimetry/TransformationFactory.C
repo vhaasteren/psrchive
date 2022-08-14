@@ -35,7 +35,7 @@ static void instances_build ()
 
 //! Construct a new model instance from a string
 MEAL::Complex2* 
-Calibration::TransformationFactory::new_transformation (const std::string& text)
+Calibration::TransformationFactory::operator() (const std::string& text)
 {
   if (instances == NULL)
     instances_build ();

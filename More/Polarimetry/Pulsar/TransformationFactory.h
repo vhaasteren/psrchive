@@ -18,10 +18,8 @@ namespace Calibration {
   {
   public:
 
-    TransformationFactory ();
-
     //! Construct a new transformation
-    virtual MEAL::Complex2* new_transformation (const std::string&);
+    virtual MEAL::Complex2* operator() (const std::string&);
   };
 }
 

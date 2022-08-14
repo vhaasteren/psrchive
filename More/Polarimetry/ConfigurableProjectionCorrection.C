@@ -27,43 +27,43 @@ ConfigurableProjectionCorrection::ConfigurableProjectionCorrection (const string
 
   YAML::Node node = YAML::LoadFile(filename);
 
-  unsigned nnode = 1;
+  if (!node.IsMap())
+    throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
+                 "YAML::LoadFile does not return a Map");
 
-  if (node.IsSequence())
+  if ( !node["model"] )
+    throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
+                 "YAML map does not contain 'model'");
+
+  Calibration::TransformationFactory xform_factory;
+
+  MEAL::Complex2* xform = 0;
+
+  YAML::Node model = node["model"];
+  if (model.IsScalar())
+    xform = xform_factory( model.as<std::string>() );
+  else if (model.IsMap())
   {
-    cerr << filename << " contains a sequence" << endl;
-    nnode = node.size();
-  }
+    if ( !model["name"] )
+      throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
+                   "YAML map does not contain model 'name'");
 
-  for (unsigned inode=0; inode<nnode; inode++)
-  {
-    YAML::Node one;
-    if (node.IsSequence())
-      one = node[inode];
-    else
-      one = node;
+    xform = xform_factory( model["name"].as<std::string>() );
 
-#if 0
+    auto interface = xform->get_interface();
 
-    if ( !one["M"] )
-      throw Error (InvalidState, "SpectralKurtosis::load_configuration",
-                   "M not specified for resolution[%u]", ires);
+    for (auto it=model.begin(); it!=model.end(); ++it)
+    {
+      string key = it->first.as<string>();
 
-    resolution[ires].set_M( one["M"].as<unsigned>() );
+      if (key == "name")
+        continue;
 
-    // the rest are optional
+      string value = it->second.as<string>();
 
-    if ( one["overlap"] )
-      resolution[ires].noverlap = one["overlap"].as<unsigned>();
-
-    if ( one["exclude"] )
-      parse_ranges( one["exclude"], resolution[ires].exclude );
-
-    if ( one["include"] )
-      parse_ranges( one["include"], resolution[ires].include );
-
-#endif
-
+      // cerr << "parsing key='" << key << "' value='" << value << "'" << endl;
+      interface->set_value (key, value);
+    }
   }
 
 #else
