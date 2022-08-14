@@ -293,6 +293,14 @@ test_ModeSeparation_SOURCES	= test_ModeSeparation.C
 test_copy_SOURCES		= test_copy.C
 test_IRIonosphere_SOURCES	= test_IRIonosphere.C
 
+if HAVE_YAMLCPP
+
+  check_PROGRAMS += test_yaml test_ConfigurableProjectionCorrection
+  test_yaml_SOURCES = test_yaml.C
+  test_ConfigurableProjectionCorrection_SOURCES = test_ConfigurableProjectionCorrection.C
+
+endif
+
 #############################################################################
 #
 

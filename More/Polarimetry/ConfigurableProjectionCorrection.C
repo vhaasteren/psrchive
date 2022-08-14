@@ -11,8 +11,7 @@
 
 #include "Pulsar/ConfigurableProjectionCorrection.h"
 #include "Pulsar/TransformationFactory.h"
-#include "Pulsar/SingleAxis.h"
-#include "MountProjection.h"
+#include "MEAL/NvariateScalarFactory.h"
 
 #if HAVE_YAMLCPP
 #include <yaml-cpp/yaml.h>
@@ -21,49 +20,105 @@
 using namespace Pulsar;
 using namespace std;
 
+#if HAVE_YAMLCPP
+
+//! Construct an object from a YAML::Node
+template<typename T, typename Factory>
+T* construct (const YAML::Node& node, Factory factory)
+{
+  if (!node.IsMap())
+    throw Error (InvalidParam, "construct<T> (YAML::Node)",
+                 "YAML::Node is not a Map");
+
+  if ( !node["model"] )
+    throw Error (InvalidParam, "construct<T> (YAML::Node)",
+                 "map does not contain 'model'");
+
+  YAML::Node model = node["model"];
+
+  if (model.IsScalar())
+    return factory( model.as<std::string>() );
+
+  if (!model.IsMap())
+    throw Error (InvalidParam, "construct<T> (YAML::Node)",
+                 "YAML::Node for 'model' is neither a Scalar nor a Map");
+
+  if ( !model["name"] )
+    throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
+                 "model map does not contain 'name'");
+
+  T* object = factory( model["name"].as<std::string>() );
+
+  auto interface = object->get_interface();
+
+  for (auto it=model.begin(); it!=model.end(); ++it)
+  {
+    string key = it->first.as<string>();
+
+    if (key == "name")
+      continue;
+
+    string value = it->second.as<string>();
+
+    // cerr << "parsing key='" << key << "' value='" << value << "'" << endl;
+    interface->set_value (key, value);
+  }
+
+  return object;
+}
+
+#endif
+
 ConfigurableProjectionCorrection::ConfigurableProjectionCorrection (const string& filename)
 {
 #if HAVE_YAMLCPP
 
   YAML::Node node = YAML::LoadFile(filename);
 
-  if (!node.IsMap())
-    throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
-                 "YAML::LoadFile does not return a Map");
-
-  if ( !node["model"] )
-    throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
-                 "YAML map does not contain 'model'");
-
   Calibration::TransformationFactory xform_factory;
+  MEAL::Complex2* xform = construct<MEAL::Complex2> (node, xform_factory);
 
-  MEAL::Complex2* xform = 0;
+  MEAL::NvariateScalarFactory function_factory;
 
-  YAML::Node model = node["model"];
-  if (model.IsScalar())
-    xform = xform_factory( model.as<std::string>() );
-  else if (model.IsMap())
+  for (auto it=node.begin(); it!=node.end(); ++it)
   {
-    if ( !model["name"] )
-      throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
-                   "YAML map does not contain model 'name'");
-
-    xform = xform_factory( model["name"].as<std::string>() );
-
-    auto interface = xform->get_interface();
-
-    for (auto it=model.begin(); it!=model.end(); ++it)
+    string key = it->first.as<string>();
+    if ( key == "chain" )
     {
-      string key = it->first.as<string>();
+      YAML::Node chain = it->second;
+      if (! chain.IsMap())
+        throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
+                     "YAML value for 'chain' is not a map");
 
-      if (key == "name")
-        continue;
+      cerr << "parsing chain param" << endl;
+      if ( !chain["param"] )
+        throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
+                     "YAML chain map does not contain 'param'");
 
-      string value = it->second.as<string>();
+      string param_name = chain["param"].as<string>();
 
-      // cerr << "parsing key='" << key << "' value='" << value << "'" << endl;
-      interface->set_value (key, value);
+      cerr << "parsing chain model" << endl;
+      MEAL::Nvariate<MEAL::Scalar>* func = construct< MEAL::Nvariate<MEAL::Scalar> > (chain, function_factory);
+
+      if ( !chain["args"] )
+        throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
+                     "YAML chain map does not contain 'args'");
+
+      YAML::Node args = chain["args"];
+      if (! args.IsSequence())
+       throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
+                     "YAML value for 'args' is not a map");
+
+      if (args.size() != func->get_ndim())
+        cerr << "WARNING: number of arguments = " << args.size() << " != "
+                "number of dimensions = " << func->get_ndim() << endl;
+
+      cerr << "parsing arguments" << endl;
+      vector<string> params (args.size());
+      for (unsigned i=0; i<args.size(); i++)
+        params[i] = args[i].as<string>();
     }
+
   }
 
 #else
