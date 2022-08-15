@@ -11,7 +11,7 @@
 #ifndef __CalibrationVariableTransformation_H
 #define __CalibrationVariableTransformation_H
 
-#include "MEAL/Multivariate.h"
+#include "MEAL/Nvariate.h"
 #include "MEAL/ProductRule.h"
 #include "MEAL/ChainRule.h"
 #include "MEAL/Value.h"
@@ -39,7 +39,7 @@ namespace Calibration {
     Reference::To<MEAL::Complex2> model;
 
     //! Map of model index to constraining multivariate function
-    std::map< unsigned, Reference::To< MEAL::Multivariate<MEAL::Scalar> > > function;
+    std::map< unsigned, Reference::To< MEAL::Nvariate<MEAL::Scalar> > > function;
 
   public:
 
@@ -66,7 +66,7 @@ namespace Calibration {
     MEAL::Complex2* get_model ();
 
     //! Set the multivariate function that constrains the specified parameter
-    void set_constraint (unsigned index, MEAL::Multivariate<MEAL::Scalar>*);
+    void set_constraint (unsigned index, MEAL::Nvariate<MEAL::Scalar>*);
 
     class Argument
     {
