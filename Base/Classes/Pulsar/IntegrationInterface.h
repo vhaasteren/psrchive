@@ -6,10 +6,10 @@
  *
  ***************************************************************************/
 
-// psrchive/Base/Classes/Pulsar/IntegrationTI.h
+// psrchive/Base/Classes/Pulsar/IntegrationInterface.h
 
-#ifndef __Pulsar_IntegrationTI_h
-#define __Pulsar_IntegrationTI_h
+#ifndef __Pulsar_IntegrationInterface_h
+#define __Pulsar_IntegrationInterface_h
 
 #include "Pulsar/Integration.h"
 #include "TextInterface.h"

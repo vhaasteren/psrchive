@@ -42,6 +42,8 @@ void MEAL::Polynomial2D::resize (unsigned ncoeff, unsigned mcoeff)
   if (ncoeff == 0)
     return;
 
+  // poly.set_infit (0, false);
+
   coefficients.resize (ncoeff - 1);
   for (unsigned i=0; i < coefficients.size(); i++)
   {
