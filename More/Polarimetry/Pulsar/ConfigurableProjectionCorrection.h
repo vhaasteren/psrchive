@@ -34,18 +34,20 @@ namespace Pulsar
       MEAL::Axis< Calibration::VariableTransformation::Argument > argument;
 
       //! The variable transformation
-      Calibration::VariableTransformation transformation;
+      Reference::To<Calibration::VariableTransformation> transformation;
       
     public:
 
-      Transformation ()
+      Transformation (Calibration::VariableTransformation* xform)
       {
-	argument.signal.connect (&transformation,
+        transformation = xform;
+	argument.signal.connect (xform,
 				 &Calibration::VariableTransformation::set_argument);
       }
       
       //! The transformation
-      Calibration::VariableTransformation* get_transformation () { return &transformation; }
+      Calibration::VariableTransformation* get_transformation () 
+      { return transformation; }
       
       //! Its argument
       MEAL::Argument* get_argument () { return &argument; }  
@@ -74,13 +76,9 @@ namespace Pulsar
     //! Known/fixed projection correction
     VariableProjectionCorrection projection;
 
-    //! Map of model index (key) to constraining function (value)
-    /*! This attribute is cloned in each new VariableTransformation */
-    std::map< unsigned, Reference::To< MEAL::Multivariate<MEAL::Scalar> > > function;
-
     //! Model inserted between instrument and projection
-    /*! This attribute is cloned in each new VariableTransformation */
-    Reference::To< MEAL::Complex2> model;
+    /*! This attribute is cloned in each new Transformation */
+    Reference::To< Calibration::VariableTransformation > transformation;
 
     //! Names of Archive attributes assigned to each abscissa/dimension
     std::map< unsigned, std::vector<std::string> > parameters;

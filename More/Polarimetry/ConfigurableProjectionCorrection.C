@@ -69,14 +69,19 @@ T* construct (const YAML::Node& node, Factory factory)
 
 #endif
 
+typedef MEAL::Nvariate<MEAL::Scalar> NvariateScalar;
+
 ConfigurableProjectionCorrection::ConfigurableProjectionCorrection (const string& filename)
 {
 #if HAVE_YAMLCPP
 
   YAML::Node node = YAML::LoadFile(filename);
 
+  transformation = new Calibration::VariableTransformation;
+
   Calibration::TransformationFactory xform_factory;
-  MEAL::Complex2* xform = construct<MEAL::Complex2> (node, xform_factory);
+  MEAL::Complex2* model = construct<MEAL::Complex2> (node, xform_factory);
+  transformation->set_model ( model );
 
   MEAL::NvariateScalarFactory function_factory;
 
@@ -97,28 +102,61 @@ ConfigurableProjectionCorrection::ConfigurableProjectionCorrection (const string
 
       string param_name = chain["param"].as<string>();
 
+      unsigned iparam = 0;
+      while (iparam < model->get_nparam())
+      {
+        if (model->get_param_name(iparam) == param_name)
+          break;
+        else
+          iparam ++;
+      }
+
+      if (iparam == model->get_nparam())
+        throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
+                     "no parameter named '" + param_name + "' "
+                     "in model named '" + model->get_name() + "'");
+
+
       cerr << "parsing chain model" << endl;
-      MEAL::Nvariate<MEAL::Scalar>* func = construct< MEAL::Nvariate<MEAL::Scalar> > (chain, function_factory);
+      NvariateScalar* func = construct<NvariateScalar> (chain, function_factory);
+
+      transformation->set_constraint (iparam, func);
 
       if ( !chain["args"] )
         throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
                      "YAML chain map does not contain 'args'");
 
+      cerr << "parsing arguments" << endl;
       YAML::Node args = chain["args"];
-      if (! args.IsSequence())
-       throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
-                     "YAML value for 'args' is not a map");
 
-      if (args.size() != func->get_ndim())
-        cerr << "WARNING: number of arguments = " << args.size() << " != "
+      vector<string> params;
+
+      if (args.IsScalar())
+      {
+        if (func->get_ndim() != 1)
+          cerr << "WARNING: number of arguments = 1 != "
                 "number of dimensions = " << func->get_ndim() << endl;
 
-      cerr << "parsing arguments" << endl;
-      vector<string> params (args.size());
-      for (unsigned i=0; i<args.size(); i++)
-        params[i] = args[i].as<string>();
-    }
+        params.resize (1, args.as<string>());
+      }
 
+      else
+      {
+        if (! args.IsSequence())
+          throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
+                       "YAML value for 'args' is not a map");
+
+        if (args.size() != func->get_ndim())
+          cerr << "WARNING: number of arguments = " << args.size() << " != "
+                  "number of dimensions = " << func->get_ndim() << endl;
+
+        params.resize (args.size());
+        for (unsigned i=0; i<args.size(); i++)
+          params[i] = args[i].as<string>();
+      }
+
+      parameters[iparam] = params;
+    }
   }
 
 #else
@@ -152,23 +190,8 @@ void ConfigurableProjectionCorrection::set_chan (unsigned _chan)
 ConfigurableProjectionCorrection::Transformation*
 ConfigurableProjectionCorrection::new_transformation ()
 {
-  auto xform = new ConfigurableProjectionCorrection::Transformation;
-
-  // TODO: here is where the transformation is configured
-
-  Calibration::VariableTransformation* cfg = xform->get_transformation ();
-
-#if 0
-  for (auto f : function)
-  {
-    chain->set_constraint (f.first, f.second);
-
-    f.second->set_param (0, 0.0);
-    f.second->set_infit (0, false);
-  }
-#endif
-
-  return xform;
+  Calibration::VariableTransformation* xform = transformation->clone();
+  return new ConfigurableProjectionCorrection::Transformation (xform);
 }
 
 using Calibration::VariableTransformation;
