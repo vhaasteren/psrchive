@@ -7,12 +7,23 @@
 
 #include "Pulsar/ArchiveInterface.h"
 #include "Pulsar/ArchiveExtension.h"
-#include "Pulsar/IntegrationTI.h"
+#include "Pulsar/IntegrationInterface.h"
 #include "Pulsar/FITSAlias.h"
 
 #include "TextInterfaceEmbed.h"
+#include "TextInterfaceTransform.h"
 
 using namespace std;
+
+double get_declination (const sky_coord& coord)
+{
+  return coord.dec().getRadians();
+}
+
+double get_right_ascension (const sky_coord& coord)
+{
+  return coord.ra().getRadians();
+}
 
 Pulsar::Archive::Interface::Interface( Archive *c )
 {
@@ -38,6 +49,13 @@ Pulsar::Archive::Interface::Interface( Archive *c )
   add( &Archive::get_coordinates,
        &Archive::set_coordinates,
        "coord", "Source coordinates" );
+
+  TextInterface::XAllocator<Archive> xform;
+  add_value( xform ("dec", "Declination (rad)",
+                    &Archive::get_coordinates, get_declination) );
+
+  add_value( xform ("ra", "Right Ascension (rad)",
+                    &Archive::get_coordinates, get_right_ascension) );
 
   add( &Archive::get_centre_frequency,
        &Archive::set_centre_frequency,

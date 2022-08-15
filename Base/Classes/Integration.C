@@ -10,7 +10,7 @@
 #include "Pulsar/IntegrationExtension.h"
 #include "Pulsar/IntegrationExpert.h"
 #include "Pulsar/IntegrationMeta.h"
-#include "Pulsar/IntegrationTI.h"
+#include "Pulsar/IntegrationInterface.h"
 #include "Pulsar/Profile.h"
 
 #include "Pulsar/AuxColdPlasma.h"
