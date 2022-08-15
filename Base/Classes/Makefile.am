@@ -31,7 +31,7 @@ nobase_include_HEADERS = \
         Pulsar/IntegrationManagerExpert.h \
         Pulsar/IntegrationManager.h \
 	Pulsar/IntegrationMeta.h \
-        Pulsar/IntegrationTI.h \
+        Pulsar/IntegrationInterface.h \
 	Pulsar/MoreProfiles.h \
 	Pulsar/PhaseResolvedHistogram.h \
 	Pulsar/Processor.h \
@@ -83,7 +83,7 @@ libClasses_la_SOURCES = \
 	Integration_remove.C \
         Integration_mixable.C \
         Integration_resize.C \
-        IntegrationTI.C \
+        IntegrationInterface.C \
 	ManagedStrategies.C \
 	MoreProfiles.C \
 	PhaseResolvedHistogram.C \

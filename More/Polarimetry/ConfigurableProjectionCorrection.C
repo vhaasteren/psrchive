@@ -11,6 +11,10 @@
 
 #include "Pulsar/ConfigurableProjectionCorrection.h"
 #include "Pulsar/TransformationFactory.h"
+
+#include "Pulsar/ArchiveInterface.h"
+#include "Pulsar/IntegrationInterface.h"
+
 #include "MEAL/NvariateScalarFactory.h"
 
 #if HAVE_YAMLCPP
@@ -233,7 +237,34 @@ ConfigurableProjectionCorrection::new_value (VariableTransformationManager::Tran
 //! Return the value associated with the parameter name
 double ConfigurableProjectionCorrection::get_value (const std::string& name)
 {
-  return 0;
+  if (name == "ha")
+    return projection.get_correction()->get_mount()->get_hour_angle();
+
+  // until a const interface with only get access is implemented ...
+  Archive* data = const_cast<Archive*> ( archive.get() );
+
+  TextInterface::Parser* parser = 0;
+  string param;
+
+  if ( name.substr (0, 4) == "int:")
+  {
+    parser = data -> get_Integration (subint) -> get_interface();
+    param = name.substr (4);
+  }
+  else
+  {
+    parser = data->get_interface ();
+    param = name;
+  }
+
+  // print with 15 digits of precision
+  param += "%15";
+
+  double result = fromstring<double>( parser->get_value (param) );
+
+  // cerr << "ConfigurableProjectionCorrection::get_value name=" << param << " val=" << result << endl;
+
+  return result;
 }
 
 

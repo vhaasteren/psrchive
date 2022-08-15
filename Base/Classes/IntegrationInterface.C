@@ -5,7 +5,7 @@
  *
  ***************************************************************************/
 
-#include "Pulsar/IntegrationTI.h"
+#include "Pulsar/IntegrationInterface.h"
 #include "Pulsar/Pointing.h"
 #include "Pulsar/AuxColdPlasmaMeasures.h"
 
