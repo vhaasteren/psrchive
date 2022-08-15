@@ -15,12 +15,20 @@ using namespace Calibration;
 
 // #define _DEBUG 1
 
+void VariableTransformation::init()
+{
+  add_model (&chain);
+  add_model (&correction);
+}
+
 VariableTransformation::VariableTransformation ()
 {
+  init ();
 }
 
 VariableTransformation::VariableTransformation (const VariableTransformation& s)
 {
+  init ();
   operator = (s);
 }
 

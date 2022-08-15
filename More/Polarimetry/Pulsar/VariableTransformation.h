@@ -27,7 +27,7 @@ namespace Calibration {
 
   //! Product of multi-variate model and known correction
 
-  class VariableTransformation : public MEAL::ChainRule<MEAL::Complex2>
+  class VariableTransformation : public MEAL::ProductRule<MEAL::Complex2>
   {
     //! Chain rule used to constrain model parameters with functions
     MEAL::ChainRule<MEAL::Complex2> chain;
