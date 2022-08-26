@@ -65,6 +65,11 @@ string MEAL::Polynomial::get_name () const
   return "Polynomial";
 }
 
+void MEAL::Polynomial::set_param_name (unsigned icoeff, const std::string& name)
+{
+  parameters.set_name (icoeff, name);
+}
+
 void MEAL::Polynomial::parse (const string& line)
 {
   string temp = line;
