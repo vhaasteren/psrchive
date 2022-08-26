@@ -19,7 +19,8 @@ namespace MEAL {
   template <class T, class U>
     void GaussJordan (std::vector<std::vector<T> >& a,
 		      std::vector<std::vector<U> >& b,
-		      int nrow = -1, double singular_threshold = 0.0);
+		      int nrow = -1, double singular_threshold = 0.0,
+                      std::vector<std::string>* names = 0);
 }
 
 inline double inv (double x) { return 1.0/x; }
@@ -27,7 +28,8 @@ inline double inv (double x) { return 1.0/x; }
 template <class T, class U>
 void MEAL::GaussJordan (std::vector<std::vector<T> >& a,
 			std::vector<std::vector<U> >& b,
-			int nrow, double singular_threshold)
+			int nrow, double singular_threshold,
+                        std::vector<std::string>* names)
 {
   if (nrow < 0)
     nrow = a.size();
@@ -101,9 +103,15 @@ void MEAL::GaussJordan (std::vector<std::vector<T> >& a,
     }
     
     if (big <= singular_threshold)
+    {
+      if (names)
+        for (unsigned k=i; k<nrow; k++)
+          std::cerr << "MEAL::GaussJordan singular irow=" << k << " name=" << (*names)[k] << std::endl;
+
       throw Error (InvalidState, "MEAL::GaussJordan",
 		   "Singular Matrix.  icol=%d nrow=%d pivot=%le",
 		   i, nrow, big);
+    }
 
     assert (irow != -1 && icol != -1);
 
@@ -125,6 +133,9 @@ void MEAL::GaussJordan (std::vector<std::vector<T> >& a,
     std::cerr << "MEAL::GaussJordan swap b" << std::endl;
 #endif
       for (j=0; j<ncol; j++) std::swap (b[irow][j], b[icol][j]);
+
+      if (names)
+        std::swap ( (*names)[irow], (*names)[icol] );
     }
 
 #ifdef _DEBUG
@@ -135,7 +146,6 @@ void MEAL::GaussJordan (std::vector<std::vector<T> >& a,
     indxc[i]=icol;
 
     T pivinv = inv(a[icol][icol]);
-    a[icol][icol]=1.0;
 
 #ifdef _DEBUG
     std::cerr << "icol=" << icol << " irow=" << irow << " 1/piv=" << pivinv << std::endl;
@@ -144,15 +154,18 @@ void MEAL::GaussJordan (std::vector<std::vector<T> >& a,
     for (j=0; j<nrow; j++)  a[icol][j] *= pivinv;
     for (j=0; j<ncol; j++)  b[icol][j] *= pivinv;
 
+    a[icol][icol]=1.0; // to counter rounding error
+
     // reduce the rows except for the pivot
     for (j=0; j<nrow; j++)
       if (j != icol)
       {
 	T dum = a[j][icol];
-	a[j][icol]=0.0;
 
 	for (k=0; k<nrow; k++)  a[j][k] -= a[icol][k]*dum;
 	for (k=0; k<ncol; k++)  b[j][k] -= b[icol][k]*dum;
+
+        a[j][icol]=0.0; // to counter rounding error
       }
 
   }
