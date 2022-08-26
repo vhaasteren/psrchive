@@ -59,6 +59,9 @@ namespace MEAL {
     //! Return the name of the class
     std::string get_name () const;
 
+    //! Set the parameter name of the specified coefficient
+    void set_param_name (unsigned icoeff, const std::string& name);
+
     //! Parses the values of model parameters and fit flags from a string
     void parse (const std::string& text);
 

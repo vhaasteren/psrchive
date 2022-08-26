@@ -48,6 +48,10 @@ void MEAL::Polynomial2D::resize (unsigned ncoeff, unsigned mcoeff)
   for (unsigned i=0; i < coefficients.size(); i++)
   {
     coefficients[i].resize (mcoeff);
+
+    for (unsigned j=0; j<mcoeff; j++)
+      coefficients[i].set_param_name (j, "c_" + tostring(i+1) + "_" + tostring(j));
+
     chain.set_constraint (i+1, &coefficients[i]);
   }
 }
@@ -109,11 +113,6 @@ std::string MEAL::Polynomial2D::get_name() const
 {
   return "Polynomial2D";
 }
-
-// void MEAL::Polynomial2D::parse (const string& line)
-// {
-//   Function::parse(line); // avoid using inherited GroupRule::parse()
-// }
 
 #include "MEAL/FunctionInterface.h"
 #include "pairutil.h"
