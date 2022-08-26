@@ -150,24 +150,25 @@ void MEAL::GaussJordan (std::vector<std::vector<T> >& a,
 #ifdef _DEBUG
     std::cerr << "icol=" << icol << " irow=" << irow << " 1/piv=" << pivinv << std::endl;
 #endif
-    
+
+    a[icol][icol]=1.0;
+
     for (j=0; j<nrow; j++)  a[icol][j] *= pivinv;
     for (j=0; j<ncol; j++)  b[icol][j] *= pivinv;
 
-    a[icol][icol]=1.0; // to counter rounding error
-
     // reduce the rows except for the pivot
     for (j=0; j<nrow; j++)
+    {
       if (j != icol)
       {
 	T dum = a[j][icol];
 
+        a[j][icol]=0.0;
+
 	for (k=0; k<nrow; k++)  a[j][k] -= a[icol][k]*dum;
 	for (k=0; k<ncol; k++)  b[j][k] -= b[icol][k]*dum;
-
-        a[j][icol]=0.0; // to counter rounding error
       }
-
+    }
   }
 
   // unscramble the column interchanges
