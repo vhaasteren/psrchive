@@ -150,6 +150,9 @@ namespace MEAL
     //! next change to model
     std::vector<std::vector<double> > delta;
 
+    //! names of model parameters
+    std::vector<std::string> names;
+
     //! chi-squared of best fit
     float best_chisq;                     
 
@@ -495,6 +498,8 @@ void MEAL::LevenbergMarquardt<Grad>::solve_delta (const Mt& model)
     std::cerr << "MEAL::LevenbergMarquardt<Grad>::solve_delta lamda="
 	 << lamda << " nparam=" << model.get_nparam() << std::endl;
 
+  names.resize( model.get_nparam() );
+
   unsigned iinfit = 0;
   for (unsigned ifit=0; ifit<model.get_nparam(); ifit++)
   {
@@ -516,6 +521,7 @@ void MEAL::LevenbergMarquardt<Grad>::solve_delta (const Mt& model)
 
       alpha[iinfit][iinfit] *= (1.0 + lamda);
       delta[iinfit][0]=best_beta[ifit];
+      names[iinfit] = model.get_param_name(ifit);
       iinfit ++;
     }
     else if (verbose > 0)
@@ -537,7 +543,7 @@ void MEAL::LevenbergMarquardt<Grad>::solve_delta (const Mt& model)
   try
   {
     // invert Equation 15.5.14
-    MEAL::GaussJordan (alpha, delta, iinfit, singular_threshold);
+    MEAL::GaussJordan (alpha, delta, iinfit, singular_threshold, &names);
   }
   catch (Error& error)
   {
