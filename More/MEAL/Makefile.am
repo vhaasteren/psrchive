@@ -248,7 +248,8 @@ TESTS = \
 	test_Invariant test_CyclicParameter test_Univariate		 \
 	test_StokesError test_StokesCovariance test_Vectorize		 \
 	test_UnitTangent test_ComplexCorrelation	 \
-	test_Spinor test_CrossCoherency test_JonesMueller test_bessi0
+	test_Spinor test_CrossCoherency test_JonesMueller test_bessi0    \
+	test_GaussJordan
 
 check_PROGRAMS = $(TESTS) test_Function_load test_NvariateScalarFactory
 
@@ -275,6 +276,7 @@ test_Spinor_SOURCES		= test_Spinor.C
 test_CrossCoherency_SOURCES	= test_CrossCoherency.C
 test_JonesMueller_SOURCES	= test_JonesMueller.C
 test_NvariateScalarFactory_SOURCES = test_NvariateScalarFactory.C
+test_GaussJordan_SOURCES	= test_GaussJordan.C
 
 ##############################################################################
 #
