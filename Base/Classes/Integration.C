@@ -359,6 +359,12 @@ double Pulsar::Integration::get_centre_frequency (unsigned ichan) const
   if (ichan>=get_nchan() || get_npol() < 1)
     return 0;
 
+  if (profiles.size() == 0)
+    return 0;
+
+  if (profiles[0].size() <= ichan)
+    return 0;
+ 
   return profiles[0][ichan]->get_centre_frequency();
 }
 
