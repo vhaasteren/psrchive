@@ -114,15 +114,15 @@ void load (fitsfile* fptr, polynomial* poly, long row)
   cerr << "load polynomial PSRFITS 2.5" << endl;
 #endif
 
-  auto_ptr<char> site (new char[8]);
+  vector<char> site (8, '\0');
   fits_get_colnum (fptr, CASEINSEN, "NSITE", &colnum, &status);
   fits_read_col (fptr, TSTRING, colnum, row, firstelem, onelement,
-		 nul, &site, &anynul, &status);
+		 nul, &site[0], &anynul, &status);
   if (anynul || status)
     throw FITSError (status, "load polynomial failed to parse NSITE");
 
   // set the attribute
-  set.set_telescope (site.get()[0]);
+  set.set_telescope (site[0]);
 
 #ifdef _DEBUG
   cerr << "load polynomial PSRFITS 2.6" << endl;
@@ -286,13 +286,13 @@ void unload (fitsfile* fptr, const polynomial* poly, long row)
   if (status)
     throw FITSError (status, "unload polynomial", "fits_write_col NCOEF");
 
-  auto_ptr<char> site (new char[2]);
-  site.get()[0] = poly->get_telescope();
-  site.get()[1] = '\0';
+  vector<char> site (64);
+  site[0] = poly->get_telescope();
+  site[1] = '\0';
 
   fits_get_colnum (fptr, CASEINSEN, "NSITE", &colnum, &status);
   fits_write_col (fptr, TSTRING, colnum, row, firstelem, onelement,
-		  &site, &status);
+		  &site[0], &status);
   if (status)
     throw FITSError (status, "unload polynomial", "fits_write_col NSITE");
 
