@@ -12,6 +12,14 @@
 
 using namespace Pulsar;
 
+VariableFaradayRotation::VariableFaradayRotation ()
+{
+  ionospheric_rotation_measure = 0.0;
+  interstellar_rotation_measure = 0.0;
+  is_required = false;
+  built = false;
+}
+
 Jones<double> VariableFaradayRotation::get_transformation ()
 {
   if (!built)

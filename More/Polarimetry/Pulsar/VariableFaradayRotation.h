@@ -36,7 +36,7 @@ namespace Pulsar {
 
   public:
 
-    VariableFaradayRotation () { is_required = false; }
+    VariableFaradayRotation ();
  
     //! Get the transformation
     Jones<double> get_transformation ();
