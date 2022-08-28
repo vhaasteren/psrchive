@@ -115,9 +115,11 @@ void load (fitsfile* fptr, polynomial* poly, long row)
 #endif
 
   vector<char> site (8, '\0');
+  char* strptr = &(site[0]);
+
   fits_get_colnum (fptr, CASEINSEN, "NSITE", &colnum, &status);
   fits_read_col (fptr, TSTRING, colnum, row, firstelem, onelement,
-		 nul, &site[0], &anynul, &status);
+		 &nul, &strptr, &anynul, &status);
   if (anynul || status)
     throw FITSError (status, "load polynomial failed to parse NSITE");
 
@@ -286,13 +288,15 @@ void unload (fitsfile* fptr, const polynomial* poly, long row)
   if (status)
     throw FITSError (status, "unload polynomial", "fits_write_col NCOEF");
 
-  vector<char> site (64);
+  vector<char> site (8);
   site[0] = poly->get_telescope();
   site[1] = '\0';
 
+  char* strptr = &(site[0]);
+
   fits_get_colnum (fptr, CASEINSEN, "NSITE", &colnum, &status);
   fits_write_col (fptr, TSTRING, colnum, row, firstelem, onelement,
-		  &site[0], &status);
+		  &strptr, &status);
   if (status)
     throw FITSError (status, "unload polynomial", "fits_write_col NSITE");
 
