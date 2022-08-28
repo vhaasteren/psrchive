@@ -16,11 +16,24 @@
 // #define _DEBUG 1
 
 namespace MEAL {
+
+  /*! Linear equation solution by Gauss-Jordan elimination, based on the 
+      gaussj implementation provided in Section 2.1 of
+
+      NUMERICAL RECIPES IN C: THE ART OF SCIENTIFIC COMPUTING 
+      (ISBN 0-521-43108-5)
+
+      a (N x N) is the input matrix
+      b (N x M) is input containing the M right-hand side vectors. 
+
+      On output, a is replaced by its matrix inverse, and b is replaced by 
+      the corresponding set of solution vectors.
+  */
   template <class T, class U>
     void GaussJordan (std::vector<std::vector<T> >& a,
 		      std::vector<std::vector<U> >& b,
 		      int nrow = -1, double singular_threshold = 0.0,
-                      std::vector<std::string>* names = 0);
+                      std::vector<const char*>* names = 0);
 }
 
 inline double inv (double x) { return 1.0/x; }
@@ -29,7 +42,7 @@ template <class T, class U>
 void MEAL::GaussJordan (std::vector<std::vector<T> >& a,
 			std::vector<std::vector<U> >& b,
 			int nrow, double singular_threshold,
-                        std::vector<std::string>* names)
+                        std::vector<const char*>* names)
 {
   if (nrow < 0)
     nrow = a.size();
