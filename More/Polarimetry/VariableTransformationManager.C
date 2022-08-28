@@ -12,6 +12,8 @@ using namespace Pulsar;
 //! Default constructor
 VariableTransformationManager::VariableTransformationManager ()
 {
+  subint = -1;
+  chan = -1;
   built = false;
 }
 
