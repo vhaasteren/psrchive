@@ -38,6 +38,9 @@
 #include "BatchQueue.h"
 #include "Pauli.h"
 
+// #define _DEBUG 1
+#include "debug.h"
+
 #include <assert.h>
 
 using namespace std;
@@ -179,9 +182,9 @@ SystemCalibrator::get_solver (unsigned ichan)
   return model[ichan]->get_equation()->get_solver();
 }
 
-void 
-SystemCalibrator::set_solver (Calibration::ReceptionModel::Solver* s)
+void SystemCalibrator::set_solver (Calibration::ReceptionModel::Solver* s)
 {
+  DEBUG("SystemCalibrator::set_solver this=" << this << " ptr=" << (void*) s);
   solver = s;
 }
 
@@ -189,7 +192,8 @@ Calibration::ReceptionModel::Solver* SystemCalibrator::get_solver ()
 {
   if (!solver)
     solver = Calibration::ReceptionModel::new_default_Solver ();
-  
+
+  DEBUG("SystemCalibrator::get_solver this=" << this << " ptr=" << (void*) solver);
   return solver;
 }
 
@@ -1568,6 +1572,8 @@ void SystemCalibrator::init_model (unsigned ichan)
   if (verbose > 2)
     cerr << "SystemCalibrator::init_model ichan=" << ichan << endl;
 
+  model[ichan]->set_name ( instance_name + "_" + tostring(ichan) );
+
   if (!partner)
   {
     if (response_fixed.size())
@@ -1735,6 +1741,8 @@ void SystemCalibrator::solve_prepare () try
 {
   if (is_prepared)
     return;
+
+  DEBUG("SystemCalibrator::solve_prepare this=" << this);
 
   if (!data_submitted)
   {

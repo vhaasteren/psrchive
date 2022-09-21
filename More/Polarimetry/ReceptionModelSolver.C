@@ -160,6 +160,8 @@ catch (Error& error)
     minimization in order to find the best fit to the observations. */
 void Calibration::ReceptionModel::Solver::solve () try
 {
+  if (verbose)
+    cerr << "Calibration::ReceptionModel::Solver::solve this=" << this << endl;
   count_infit ();
   count_constraint ();
 
