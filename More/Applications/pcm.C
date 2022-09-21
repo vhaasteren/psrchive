@@ -657,7 +657,7 @@ void pcm::enable_diagnostic (const string& name)
   else if (name == "input")
     input_data = true;
 
-  else if (name == "report")
+  else if (name == "chisq" || name == "report")
     output_report = true;
 
   else if (name == "guess")
@@ -1805,7 +1805,7 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile,
     throw Error (InvalidState, "pcm::measurement_equation_modeling",
 		 "need to update MEM code to work without -c option");
   
-  cerr << "pcm: set calibrators" << endl;
+  cerr << "pcm: get calibrator filenames" << endl;
 
   DataSet* dataset = data_manager->get (autobin);
   vector<string> filenames = dataset->get_calibrator_filenames ();
