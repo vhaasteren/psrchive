@@ -23,6 +23,9 @@
 
 #include "templates.h"
 
+// #define _DEBUG 1
+#include "debug.h"
+
 #include <iostream>
 #include <algorithm>
 #include <assert.h>
@@ -30,8 +33,6 @@
 using namespace std;
 using namespace MEAL;
 using namespace Calibration;
-
-// #define _DEBUG 1
 
 bool SignalPath::verbose = false;
 
@@ -58,12 +59,18 @@ SignalPath::SignalPath (Pulsar::Calibrator::Type* _type)
 
 void SignalPath::copy (SignalPath* other)
 {
-  cerr << "SignalPath::copy this=" << this << " other=" << other << endl;
+  DEBUG("SignalPath::copy this=" << this << " other=" << other);
   equation->copy_fit( other->equation );
 }
 
 void SignalPath::share (SignalPath* other)
 {
+  if (sharing)
+    throw Error (InvalidState, "SignalPath::share",
+                 "already sharing");
+
+  DEBUG("SignalPath::share this=" << this << " that=" << other);
+
   equation = other->equation;
   response = other->response;
   impurity = other->impurity;
@@ -197,9 +204,7 @@ void SignalPath::set_equation (Calibration::ReceptionModel* e)
     throw Error (InvalidState, "SignalPath::set_equation",
 		 "equation already set; cannot be reset after construction");
 
-#ifdef _DEBUG
-  cerr << "SignalPath::set_equation " << e << endl;
-#endif
+  DEBUG("SignalPath::set_equation " << e);
 
   equation = e;
 }
@@ -368,7 +373,10 @@ void SignalPath::add_psr_path (VariableBackendEstimate* backend)
 
   add_transformation ( psr_path );
 
-  product->set_index ( equation->get_transformation_index () );
+  unsigned xform_index = equation->get_transformation_index ();
+  DEBUG("SignalPath::add_psr_path this=" << this << " name=" << name << " index=" << xform_index);
+
+  product->set_index ( xform_index );
 
   if (verbose)
     cerr << "SignalPath::add_psr_path index="
@@ -463,9 +471,7 @@ void SignalPath::fix_orientation ()
 
 void SignalPath::update () try
 {
-#if _DEBUG
-  cerr << "SignalPath::update" << endl;
-#endif
+  DEBUG("SignalPath::update");
   
   if (!built)
     return;
@@ -651,9 +657,7 @@ catch (Error& error)
 
 void SignalPath::set_reference_epoch (const MJD& epoch)
 {
-#ifdef _DEBUG
-  cerr << "SignalPath::set_reference_epoch " << epoch << endl;
-#endif
+  DEBUG("SignalPath::set_reference_epoch " << epoch);
 
   convert.set_reference_epoch( epoch );
 
