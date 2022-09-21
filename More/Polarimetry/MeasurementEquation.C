@@ -9,6 +9,9 @@
 #include "MEAL/CongruenceTransformation.h"
 #include "MEAL/MuellerTransformation.h"
 
+// #define _DEBUG
+#include "debug.h"
+
 using namespace std;
 
 Calibration::MeasurementEquation::MeasurementEquation () 
@@ -52,6 +55,7 @@ unsigned Calibration::MeasurementEquation::get_input_index () const
 
 void Calibration::MeasurementEquation::set_input_index (unsigned index)
 {
+  DEBUG ("Calibration::MeasurementEquation::set_input_index index=" << index);
   inputs.set_index( index );
 }
 
@@ -127,6 +131,7 @@ unsigned Calibration::MeasurementEquation::get_transformation_index () const
 void
 Calibration::MeasurementEquation::set_transformation_index (unsigned index)
 {
+  DEBUG ("Calibration::MeasurementEquation::set_xform_index index=" << index);
   xforms.set_index( index );
 }
 

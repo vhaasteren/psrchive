@@ -47,6 +47,9 @@ namespace Calibration
 
   class SignalPath : public Reference::Able
   {
+    //! Name of this instance (useful when debugging)
+    std::string name;
+
   public:
 
     //! Verbosity flag
@@ -54,6 +57,9 @@ namespace Calibration
 
     //! Default constructor
     SignalPath (Pulsar::Calibrator::Type*);
+
+    //! Set the name of this instance
+    void set_name (const std::string& _name) { name = _name; }
 
     //! Copy state of other instance
     void copy (SignalPath* other);

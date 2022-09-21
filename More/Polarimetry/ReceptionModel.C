@@ -10,6 +10,9 @@
 #include "Pulsar/CoherencyMeasurementSet.h"
 #include "Pulsar/ReceptionModelSolveMEAL.h"
 
+// #define _DEBUG
+#include "debug.h"
+
 #include <assert.h>
 
 using namespace std;
@@ -19,6 +22,8 @@ using namespace std;
 Calibration::ReceptionModel::ReceptionModel ()
 {
   set_solver( new_default_Solver() );
+
+  DEBUG("Calibration::ReceptionModel::ctor this=" << this << " solver=" << (void*) solver);
 }
 
 Calibration::ReceptionModel::Solver*
@@ -29,9 +34,7 @@ Calibration::ReceptionModel::new_default_Solver ()
 
 Calibration::ReceptionModel::~ReceptionModel ()
 {
-#ifdef _DEBUG
-  cerr << "Calibration::ReceptionModel::~ReceptionModel" << endl;
-#endif
+  DEBUG("Calibration::ReceptionModel::~ReceptionModel");
 }
 
 //! Return the name of the class
@@ -44,6 +47,9 @@ string Calibration::ReceptionModel::get_name () const
 void Calibration::ReceptionModel::set_solver (Solver* s)
 {
   solver = s;
+
+  DEBUG("Calibration::ReceptionModel::set_solver this=" << this << " solver=" << (void*) solver);
+
   if (solver)
     solver->set_equation (this);
 }
@@ -79,6 +85,8 @@ void Calibration::ReceptionModel::add_postfit_report (Report* report)
 //! Solve the measurement equation using the current algorithm
 void Calibration::ReceptionModel::solve ()
 {
+  DEBUG("Calibration::ReceptionModel::solve this=" << this << " solver=" << (void*) solver);
+
   for (unsigned i=0; i<prefit_reports.size(); i++)
     prefit_reports[i]->report();
 
