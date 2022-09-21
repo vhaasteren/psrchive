@@ -11,6 +11,7 @@
 #include "Pulsar/AuxColdPlasmaMeasures.h"
 
 using namespace Pulsar;
+using namespace std;
 
 VariableFaradayRotation::VariableFaradayRotation ()
 {
@@ -63,8 +64,21 @@ void VariableFaradayRotation::build () const try
 
   const Integration* integration = archive->get_Integration (subint);
 
+  transformation = Jones<double>::identity();
   is_required = false;
   description = "";
+
+  if (chan >= integration->get_nchan())
+    throw Error (InvalidState, "VariableFaradayRotation::build",
+                 "invalid chan=%u >= nchan=%u", chan, integration->get_nchan());
+
+  double centre_frequency = integration->get_centre_frequency(chan);
+
+  if (centre_frequency <= 0)
+  {
+    description = "invalid centre frequency = " + tostring(centre_frequency);
+    return;
+  }
 
   double iono_rm = ionospheric_rotation_measure;
 
@@ -121,23 +135,28 @@ void VariableFaradayRotation::build () const try
   // correct interstellar Faraday rotation wrt centre frequency
   ism_faraday->set_reference_frequency( archive->get_centre_frequency() );
 
-  transformation = Jones<double>::identity();
+  try {
+    iono_faraday->set_frequency( integration->get_centre_frequency(chan) );
+    transformation *= iono_faraday->evaluate();
+  }
+  catch (Error& error)
+  {
+    throw error += "VariableFaradayRotation::build iono_faraday";
+  }
 
-  iono_faraday->set_frequency( integration->get_centre_frequency(chan) );
-  transformation *= iono_faraday->evaluate();
-
-  ism_faraday->set_frequency( integration->get_centre_frequency(chan) );
-  transformation *= ism_faraday->evaluate();
+  try {
+    ism_faraday->set_frequency( integration->get_centre_frequency(chan) );
+    transformation *= ism_faraday->evaluate();
+  }
+  catch (Error& error)
+  {
+    throw error += "VariableFaradayRotation::build ism_faraday";
+  }
 
   built = true;
 }
 catch (Error& error)
 {
   throw error += "VariableFaradayRotation::build";
-}
-
-void VariableFaradayRotation::set_chan (unsigned)
-{
-  // ignore (this override disables resetting the built flag)
 }
 

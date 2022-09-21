@@ -8,6 +8,8 @@
 #include "Pulsar/ObservationUncertainty.h"
 #include "Pauli.h"
 
+#include <cassert>
+
 using namespace std;
 using namespace Calibration;
 
@@ -24,6 +26,7 @@ double ObservationUncertainty::get_weighted_norm
     difference += sqr(stokes[ipol].real()) * inv_variance[ipol].real();
     difference += sqr(stokes[ipol].imag()) * inv_variance[ipol].imag();
   }
+  assert (isfinite(difference));
   return difference;
 }
 
@@ -36,9 +39,22 @@ Jones<double> ObservationUncertainty::get_weighted_conjugate
   // cerr << "inv=" << inv_variance << endl;
 
   for (unsigned ipol=0; ipol<4; ipol++)
+  {
     stokes[ipol] =
       complex<double>( inv_variance[ipol].real() * stokes[ipol].real(),
 		      -inv_variance[ipol].imag() * stokes[ipol].imag() );
+
+    if (!isfinite(stokes[ipol]))
+    {
+      cerr << "ObservationUncertainty::get_weighted_conjugate non-finite result\n"
+        " input=" << matrix << endl <<
+        " stokes[" << ipol << "]=" << stokes[ipol] << endl <<
+        " invvar[" << ipol << "]=" << inv_variance[ipol] << endl;
+
+      throw Error (InvalidState, "ObservationUncertainty::get_weighted_conjugate",
+                   "non-finite result");
+    }
+  }
 
   return convert (stokes);
 }
@@ -54,9 +70,13 @@ ObservationUncertainty::get_weighted_components
   Stokes< complex<double> > stokes = complex_coherency( matrix );
 
   for (unsigned ipol=0; ipol<4; ipol++)
+  {
     stokes[ipol] =
       complex<double>( sqrt(inv_variance[ipol].real()) * stokes[ipol].real(),
 		       sqrt(inv_variance[ipol].imag()) * stokes[ipol].imag() );
+
+    assert (isfinite(stokes[ipol]));
+  }
 
   return stokes;
 }
@@ -66,8 +86,15 @@ void ObservationUncertainty::set_variance
 ( const Stokes< complex<double> >& variance )
 {
   for (unsigned ipol=0; ipol < 4; ipol++)
-    inv_variance[ipol] = complex<double>( 1.0 / variance[ipol].real(),
-					  1.0 / variance[ipol].imag() );
+  {
+    double inv_re = 1.0 / variance[ipol].real();
+    double inv_im = 1.0 / variance[ipol].imag();
+
+    assert (isfinite(inv_re));
+    assert (isfinite(inv_im));
+
+    inv_variance[ipol] = complex<double>( inv_re, inv_im );
+  }
 }
 
 //! Set the uncertainty of the observation
@@ -75,8 +102,12 @@ void ObservationUncertainty::set_variance
 ( const Stokes<double>& variance )
 {
   for (unsigned ipol=0; ipol < 4; ipol++)
-    inv_variance[ipol] = complex<double>( 1.0 / variance[ipol],
-					  1.0 / variance[ipol] );
+  {
+    double inv_var = 1.0 / variance[ipol];
+    assert (isfinite(inv_var));
+
+    inv_variance[ipol] = complex<double>( inv_var, inv_var );
+  }
 }
 
 //! Return the variance of each Stokes parameter
@@ -140,8 +171,13 @@ void ObservationUncertainty::add (const Uncertainty* other)
   {
     complex<double> var = getvar(inv_variance[ipol]);
     var += getvar(like->inv_variance[ipol]);
+
+    double inv_re = 1.0 / var.real();
+    double inv_im = 1.0 / var.imag();
+
+    assert (isfinite(inv_re));
+    assert (isfinite(inv_im));
     
-    inv_variance[ipol] = complex<double>( 1.0 / var.real(),
-					  1.0 / var.imag() );
+    inv_variance[ipol] = complex<double>( inv_re, inv_im );
   }
 }

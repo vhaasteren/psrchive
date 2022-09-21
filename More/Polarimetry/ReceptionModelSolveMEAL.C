@@ -87,7 +87,16 @@ float lmcoff (// input
      of the WeightingScheme template class used by LevenbergMacquardt.
      The weight depends on the error (sigma-like).
   */
-  return MEAL::lmcoff1 (model, delta_y, obs, gradient, alpha, beta);
+  try
+  {
+    return MEAL::lmcoff1 (model, delta_y, obs, gradient, alpha, beta);
+  }
+  catch (Error& error)
+  {
+    error << "\n\t" "data=" << obs.get_coherency() 
+          << "\n\t" "model=" << result;
+    throw error += "Calibration::ReceptionModel::lmcoff";
+  }
 }
 
 // template specialization of MEAL::lmcoff
@@ -100,6 +109,7 @@ float lmcoff (// input
 	      // output
 	      vector<vector<double> >& alpha,
 	      vector<double>& beta)
+try
 {
   if (Calibration::ReceptionModel::verbose)
     cerr << "Calibration::ReceptionModel::lmcoff set abscissa" << endl;
@@ -119,7 +129,10 @@ float lmcoff (// input
   
   return chisq;
 }
-
+catch (Error& error)
+{
+  throw error += "Calibration::ReceptionModel::lmcoff 2";
+}
 
 void Calibration::SolveMEAL::fit ()
 {

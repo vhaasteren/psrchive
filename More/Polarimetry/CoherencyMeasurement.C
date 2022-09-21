@@ -44,7 +44,16 @@ void CoherencyMeasurement::set_stokes
 {
   Stokes<double> val;
 
-  for (unsigned ipol=0; ipol<4; ipol++) {
+  for (unsigned ipol=0; ipol<4; ipol++)
+  {
+    if (!isfinite(stokes[ipol].val))
+      throw Error (InvalidState, "CoherencyMeasurement::set_stokes",
+                   "non-finite stokes[%d].val=", stokes[ipol].val);
+
+    if (!isfinite(stokes[ipol].var))
+      throw Error (InvalidState, "CoherencyMeasurement::set_stokes",
+                   "non-finite stokes[%d].var=", stokes[ipol].var);
+
     val[ipol] = stokes[ipol].val;
     variance[ipol] = stokes[ipol].var;
   }
@@ -150,6 +159,7 @@ Jones<double> CoherencyMeasurement::get_weighted_conjugate
 }
 catch (Error& error)
 {
+  error << "\n\t" "matrix=" << matrix;
   throw error += "CoherencyMeasurement::get_weighted_conjugate";
 }
 
