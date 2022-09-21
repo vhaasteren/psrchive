@@ -55,8 +55,7 @@ include_HEADERS = \
 	TextInterfaceTransform.h \
 	TextInterfaceValue.h \
 	TextLoop.h \
-        tostring.h \
-        Traits.h
+        tostring.h
 
 libunits_la_SOURCES = \
 	Alias.C \
