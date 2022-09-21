@@ -17,6 +17,7 @@
 #include "Error.h"
 
 #include <iostream>
+#include <cassert>
 #include <cmath>
 
 namespace MEAL
@@ -417,9 +418,11 @@ void verify_orthogonal (const std::vector<std::vector<double > >& alpha,
 
   for (unsigned irow=0; irow<nfree; irow++)
   {
+    double norm = 0.0;
     for (unsigned jcol=0; jcol<nfree; jcol++) 
-      row_mod[irow] += alpha[irow][jcol] * alpha[irow][jcol];
-    row_mod[irow] = sqrt(row_mod[irow]);
+      norm += alpha[irow][jcol] * alpha[irow][jcol];
+
+    row_mod[irow] = sqrt(norm);
 
     if (row_mod[irow] == 0)
       std::cerr << irow << "=" << names[irow] << " gradient = 0" << std::endl;
@@ -438,6 +441,7 @@ void verify_orthogonal (const std::vector<std::vector<double > >& alpha,
       double degen = 0.0;
       for (unsigned jcol=0; jcol<nfree; jcol++)
         degen += alpha[krow][jcol] * alpha[irow][jcol];
+
       degen /= row_mod[krow] * row_mod[irow];
 
       if (degen > 0.8)
@@ -791,6 +795,7 @@ float MEAL::lmcoff (
 		    std::vector<std::vector<double> >& alpha,
 		    std::vector<double>& beta
 		    )
+try
 {
   if (LevenbergMarquardt<Grad>::verbose > 2)
     std::cerr << "MEAL::lmcoff data=" << data << std::endl;
@@ -811,6 +816,12 @@ float MEAL::lmcoff (
 
   return result;
 }
+catch (Error& error)
+{
+  error << "\n\t" "data=" << data << " model=" << model.evaluate ();
+  throw error += "MEAL::lmcoff";
+}
+
 
 template <class Mt, class Yt, class Wt, class Grad>
 float MEAL::lmcoff1 (
@@ -823,6 +834,7 @@ float MEAL::lmcoff1 (
 		     std::vector<std::vector<double> >& alpha,
 		     std::vector<double>& beta
 		     )
+try
 {
   //! The traits of the gradient element
   ElementTraits<Grad> traits;
@@ -836,8 +848,11 @@ float MEAL::lmcoff1 (
   {
     if (model.get_infit(ifit))
     {
+      double term = traits.to_real (w_delta_y * gradient[ifit]);
+      assert (isfinite(term));
+
       // Equation 15.5.6 (with 15.5.8)
-      beta[ifit] += traits.to_real (w_delta_y * gradient[ifit]);
+      beta[ifit] += term;
 
       if (LevenbergMarquardt<Grad>::verbose > 2)
         std::cerr << "MEAL::lmcoff1 compute weighted conjugate of gradient"
@@ -851,19 +866,26 @@ float MEAL::lmcoff1 (
       // Equation 15.5.11
       for (unsigned jfit=0; jfit <= ifit; jfit++)
 	if (model.get_infit(jfit))
-	  alpha[ifit][jfit] += traits.to_real (w_gradient * gradient[jfit]);
+        {
+          double term = traits.to_real (w_gradient * gradient[jfit]);
+          assert (isfinite(term));
+          alpha[ifit][jfit] += term;
+        }
     }
   }
 
   // Equation 15.5.5
   float chisq = weight.get_weighted_norm (delta_y);
 
-  if (LevenbergMarquardt<Grad>::verbose > 1)
+  if (LevenbergMarquardt<Grad>::verbose > 1 || !isfinite(chisq))
     std::cerr << "MEAL::lmcoff1 chisq=" << chisq << std::endl;
 
   return chisq;
 }
-
-
+catch (Error& error)
+{
+  error << "\n\t" "delta_y=" << delta_y;
+  throw error += "MEAL::lmcoff1";
+}
 
 #endif
