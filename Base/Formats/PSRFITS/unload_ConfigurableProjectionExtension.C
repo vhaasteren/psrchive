@@ -25,11 +25,6 @@ void unload_variances (fitsfile*, const Pulsar::ConfigurableProjectionExtension*
 void unload_covariances (fitsfile*, const Pulsar::ConfigurableProjectionExtension*,
 			 int ncovar, vector<float>& data);
 
-void unload_solver (fitsfile* fptr, const Pulsar::ConfigurableProjectionExtension* pce,
-		    vector<float>& data);
-
-void delete_solver (fitsfile* fptr);
-
 void Pulsar::FITSArchive::unload (fitsfile* fptr, 
 				  const ConfigurableProjectionExtension* pce) try
 {
@@ -123,11 +118,6 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr,
     unload_covariances (fptr, pce, ncovar, data);
   else
     unload_variances (fptr, pce, ncpar, data);
-
-  if (pce->get_has_solver())
-    unload_solver (fptr, pce, data);
-  else
-    delete_solver (fptr);
 
   if (verbose == 3)
     cerr << "FITSArchive::unload ConfigurableProjectionExtension exiting" << endl; 
@@ -230,42 +220,3 @@ void unload_covariances (fitsfile* fptr,
   psrfits_write_col (fptr, "COVAR", 1, data, dimensions);
 }
 
-void unload_solver (fitsfile* fptr,
-		    const Pulsar::ConfigurableProjectionExtension* pce,
-		    vector<float>& chisq)
-{
-  unsigned nchan = pce->get_nchan();
-
-  chisq.resize( nchan );
-  vector<unsigned> nfree( nchan, 0 );
-  vector<unsigned> nfit( nchan, 0 );
-
-  for (unsigned i = 0; i < nchan; i++)
-  {
-    if (pce->get_valid(i))
-    {
-      chisq[i] = pce->get_transformation(i)->get_chisq();
-      nfree[i] = pce->get_transformation(i)->get_nfree();
-      nfit[i]  = pce->get_transformation(i)->get_nfit();
-    }
-    else
-    {
-      chisq[i] = 0.0;
-      nfree[i] = 0;
-      nfit[i]  = 0;
-    }
-  }
-
-  vector<unsigned> no_dimensions;
-
-  psrfits_write_col (fptr, "CHISQ", 1, chisq, no_dimensions);
-  psrfits_write_col (fptr, "NFREE", 1, nfree, no_dimensions);
-  psrfits_write_col (fptr, "NFIT",  1, nfit,  no_dimensions);
-}
-
-void delete_solver (fitsfile* fptr)
-{
-  psrfits_delete_col (fptr, "CHISQ");
-  psrfits_delete_col (fptr, "NFREE");
-  psrfits_delete_col (fptr, "NFIT");
-}

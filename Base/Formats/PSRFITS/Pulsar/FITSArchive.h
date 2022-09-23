@@ -32,6 +32,7 @@ namespace Pulsar
   class FluxCalibratorExtension;
   class CalibratorStokes;
   class CalibrationInterpolatorExtension;
+  class ConfigurableProjectionExtension;
   class DigitiserCounts;
   class FITSSUBHdrExtension;
   class ProfileColumn;
@@ -137,7 +138,10 @@ namespace Pulsar
 
     //! Unload CalibrationInterpolatorExtension to the PCMINTER HDU
     static void unload (fitsfile*, const CalibrationInterpolatorExtension*);
-    
+   
+    //! Unload ConfigurableProjectionExtension to the CFGPROJ HDU
+    static void unload (fitsfile*, const ConfigurableProjectionExtension*);
+ 
     //! Unload FITSSUBHdrExtension
     static void unload (fitsfile*, const FITSSUBHdrExtension*);
     
@@ -261,6 +265,7 @@ namespace Pulsar
     void load_FluxCalibratorExtension (fitsfile*);
     void load_CalibratorStokes (fitsfile*);
     void load_CalibrationInterpolatorExtension (fitsfile*);
+    void load_ConfigurableProjectionExtension (fitsfile*);
     void load_Receiver (fitsfile*);
     void load_ITRFExtension (fitsfile*);
     void load_CalInfoExtension (fitsfile*);
