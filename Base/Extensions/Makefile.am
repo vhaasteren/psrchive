@@ -17,6 +17,7 @@ nobase_include_HEADERS = \
         Pulsar/CalInfoExtension.h \
 	Pulsar/CoherentDedispersion.h \
         Pulsar/ColdPlasmaHistory.h \
+        Pulsar/ConfigurableProjectionExtension.h \
         Pulsar/Dedisperse.h \
         Pulsar/DeFaraday.h \
         Pulsar/DigitiserStatistics.h \
@@ -72,6 +73,7 @@ libExtensions_la_SOURCES = \
 	CoherentDedispersion.C \
 	CoherentDedispersionTI.C \
         ColdPlasmaHistory.C \
+        ConfigurableProjectionExtension.C \
         Dedisperse.C \
         DeFaraday.C \
         DigitiserStatistics.C \
