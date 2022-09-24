@@ -9,7 +9,7 @@
 #include <config.h>
 #endif
 
-#include "Pulsar/ConfigurableProjectionCorrection.h"
+#include "Pulsar/ConfigurableProjection.h"
 #include "Pulsar/TransformationFactory.h"
 
 #include "Pulsar/ArchiveInterface.h"
@@ -48,7 +48,7 @@ T* construct (const YAML::Node& node, Factory factory)
                  "YAML::Node for 'model' is neither a Scalar nor a Map");
 
   if ( !model["name"] )
-    throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
+    throw Error (InvalidParam, "ConfigurableProjection::load",
                  "model map does not contain 'name'");
 
   T* object = factory( model["name"].as<std::string>() );
@@ -75,11 +75,18 @@ T* construct (const YAML::Node& node, Factory factory)
 
 typedef MEAL::Nvariate<MEAL::Scalar> NvariateScalar;
 
-ConfigurableProjectionCorrection::ConfigurableProjectionCorrection (const string& filename)
+ConfigurableProjection::ConfigurableProjection (const string& filename)
 {
 #if HAVE_YAMLCPP
 
   YAML::Node node = YAML::LoadFile(filename);
+
+  YAML::Emitter out;
+  out << node;
+  configuration = out.c_str();
+
+  if (Archive::verbose > 1)
+    cerr << "ConfigurableProjection::ctor cfg='" << configuration << "'" << endl;
 
   transformation = new Calibration::VariableTransformation;
 
@@ -96,12 +103,12 @@ ConfigurableProjectionCorrection::ConfigurableProjectionCorrection (const string
     {
       YAML::Node chain = it->second;
       if (! chain.IsMap())
-        throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
+        throw Error (InvalidParam, "ConfigurableProjection::load",
                      "YAML value for 'chain' is not a map");
 
       cerr << "parsing chain param" << endl;
       if ( !chain["param"] )
-        throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
+        throw Error (InvalidParam, "ConfigurableProjection::load",
                      "YAML chain map does not contain 'param'");
 
       string param_name = chain["param"].as<string>();
@@ -116,7 +123,7 @@ ConfigurableProjectionCorrection::ConfigurableProjectionCorrection (const string
       }
 
       if (iparam == model->get_nparam())
-        throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
+        throw Error (InvalidParam, "ConfigurableProjection::load",
                      "no parameter named '" + param_name + "' "
                      "in model named '" + model->get_name() + "'");
 
@@ -127,7 +134,7 @@ ConfigurableProjectionCorrection::ConfigurableProjectionCorrection (const string
       transformation->set_constraint (iparam, func);
 
       if ( !chain["args"] )
-        throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
+        throw Error (InvalidParam, "ConfigurableProjection::load",
                      "YAML chain map does not contain 'args'");
 
       cerr << "parsing arguments" << endl;
@@ -147,7 +154,7 @@ ConfigurableProjectionCorrection::ConfigurableProjectionCorrection (const string
       else
       {
         if (! args.IsSequence())
-          throw Error (InvalidParam, "ConfigurableProjectionCorrection::load",
+          throw Error (InvalidParam, "ConfigurableProjection::load",
                        "YAML value for 'args' is not a map");
 
         if (args.size() != func->get_ndim())
@@ -164,45 +171,84 @@ ConfigurableProjectionCorrection::ConfigurableProjectionCorrection (const string
   }
 
 #else
-  throw Error (InvalidState, "ConfigurableProjectionCorrection ctor",
+  throw Error (InvalidState, "ConfigurableProjection ctor",
                "yaml-cpp required and not available");
 #endif
 }
 
 //! Set the Archive for which a tranformation will be computed
-void ConfigurableProjectionCorrection::set_archive (const Archive* _archive)
+void ConfigurableProjection::set_archive (const Archive* _archive)
 {
   VariableTransformationManager::set_archive (_archive);
   projection.set_archive (_archive);
 }
 
 //! Set the sub-integration for which a tranformation will be computed
-void ConfigurableProjectionCorrection::set_subint (unsigned _subint)
+void ConfigurableProjection::set_subint (unsigned _subint)
 {
   VariableTransformationManager::set_subint (_subint);
   projection.set_subint (_subint);
 }
 
 //! Set the frequency channel for which a tranformation will be computed
-void ConfigurableProjectionCorrection::set_chan (unsigned _chan)
+void ConfigurableProjection::set_chan (unsigned _chan)
 {
   VariableTransformationManager::set_chan (_chan);
   projection.set_chan (_chan);
 }
 
-//! Return a newly constructed Transformation instance
-ConfigurableProjectionCorrection::Transformation*
-ConfigurableProjectionCorrection::new_transformation ()
+void ConfigurableProjection::set_nchan (unsigned nchan)
 {
-  Calibration::VariableTransformation* xform = transformation->clone();
-  return new ConfigurableProjectionCorrection::Transformation (xform);
+  xforms.resize (nchan);
+}
+
+unsigned ConfigurableProjection::get_nchan () const
+{
+  return xforms.size();
+}
+
+//! Return a newly constructed Transformation instance
+ConfigurableProjection::Transformation*
+ConfigurableProjection::get_transformation (unsigned ichan)
+{
+  if (ichan >= xforms.size())
+    throw Error (InvalidParam, "ConfigurableProjection::get_transformation",
+                 "ichan=%u >= nchan=%u", ichan, xforms.size());
+
+  if (!xforms[ichan])
+  {
+    Calibration::VariableTransformation* xform = transformation->clone();
+    xforms[ichan] = new ConfigurableProjection::Transformation (xform);
+  }
+
+  return xforms[ichan];
+}
+
+//! Return a newly constructed Transformation instance
+const ConfigurableProjection::Transformation*
+ConfigurableProjection::get_transformation (unsigned ichan) const
+{
+  if (ichan >= xforms.size())
+    throw Error (InvalidParam, "ConfigurableProjection::get_transformation",
+                 "ichan=%u >= nchan=%u", ichan, xforms.size());
+
+  if (!xforms[ichan])
+    throw Error (InvalidParam, "ConfigurableProjection::get_transformation",
+                 "ichan=%u invalid");
+
+  return xforms[ichan];
+}
+
+bool ConfigurableProjection::get_transformation_valid (unsigned ichan) const
+{
+  return xforms[ichan];
 }
 
 using Calibration::VariableTransformation;
 
 //! Return a newly constructed Argument::Value for the given Transformation
 MEAL::Argument::Value*
-ConfigurableProjectionCorrection::new_value (VariableTransformationManager::Transformation* xform)
+ConfigurableProjection::new_value (VariableTransformationManager::Transformation* xform)
 {
   MEAL::Argument* argument = xform->get_argument ();
 
@@ -211,7 +257,7 @@ ConfigurableProjectionCorrection::new_value (VariableTransformationManager::Tran
   VariableArgument* vararg = dynamic_cast<VariableArgument*> (argument);
 
   if (!vararg)
-    throw Error (InvalidParam, "ConfigurableProjectionCorrection::new_value",
+    throw Error (InvalidParam, "ConfigurableProjection::new_value",
 		 "Transformation does not have a VariableArgument");
 
   Calibration::VariableTransformation::Argument arg;
@@ -235,7 +281,7 @@ ConfigurableProjectionCorrection::new_value (VariableTransformationManager::Tran
 }
 
 //! Return the value associated with the parameter name
-double ConfigurableProjectionCorrection::get_value (const std::string& name)
+double ConfigurableProjection::get_value (const std::string& name)
 {
   if (name == "ha")
     return projection.get_correction()->get_mount()->get_hour_angle();
@@ -262,7 +308,7 @@ double ConfigurableProjectionCorrection::get_value (const std::string& name)
 
   double result = fromstring<double>( parser->get_value (param) );
 
-  // cerr << "ConfigurableProjectionCorrection::get_value name=" << param << " val=" << result << endl;
+  // cerr << "ConfigurableProjection::get_value name=" << param << " val=" << result << endl;
 
   return result;
 }

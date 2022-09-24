@@ -23,7 +23,7 @@
 #include "Pulsar/VariableTransformationFile.h"
 #include "Pulsar/ManualPolnCalibrator.h"
 #include "Pulsar/NancayProjectionCorrection.h"
-#include "Pulsar/ConfigurableProjectionCorrection.h"
+#include "Pulsar/ConfigurableProjection.h"
 
 #include "Pulsar/SystemCalibratorManager.h"
 #include "Pulsar/SystemCalibratorUnloader.h"
@@ -808,7 +808,7 @@ void pcm::set_projection (const string& filename)
   }
 
   try {
-    projection = new ConfigurableProjectionCorrection (filename);
+    projection = new ConfigurableProjection (filename);
     cerr << "pcm: projection configuration loaded from " << filename << endl;
     return;
   }

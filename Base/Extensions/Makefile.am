@@ -74,6 +74,7 @@ libExtensions_la_SOURCES = \
 	CoherentDedispersionTI.C \
         ColdPlasmaHistory.C \
         ConfigurableProjectionExtension.C \
+	ConfigurableProjectionExtensionInterface.C \
         Dedisperse.C \
         DeFaraday.C \
         DigitiserStatistics.C \

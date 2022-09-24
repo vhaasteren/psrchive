@@ -89,7 +89,7 @@ namespace Pulsar {
     void set_chan (unsigned _chan);
 
     //! Return a newly constructed Transformation instance
-    Transformation* new_transformation ();
+    Transformation* get_transformation (unsigned ichan);
 
     //! Return a newly constructed Argument::Value for the given Transformation
     MEAL::Argument::Value* new_value (VariableTransformationManager::Transformation*);

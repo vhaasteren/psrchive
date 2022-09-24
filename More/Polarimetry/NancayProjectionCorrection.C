@@ -77,7 +77,7 @@ void NancayProjectionCorrection::set_chan (unsigned _chan)
 
 //! Return a newly constructed Transformation instance
 NancayProjectionCorrection::Transformation*
-NancayProjectionCorrection::new_transformation ()
+NancayProjectionCorrection::get_transformation (unsigned ichan)
 {
   return new NancayProjectionCorrection::Transformation;
 }

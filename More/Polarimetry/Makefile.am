@@ -16,7 +16,7 @@ nobase_include_HEADERS = \
         Pulsar/CoherencyMeasurement.h \
         Pulsar/CoherencyMeasurementSet.h \
 	Pulsar/ComplexRVMFit.h \
-	Pulsar/ConfigurableProjectionCorrection.h \
+	Pulsar/ConfigurableProjection.h \
 	Pulsar/ConstantGainInfo.h \
         Pulsar/ConvertMJD.h \
         Pulsar/Database.h \
@@ -133,7 +133,8 @@ libPolarimetry_la_SOURCES = \
         CoherencyMeasurement.C \
         CoherencyMeasurementSet.C \
 	ComplexRVMFit.C \
-	ConfigurableProjectionCorrection.C \
+	ConfigurableProjection.C \
+	ConfigurableProjectionExt.C \
 	ConstantGainInfo.C \
         ConvertMJD.C \
         Database.C \
@@ -295,9 +296,9 @@ test_IRIonosphere_SOURCES	= test_IRIonosphere.C
 
 if HAVE_YAMLCPP
 
-  check_PROGRAMS += test_yaml test_ConfigurableProjectionCorrection
+  check_PROGRAMS += test_yaml test_ConfigurableProjection
   test_yaml_SOURCES = test_yaml.C
-  test_ConfigurableProjectionCorrection_SOURCES = test_ConfigurableProjectionCorrection.C
+  test_ConfigurableProjection_SOURCES = test_ConfigurableProjection.C
 
 endif
 
