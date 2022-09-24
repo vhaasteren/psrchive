@@ -6,8 +6,8 @@
  *
  ***************************************************************************/
 
-#ifndef __Pulsar_ConfigurableProjectionCorrection_h
-#define __Pulsar_ConfigurableProjectionCorrection_h
+#ifndef __Pulsar_ConfigurableProjection_h
+#define __Pulsar_ConfigurableProjection_h
 
 #include "Pulsar/VariableProjectionCorrection.h"
 #include "Pulsar/VariableTransformation.h"
@@ -17,41 +17,12 @@
 namespace Pulsar 
 {
   //! Manager of variable transformations
-  class ConfigurableProjectionCorrection : public VariableTransformationManager
+  class ConfigurableProjection : public VariableTransformationManager
   {
   public:
 
     //! Construct from a configuration file
-    ConfigurableProjectionCorrection (const std::string& filename);
-
-    // typedef MEAL::Axis< VariableTransformation::Argument > VariableArgument;
-
-    class Transformation : public VariableTransformationManager::Transformation
-    {
-    protected:
-      
-      //! The variable transformation argument
-      MEAL::Axis< Calibration::VariableTransformation::Argument > argument;
-
-      //! The variable transformation
-      Reference::To<Calibration::VariableTransformation> transformation;
-      
-    public:
-
-      Transformation (Calibration::VariableTransformation* xform)
-      {
-        transformation = xform;
-	argument.signal.connect (xform,
-				 &Calibration::VariableTransformation::set_argument);
-      }
-      
-      //! The transformation
-      Calibration::VariableTransformation* get_transformation () 
-      { return transformation; }
-      
-      //! Its argument
-      MEAL::Argument* get_argument () { return &argument; }  
-    };
+    ConfigurableProjection (const std::string& filename);
 
     //! Set the Archive for which a tranformation will be computed
     void set_archive (const Archive* _archive);
@@ -62,8 +33,13 @@ namespace Pulsar
     //! Set the frequency channel for which a tranformation will be computed
     void set_chan (unsigned _chan);
 
-    //! Return a newly constructed Transformation instance
-    Transformation* new_transformation ();
+    class Transformation;
+
+    //! Set the number of frequency channels
+    void set_nchan (unsigned);
+
+    //! Get the number of frequency channels
+    unsigned get_nchan () const;
 
     //! Return a newly constructed Argument::Value for the given Transformation
     MEAL::Argument::Value* new_value (VariableTransformationManager::Transformation*);
@@ -71,7 +47,13 @@ namespace Pulsar
     //! Return the value associated with the parameter name
     double get_value (const std::string& name);
 
+    //! Get the configuration text from which this instance was constructed
+    const std::string& get_configuration() const { return configuration; }
+
   protected:
+
+    //! Configuration string
+    std::string configuration;
 
     //! Known/fixed projection correction
     VariableProjectionCorrection projection;
@@ -82,6 +64,51 @@ namespace Pulsar
 
     //! Names of Archive attributes assigned to each abscissa/dimension
     std::map< unsigned, std::vector<std::string> > parameters;
+
+    std::vector< Reference::To<Transformation> > xforms;
+
+  public:
+
+    class Transformation : public VariableTransformationManager::Transformation
+    {
+    protected:
+  
+      //! The variable transformation argument
+      MEAL::Axis< Calibration::VariableTransformation::Argument > argument;
+  
+      //! The variable transformation
+      Reference::To<Calibration::VariableTransformation> transformation;
+  
+    public:
+  
+      Transformation (Calibration::VariableTransformation* xform)
+      {
+        transformation = xform;
+        argument.signal.connect (xform,
+                                   &Calibration::VariableTransformation::set_argument);
+      }
+  
+      //! The transformation
+      Calibration::VariableTransformation* get_transformation ()
+      { return transformation; }
+ 
+      //! The transformation
+      const Calibration::VariableTransformation* get_transformation () const
+      { return transformation; }
+ 
+      //! Its argument
+      MEAL::Argument* get_argument () { return &argument; }
+    };
+
+    //! Return the Transformation instance for the specified channel
+    Transformation* get_transformation (unsigned ichan);
+
+    //! Return the Transformation instance for the specified channel
+    const Transformation* get_transformation (unsigned ichan) const;
+
+    //! Return true if the speficied channel has a valid solution
+    bool get_transformation_valid (unsigned ichan) const;
+
   };
 }
 

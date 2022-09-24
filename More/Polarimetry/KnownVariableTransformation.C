@@ -11,7 +11,7 @@ using namespace Pulsar;
 
 //! Return a newly constructed Transformation instance
 KnownVariableTransformation::Transformation*
-KnownVariableTransformation::new_transformation ()
+KnownVariableTransformation::get_transformation (unsigned ichan)
 {
   return new KnownVariableTransformation::Transformation;
 }

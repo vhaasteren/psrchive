@@ -1539,6 +1539,12 @@ void SystemCalibrator::create_model () try
   unsigned nchan = get_nchan ();
   model.resize (nchan);
 
+  if (projection)
+    projection->set_nchan (nchan);
+
+  if (faraday_rotation)
+    faraday_rotation->set_nchan (nchan);
+
   if (verbose)
     cerr << "SystemCalibrator::create_model nchan=" << nchan << endl;
 
@@ -1605,7 +1611,7 @@ void SystemCalibrator::init_model (unsigned ichan)
       if (verbose > 2)
 	cerr << "SystemCalibrator::init_model projection" << endl;
       model[ichan]->set_projection
-        ( projection->new_transformation() );
+        ( projection->get_transformation(ichan) );
     }
 
     if (faraday_rotation)
@@ -1613,7 +1619,7 @@ void SystemCalibrator::init_model (unsigned ichan)
       if (verbose > 2)
         cerr << "SystemCalibrator::init_model Faraday rotation" << endl;
       model[ichan]->set_faraday_rotation
-        ( faraday_rotation->new_transformation() );
+        ( faraday_rotation->get_transformation(ichan) );
     }
 
     for (auto rv : response_variation)
