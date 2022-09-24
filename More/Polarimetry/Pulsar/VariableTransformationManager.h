@@ -20,6 +20,7 @@ namespace Pulsar {
   {
 
   protected:
+
     Reference::To<const Archive,false> archive;
     unsigned subint;
     unsigned chan;
@@ -43,8 +44,11 @@ namespace Pulsar {
     //! Set the frequency channel for which a tranformation will be computed
     virtual void set_chan (unsigned _chan);
 
+    //! Set the number of frequency channels for which get_transformation will be called
+    virtual void set_nchan (unsigned);
+
     //! Return a newly constructed Transformation instance
-    virtual Transformation* new_transformation () = 0;
+    virtual Transformation* get_transformation (unsigned ichan) = 0;
 
     //! Return a newly constructed Argument::Value for the given Transformation
     virtual MEAL::Argument::Value* new_value (Transformation*) = 0;

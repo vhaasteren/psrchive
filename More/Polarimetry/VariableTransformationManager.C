@@ -44,3 +44,7 @@ void VariableTransformationManager::set_chan (unsigned _chan)
   chan = _chan;
 }
 
+void VariableTransformationManager::set_nchan (unsigned)
+{
+}
+

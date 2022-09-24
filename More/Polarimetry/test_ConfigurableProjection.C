@@ -5,7 +5,7 @@
  *
  ***************************************************************************/
 
-#include "Pulsar/ConfigurableProjectionCorrection.h"
+#include "Pulsar/ConfigurableProjection.h"
 
 #include <iostream>
 
@@ -21,7 +21,7 @@ int main (int argc, char** argv) try
 
   string filename = argv[1];
 
-  auto cpc = new Pulsar::ConfigurableProjectionCorrection (filename);
+  auto cpc = new Pulsar::ConfigurableProjection (filename);
   return 0;
 }
 catch (Error& error)
