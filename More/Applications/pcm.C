@@ -1428,25 +1428,31 @@ void pcm::process (Pulsar::Archive* archive)
 
   if (reparallactify)
   {
-     cerr << "pcm: re-parallactifying data" << endl;
-     ProjectionCorrection projection;
+    cerr << "pcm: re-parallactifying data" << endl;
+    ProjectionCorrection projection;
 
-     Pulsar::Receiver* rcvr = archive->get<Receiver>();
-     if (!rcvr)
-       throw Error (InvalidState, "pcm reparallactify",
-                    "no Receiver extension available");
+    Pulsar::Receiver* rcvr = archive->get<Receiver>();
+    if (!rcvr)
+      throw Error (InvalidState, "pcm reparallactify",
+                   "no Receiver extension available");
 
-     rcvr->set_projection_corrected (false);
+    if ( rcvr->get_projection_corrected () )
+    {
+      cerr << "pcm: re-parallactifying data" << endl;
+      ProjectionCorrection projection;
 
-     projection.set_archive( archive );
+      rcvr->set_projection_corrected (false);
 
-     unsigned nsub = archive->get_nsubint();
-     for (unsigned isub=0; isub < nsub; isub++)
-     {
-       Pulsar::Integration* subint = archive->get_Integration (isub);
-       Jones<double> xform = projection (isub);
-       subint->expert()->transform (xform);
-     }
+      projection.set_archive( archive );
+
+      unsigned nsub = archive->get_nsubint();
+      for (unsigned isub=0; isub < nsub; isub++)
+      {
+        Pulsar::Integration* subint = archive->get_Integration (isub);
+        Jones<double> xform = projection (isub);
+        subint->expert()->transform (xform);
+      }
+    }
   }
 
   if (!model_manager)
