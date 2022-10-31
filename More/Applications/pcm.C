@@ -1433,7 +1433,7 @@ void pcm::process (Pulsar::Archive* archive)
       throw Error (InvalidState, "pcm reparallactify",
                    "no Receiver extension available");
 
-    if ( rcvr->set_projection_corrected () )
+    if ( rcvr->get_projection_corrected () )
     {
       cerr << "pcm: re-parallactifying data" << endl;
       ProjectionCorrection projection;
