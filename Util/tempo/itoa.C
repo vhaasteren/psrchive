@@ -64,6 +64,7 @@ static int default_aliases ()
   add_alias ("LF", "LOFAR");
   add_alias ("LF", "lofar");
   add_alias ("FL", "FR606");
+  add_alias ("FL", "fr606");
   add_alias ("DL", "DE601");
   add_alias ("D2", "DE602");
   add_alias ("D3", "DE603");
@@ -74,6 +75,7 @@ static int default_aliases ()
   add_alias ("P0", "PL610");
   add_alias ("P1", "PL611");
   add_alias ("P2", "PL612");
+  add_alias ("SL", "SE607");
 
   add_alias ("WT", "wsrt");
   add_alias ("WT", "westerbork");
@@ -97,6 +99,16 @@ static int default_aliases ()
   add_alias ("MK", "MEERKAT");
 
   add_alias ("CH", "chime");
+  add_alias ("CH", "CHIME");
+
+  // NenuFAR
+  add_alias ("NF", "nenufar");
+  add_alias ("NF", "Nenufar");
+  add_alias ("NF", "NenuFAR");
+  add_alias ("NF", "NenuFar");
+
+  add_alias ("MW", "MWA");
+  add_alias ("MW", "mwa");
 
   return 1;
 }
