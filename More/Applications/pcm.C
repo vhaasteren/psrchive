@@ -1439,7 +1439,6 @@ void pcm::process (Pulsar::Archive* archive)
       ProjectionCorrection projection;
 
       rcvr->set_projection_corrected (false);
-
       projection.set_archive( archive );
 
       unsigned nsub = archive->get_nsubint();
@@ -1449,7 +1448,6 @@ void pcm::process (Pulsar::Archive* archive)
  
         // the returned matrix transforms from the corrected to the observed
         Jones<double> xform = projection (isub);
-
         subint->expert()->transform (xform);
       }
     }
@@ -1929,7 +1927,7 @@ SystemCalibrator* pcm::matrix_template_matching (const string& stdname)
 
   for (unsigned ical=0; ical < filenames.size(); ical++)
   {
-    Archive* cal = Archive::load (calibrator_filenames[ical]);
+    Archive* cal = Archive::load (filenames[ical]);
     standard_options->process (cal);
 
     model->add_observation( cal );

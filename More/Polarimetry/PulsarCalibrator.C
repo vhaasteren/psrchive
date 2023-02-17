@@ -342,15 +342,15 @@ bool Pulsar::PulsarCalibrator::match (const Archive* data, bool throw_exception)
   string reason;
   if (!calibrator_match (data, reason))
   {
-    if (throw_exception)
-      throw Error (InvalidParam, "Pulsar::PulsarCalibrator::match",
-                 "mismatch between calibrator\n\t"
-		   + get_calibrator()->get_filename() +
-		   " and\n\t" + data->get_filename() + match.get_reason());
-    else
+    if (!throw_exception)
       return false;
+
+    throw Error (InvalidParam, "Pulsar::PulsarCalibrator::match",
+                 "mismatch between calibrator\n\t"
+                 + get_calibrator()->get_filename() +
+                 " and\n\t" + data->get_filename() + reason);
   }
-  
+
   if (!has_Receiver())
     set_Receiver (data);
 
