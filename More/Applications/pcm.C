@@ -1813,7 +1813,7 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile,
 
   if (flux_cal)
     model->set_flux_calibrator (flux_cal);
-
+  
   // archive from which pulse phase bins will be chosen
   Reference::To<Pulsar::Archive> autobin;
 
