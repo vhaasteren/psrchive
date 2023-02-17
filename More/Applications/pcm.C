@@ -1462,7 +1462,8 @@ void pcm::process (Pulsar::Archive* archive)
     model_manager->set_fscrunch_data_to_model (fscrunch_data_to_model);
       
     for (auto filename: template_filenames)
-    {  
+    {
+      cerr << "pcm: constructing METM with " << filename << endl;
       SystemCalibrator* model = matrix_template_matching (filename);
       configure_model( model );  
       model_manager->manage( model );
@@ -1470,6 +1471,7 @@ void pcm::process (Pulsar::Archive* archive)
 
     for (auto filename: binfiles)
     {
+      cerr << "pcm: constructing MEM with " << filename << endl;
       unsigned nbin = archive->get_nbin();
       SystemCalibrator* model = measurement_equation_modeling (filename, nbin);
       configure_model( model );  
@@ -1814,24 +1816,14 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile,
   if (flux_cal)
     model->set_flux_calibrator (flux_cal);
   
-  // archive from which pulse phase bins will be chosen
-  Reference::To<Pulsar::Archive> autobin;
+  cerr << "pcm: selecting phase bins from " << binfile << endl;
+  Reference::To<Pulsar::Archive> autobin = load (binfile);
+  auto_select (*model, autobin, maxbins);
 
-  for (auto filename: binfiles) try 
-  {
-    autobin = load (filename);
-    auto_select (*model, autobin, maxbins);
-
-    if (phase_std_manager)
-      phase_std_manager->integrate( autobin );
+  if (phase_std_manager)
+    phase_std_manager->integrate( autobin );
     
-    model->set_name (autobin->get_source ());
-  }
-  catch (Error& error)
-  {
-    error << "\ncould not load constraint archive '" << binfile << "'";
-    throw error;
-  }
+  model->set_name (autobin->get_source ());
 
   if (!autobin)
     throw Error (InvalidState, "pcm::measurement_equation_modeling",
