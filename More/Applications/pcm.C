@@ -1817,9 +1817,6 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile,
   // archive from which pulse phase bins will be chosen
   Reference::To<Pulsar::Archive> autobin;
 
-  // archive from which pulse phase bins will be chosen
-  Reference::To<Pulsar::Archive> autobin;
-
   for (auto filename: binfiles) try 
   {
     autobin = load (filename);
