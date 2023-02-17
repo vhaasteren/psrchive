@@ -1428,9 +1428,6 @@ void pcm::process (Pulsar::Archive* archive)
 
   if (reparallactify)
   {
-    cerr << "pcm: re-parallactifying data" << endl;
-    ProjectionCorrection projection;
-
     Pulsar::Receiver* rcvr = archive->get<Receiver>();
     if (!rcvr)
       throw Error (InvalidState, "pcm reparallactify",
@@ -1442,7 +1439,6 @@ void pcm::process (Pulsar::Archive* archive)
       ProjectionCorrection projection;
 
       rcvr->set_projection_corrected (false);
-
       projection.set_archive( archive );
 
       unsigned nsub = archive->get_nsubint();
@@ -1822,8 +1818,8 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile,
 
   if (!binfile.empty()) try 
   {
-    // archive from which pulse phase bins will be chosen
-    autobin = load (binfile);
+    autobin = Archive::load (binfile);
+
     auto_select (*model, autobin, maxbins);
       
     if (phase_std_manager)
@@ -1928,7 +1924,7 @@ SystemCalibrator* pcm::matrix_template_matching (const string& stdname)
 
   for (unsigned ical=0; ical < filenames.size(); ical++)
   {
-    Archive* cal = Archive::load (calibrator_filenames[ical]);
+    Archive* cal = Archive::load (filenames[ical]);
     standard_options->process (cal);
 
     model->add_observation( cal );

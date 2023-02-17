@@ -333,7 +333,7 @@ bool Pulsar::PulsarCalibrator::calibrator_match (const Archive* data, std::strin
 }
 
 //! Ensure that the pulsar observation can be added to the data set
-void Pulsar::PulsarCalibrator::match (const Archive* data)
+bool Pulsar::PulsarCalibrator::match (const Archive* data, bool throw_exception)
 {
   if (verbose)
     cerr << "Pulsar::PulsarCalibrator::match"
@@ -341,10 +341,15 @@ void Pulsar::PulsarCalibrator::match (const Archive* data)
 
   string reason;
   if (!calibrator_match (data, reason))
+  {
+    if (!throw_exception)
+      return false;
+
     throw Error (InvalidParam, "Pulsar::PulsarCalibrator::match",
                  "mismatch between calibrator\n\t"
                  + get_calibrator()->get_filename() +
                  " and\n\t" + data->get_filename() + reason);
+  }
 
   if (!has_Receiver())
     set_Receiver (data);
@@ -365,6 +370,8 @@ void Pulsar::PulsarCalibrator::match (const Archive* data)
 
     build( data->get_nchan() );
   }
+
+  return true;
 }
 
 /*!

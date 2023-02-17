@@ -880,7 +880,6 @@ void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
     solution = hybrid_cal;
   }
 
-
   vector< Jones<double> > response (nchan, 0.0);
   vector< Reference::To<const MEAL::Complex2> > xform (nchan);
 
