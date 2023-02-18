@@ -520,7 +520,7 @@ END
 #
 ###############################################################################
 #
-XTENSION= BINTABLE             / ***** Feed Cross-Coupling parameters *****
+XTENSION= BINTABLE             / ***** configurable projection parameters *****
 BITPIX  =                    8 / N/A
 NAXIS   =                    2 / 2-dimensional binary table
 NAXIS1  =                    * / width of table in bytes
@@ -530,11 +530,11 @@ GCOUNT  =                    1 / one data group (required keyword)
 TFIELDS =                    * / Number of fields per row
 #
 EXTNAME = CFGPROJ              / Name of this binary table extension
+LONGSTRN= 'OGIP 1.0'           / The OGIP Long String Convention is used.
+YAML    = '                  ' / [long string] YAML projection configuration
 NPARAM  =                    * / Number of parameters
 NCOVAR  =                    * / Number of parameter covariances
 NCHAN   =                    * / Number of frequency channels
-NCH_CFG =                    * / Number of characters in CFGTXT
-NCH_NAME=                    * / Number of characters in NAMES
 EPOCH   = '                  ' / [MJD] Epoch of calibration obs
 #
 TTYPE#  = DAT_FREQ             / [MHz] Centre frequency for each channel
@@ -551,10 +551,6 @@ TFORM#  = E                    / NPARAM*NCHAN floats
 TTYPE#  = COVAR                / Formal covariances of coupling data
 TDIM#   = (*,*)                / Dimensions (NCOVAR,NCHAN)
 TFORM#  = E                    / NCOVAR*NCHAN floats
-TTYPE#  = CFGTXT               / Text that describes projection
-TFORM#  = A                    / NCH_CFG characters
-TTYPE#  = NAMES                / Parameter names
-TFORM#  = A                    / NCH_NAME characters
 END
 #
 ###############################################################################

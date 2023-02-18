@@ -1,7 +1,7 @@
 //-*-C++-*-
 /***************************************************************************
  *
- *   Copyright (C) 2003-2009 by Willem van Straten
+ *   Copyright (C) 2022 - 2023 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -18,9 +18,10 @@ namespace Pulsar {
   class ConfigurableProjection;
 
   //! Stores ConfigurableProjection parameters in an Archive instance
-  /*! This Archive::Extension implements the storage of ConfigurableProjection
-    data. */  
-  class ConfigurableProjectionExtension : public CalibratorExtension {
+  /*! This Archive::Extension implements the storage of ConfigurableProjection data. */
+
+  class ConfigurableProjectionExtension : public CalibratorExtension
+  {
     
   public:
     
@@ -56,8 +57,9 @@ namespace Pulsar {
     //! Return a short name
     std::string get_short_name () const { return "pcal"; }
 
-    //! Set the type of the instrumental response parameterization
-    void set_type (const Calibrator::Type* type);
+    //! Set the YAML string that configures this projection
+    void set_yaml (const std::string& text) { yaml = text; }
+    const std::string& get_yaml () const { return yaml; }
 
     //! Set the number of frequency channels
     void set_nchan (unsigned nchan);
@@ -77,11 +79,6 @@ namespace Pulsar {
     bool get_has_covariance () const;
     //! Set if the covariances of the transformation parameters
     void set_has_covariance (bool);
-
-    //! Get if the covariances of the transformation parameters
-    bool get_has_solver () const;
-    //! Set if the covariances of the transformation parameters
-    void set_has_solver (bool);
 
     //! Return true if the transformation for the specified channel is valid
     bool get_valid (unsigned ichan) const;
@@ -105,6 +102,9 @@ namespace Pulsar {
 
   protected:
 
+    //! YAML string that configures this projection
+    std::string yaml;
+
     //! The instrumental response as a function of frequency
     std::vector<Transformation> response;
 
@@ -113,9 +113,6 @@ namespace Pulsar {
 
     //! The covariances of the transformation parameters are available
     bool has_covariance;
-
-    //! The solver statistics are available
-    bool has_solver;
 
     //! Construct the response array according to the current attributes
     void construct ();
@@ -179,24 +176,6 @@ namespace Pulsar {
     //! Set the model validity flag
     void set_valid (bool);
 
-    //! Get the best fit value of chi squared
-    double get_chisq () const;
-    //! Set the best fit value of chi squared
-    void set_chisq (double);
-
-    //! Get the number of degrees of freedom
-    unsigned get_nfree() const;
-    //! Set the number of degress of freedom
-    void set_nfree (unsigned);
-
-    //! Get the number of model parameters varied to find best fit
-    unsigned get_nfit() const;
-    //! Set the number of model parameters varied to find best fit
-    void set_nfit (unsigned);
-
-    //! Get the best fit value of the reduced chi squared = chisq/nfree
-    double get_reduced_chisq () const;
-
     // Text interface to a ConfigurableProjectionExtension instance
     class Interface : public TextInterface::To<Transformation>
     {
@@ -211,9 +190,6 @@ namespace Pulsar {
     std::vector< std::string > descriptions;
 
     std::vector<double> covariance;
-    double chisq;
-    unsigned nfree;
-    unsigned nfit;
     bool valid;
 
   };

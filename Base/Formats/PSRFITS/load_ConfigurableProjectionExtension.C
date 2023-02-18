@@ -20,86 +20,57 @@
 
 using namespace std;
 
-void load_variances (fitsfile* fptr, Pulsar::ConfigurableProjectionExtension* pce,
-		     int ncpar, vector<float>& data);
+void load_variances (fitsfile* fptr, Pulsar::ConfigurableProjectionExtension* cpe,
+		     int nparam, vector<float>& data);
 
-void load_covariances (fitsfile* fptr, Pulsar::ConfigurableProjectionExtension* pce,
+void load_covariances (fitsfile* fptr, Pulsar::ConfigurableProjectionExtension* cpe,
 		       int ncovar, vector<float>& data);
-
-void load_solver (fitsfile* fptr, Pulsar::ConfigurableProjectionExtension* pce,
-		  vector<float>& data);
 
 void Pulsar::FITSArchive::load_ConfigurableProjectionExtension (fitsfile* fptr) try
 {
   if (verbose == 3)
     cerr << "FITSArchive::load_ConfigurableProjectionExtension entered" << endl;
   
-  // Move to the FEEDPAR HDU
+  // Move to the CFGPROJ HDU
   int status = 0;
-  fits_movnam_hdu (fptr, BINARY_TBL, "FEEDPAR", 0, &status);
+  fits_movnam_hdu (fptr, BINARY_TBL, "CFGPROJ", 0, &status);
   
   if (status == BAD_HDU_NUM)
   {
     if (verbose == 3)
       cerr << "Pulsar::FITSArchive::load_ConfigurableProjectionExtension"
-	" no FEEDPAR HDU" << endl;
+	" no CFGPROJ HDU" << endl;
     return;
   }
 
   if (status != 0)
     throw FITSError (status, "FITSArchive::load_ConfigurableProjectionExtension", 
-		     "fits_movnam_hdu FEEDPAR");
+		     "fits_movnam_hdu CFGPROJ");
 
-  Reference::To<ConfigurableProjectionExtension> pce = new ConfigurableProjectionExtension;
+  Reference::To<ConfigurableProjectionExtension> cpe = new ConfigurableProjectionExtension;
 
-  // Get CAL_MTHD
-  
-  string cal_mthd;
-  string unknown = "unknown";
-  psrfits_read_key (fptr, "CAL_MTHD", &cal_mthd, unknown, verbose == 3);
+  string yaml = cpe->get_yaml();
 
-  if (verbose > 2)
-    cerr << "FITSArchive::load_ConfigurableProjectionExtension "
-            "CAL_MTHD='" << cal_mthd << "'" << endl;
+  // Write YAML as long string
+  char* comment = NULL;
+  char* longstr = NULL;
 
-  if (cal_mthd == "" ) {
-    // catch a few edge cases with unset CAL_MTHD header entry
-    cal_mthd = unknown;
-  }
+  fits_read_key_longstr  (fptr, "YAML", &longstr, comment, &status);
+  cpe->set_yaml (longstr);
+  fits_free_memory (longstr, &status);
 
-  if (cal_mthd == unknown)
-  {
-    if (verbose == 3)
-      cerr << "Pulsar::FITSArchive::load_ConfigurableProjectionExtension"
-        " empty CAL_MTHD" << endl;
-    return;
-  }
-
-  pce->set_type( Calibrator::Type::factory (cal_mthd) );
-
-  if (verbose == 3)
-    cerr << "FITSArchive::load_ConfigurableProjectionExtension Calibrator type=" 
-	 << pce->get_type()->get_name() << endl;
-
-  // Get NCPAR 
-  int ncpar = 0;
-  psrfits_read_key (fptr, "NCPAR", &ncpar, 0, verbose == 3);
-  if (ncpar < 0)
-    ncpar = 0;
+  // Get NPARAM 
+  int nparam = 0;
+  psrfits_read_key (fptr, "NPARAM", &nparam, 0, verbose == 3);
+  if (nparam < 0)
+    nparam = 0;
 
   int ncovar = 0;
   psrfits_read_key (fptr, "NCOVAR", &ncovar, 0, verbose == 3);
 
-  // Get NCH_FDPR (old versions of PSRFITS header)
-  int nch_fdpr = 0;
-  psrfits_read_key (fptr, "NCH_FDPR", &nch_fdpr, 0, verbose == 3);
+  vector<string> param_names (nparam);
 
-  if (nch_fdpr > 0)
-    pce->set_nchan(nch_fdpr);
-
-  vector<string> param_names (ncpar);
-
-  for (int iparam=0; iparam < ncpar; iparam++)
+  for (int iparam=0; iparam < nparam; iparam++)
   {
     string key = stringprintf ("PAR_%04d", iparam);
     string empty = "";
@@ -107,27 +78,27 @@ void Pulsar::FITSArchive::load_ConfigurableProjectionExtension (fitsfile* fptr) 
 		      empty, verbose == 3);
   }
 
-  Pulsar::load (fptr, pce);
+  Pulsar::load (fptr, cpe);
 
-  long dimension = pce->get_nchan() * ncpar;  
+  long dimension = cpe->get_nchan() * nparam;  
   
   if (dimension == 0)
   {
     if (verbose == 3)
-      cerr << "FITSArchive::load_ConfigurableProjectionExtension FEEDPAR HDU"
+      cerr << "FITSArchive::load_ConfigurableProjectionExtension CFGPROJ HDU"
 	   << " contains no data. ConfigurableProjectionExtension not loaded" << endl;
     return;
   }
 
   unsigned ichan;
 
-  for (ichan=0; ichan < pce->get_nchan(); ichan++)
-    if ( pce->get_weight (ichan) == 0 )
+  for (ichan=0; ichan < cpe->get_nchan(); ichan++)
+    if ( cpe->get_weight (ichan) == 0 )
     {
       if (verbose == 3)
         cerr << "FITSArchive::load_ConfigurableProjectionExtension ichan=" << ichan
              << " flagged invalid" << endl;
-      pce->set_valid (ichan, false);
+      cpe->set_valid (ichan, false);
     }
 
   vector<float> data (dimension);
@@ -138,40 +109,38 @@ void Pulsar::FITSArchive::load_ConfigurableProjectionExtension (fitsfile* fptr) 
     cerr << "FITSArchive::load_ConfigurableProjectionExtension data read" << endl;
   
   int count = 0;
-  for (ichan = 0; ichan < pce->get_nchan(); ichan++)
-    if (pce->get_valid(ichan))
+  for (ichan = 0; ichan < cpe->get_nchan(); ichan++)
+    if (cpe->get_valid(ichan))
     {
       DEBUG ("FITSArchive::load_ConfigurableProjectionExtension ichan=" << ichan);
       bool valid = true;
-      for (int j = 0; j < ncpar; j++)
+      for (int j = 0; j < nparam; j++)
       {
-	pce->get_transformation(ichan)->set_param_name (j, param_names[j]);
+	cpe->get_transformation(ichan)->set_param_name (j, param_names[j]);
 
 	if (!isfinite(data[count]))
 	  valid = false;
 	else
         {
-	  pce->get_transformation(ichan)->set_param(j,data[count]);
+	  cpe->get_transformation(ichan)->set_param(j,data[count]);
           DEBUG ("\t" << j << " " << data[count]);
         }
 	count++;
       }
       if (!valid)
-	pce->set_valid (ichan, false);
+	cpe->set_valid (ichan, false);
     }
     else
-      count += ncpar;
+      count += nparam;
 
   assert (count == dimension);
 
   if (ncovar)
-    load_covariances (fptr, pce, ncovar, data);
+    load_covariances (fptr, cpe, ncovar, data);
   else
-    load_variances (fptr, pce, ncpar, data);
+    load_variances (fptr, cpe, nparam, data);
 
-  load_solver (fptr, pce, data);
-
-  add_extension (pce);
+  add_extension (cpe);
   
   if (verbose == 3)
     cerr << "FITSArchive::load_ConfigurableProjectionExtension exiting" << endl;
@@ -185,10 +154,10 @@ catch (Error& error)
 //
 //
 //
-void load_variances (fitsfile* fptr, Pulsar::ConfigurableProjectionExtension* pce,
-		     int ncpar, vector<float>& data)
+void load_variances (fitsfile* fptr, Pulsar::ConfigurableProjectionExtension* cpe,
+		     int nparam, vector<float>& data)
 {
-  data.resize( ncpar * pce->get_nchan() );
+  data.resize( nparam * cpe->get_nchan() );
 
   psrfits_read_col (fptr, "DATAERR", data);
 
@@ -197,21 +166,21 @@ void load_variances (fitsfile* fptr, Pulsar::ConfigurableProjectionExtension* pc
   
   unsigned count = 0;
 
-  for (unsigned ichan = 0; ichan < pce->get_nchan(); ichan++)
+  for (unsigned ichan = 0; ichan < cpe->get_nchan(); ichan++)
   {
-    if (pce->get_valid(ichan))
+    if (cpe->get_valid(ichan))
     {
       bool valid = true;
       int zeroes = 0;
 
-      for (int j = 0; j < ncpar; j++)
+      for (int j = 0; j < nparam; j++)
       {
 	float err = data[count];
 
 	if (!isfinite(err))
 	  valid = false;
 	else
-	  pce->get_transformation(ichan)->set_variance (j,err*err);
+	  cpe->get_transformation(ichan)->set_variance (j,err*err);
 
 	if (err == 0)
 	  zeroes++;
@@ -219,7 +188,7 @@ void load_variances (fitsfile* fptr, Pulsar::ConfigurableProjectionExtension* pc
 	count++;	
       }
 
-      if (zeroes == ncpar)
+      if (zeroes == nparam)
       {
 	if (Pulsar::Archive::verbose > 1)
 	  cerr << "Pulsar::FITSArchive::load_ConfigurableProjectionExtension"
@@ -229,11 +198,11 @@ void load_variances (fitsfile* fptr, Pulsar::ConfigurableProjectionExtension* pc
       }
 
       if (!valid)
-	pce->set_valid (ichan, false);
+	cpe->set_valid (ichan, false);
 
     }
     else
-      count += ncpar;
+      count += nparam;
   }
 
   assert (count == data.size());
@@ -242,14 +211,14 @@ void load_variances (fitsfile* fptr, Pulsar::ConfigurableProjectionExtension* pc
 //
 //
 //
-void load_covariances (fitsfile* fptr, Pulsar::ConfigurableProjectionExtension* pce,
+void load_covariances (fitsfile* fptr, Pulsar::ConfigurableProjectionExtension* cpe,
 		       int ncovar, vector<float>& data)
 {
   if (Pulsar::Archive::verbose > 2)
     cerr << "FITSArchive::load_ConfigurableProjectionExtension"
       " ncovar=" << ncovar << endl;
 
-  unsigned nchan = pce->get_nchan();
+  unsigned nchan = cpe->get_nchan();
 
   data.resize( ncovar * nchan );
 
@@ -263,7 +232,7 @@ void load_covariances (fitsfile* fptr, Pulsar::ConfigurableProjectionExtension* 
 
   for (unsigned ichan = 0; ichan < nchan; ichan++)
   {
-    if (!pce->get_valid(ichan))
+    if (!cpe->get_valid(ichan))
     {
       count += ncovar;
       continue;
@@ -277,62 +246,11 @@ void load_covariances (fitsfile* fptr, Pulsar::ConfigurableProjectionExtension* 
       count++;
     }
 
-    pce->get_transformation(ichan)->set_covariance (covar);
+    cpe->get_transformation(ichan)->set_covariance (covar);
   }
 
   assert (count == data.size());
 
-  pce->set_has_covariance( true );
+  cpe->set_has_covariance( true );
 }
 
-//
-//
-//
-void load_solver (fitsfile* fptr, Pulsar::ConfigurableProjectionExtension* pce,
-		  vector<float>& data)
-{
-  unsigned nchan = pce->get_nchan();
-  data.resize( nchan );
-  vector<unsigned> nfree( nchan, 0 );
-
-  try {
-    psrfits_read_col (fptr, "CHISQ", data);
-    psrfits_read_col (fptr, "NFREE", nfree);
-  }
-  catch (Error& error)
-  {
-    if (Pulsar::Archive::verbose > 2)
-      cerr << "FITSArchive::load_ConfigurableProjectionExtension"
-	" no CHISQ/NFREE" << endl;
-    pce->set_has_solver (false);
-    return;
-  }
-
-  // WvS new on 3 Jan 2022 - needed to compute the AIC
-  vector<unsigned> nfit ( nchan, 0 );
-  try {
-    psrfits_read_col (fptr, "NFIT", nfit);
-  }
-  catch (Error& error)
-  {
-    if (Pulsar::Archive::verbose > 2)
-      cerr << "FITSArchive::load_ConfigurableProjectionExtension"
-	" no NFIT" << endl;
-    nfit.resize (0);
-  }
-
-  for (unsigned ichan = 0; ichan < nchan; ichan++)
-  {
-    if (! pce->get_valid(ichan))
-      continue;
-    
-    pce->get_transformation(ichan)->set_chisq( data[ichan] );
-    pce->get_transformation(ichan)->set_nfree( nfree[ichan] );
-
-    // WvS new on 3 Jan 2022 - needed to compute the AIC
-    if (nfit.size() == nchan)
-      pce->get_transformation(ichan)->set_nfit( nfit[ichan] );
-  }
-
-  pce->set_has_solver (true);
-}

@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *   Copyright (C) 2003-2008 by Willem van Straten
+ *   Copyright (C) 2022 - 2023 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -20,55 +20,59 @@
 using namespace std;
 
 void unload_variances (fitsfile*, const Pulsar::ConfigurableProjectionExtension*,
-		       int ncpar, vector<float>& data);
+		       int nparam, vector<float>& data);
 
 void unload_covariances (fitsfile*, const Pulsar::ConfigurableProjectionExtension*,
 			 int ncovar, vector<float>& data);
 
 void Pulsar::FITSArchive::unload (fitsfile* fptr, 
-				  const ConfigurableProjectionExtension* pce) try
+				  const ConfigurableProjectionExtension* cpe) try
 {
   if (verbose == 3)
     cerr << "FITSArchive::unload ConfigurableProjectionExtension entered" << endl;
   
-  // Initialize the FEEDPAR Binary Table
+  // Initialize the CFGPROJ Binary Table
   
-  psrfits_init_hdu (fptr, "FEEDPAR");  
+  psrfits_init_hdu (fptr, "CFGPROJ");  
 
-  int nchan = pce->get_nchan();
-  int ncpar = pce->get_nparam();
+  int nchan = cpe->get_nchan();
+  int nparam = cpe->get_nparam();
   int ncovar = 0;
 
-  if (pce->get_has_covariance())
-    ncovar = ncpar * (ncpar+1) / 2;
+  if (cpe->get_has_covariance())
+    ncovar = nparam * (nparam+1) / 2;
 
-  if (ncpar == 0)
+  if (nparam == 0)
     throw Error (InvalidState, "FITSArchive::unload ConfigurableProjectionExtension",
 		 "number of model parameters == 0");
 
-  if (verbose == 3)
+  if (verbose > 2)
     cerr << "FITSArchive::unload ConfigurableProjectionExtension nchan=" 
-	 << nchan <<  " nparam=" << ncpar << " ncovar=" << ncovar << endl;
+	 << nchan <<  " nparam=" << nparam << " ncovar=" << ncovar << endl;
 
-  string cal_mthd = pce->get_type()->get_name();
+  string yaml = cpe->get_yaml();
 
-  // Write CAL_MTHD
-  psrfits_update_key (fptr, "CAL_MTHD", cal_mthd);
+  // Write YAML as long string
+  int status = 0;
+  char* comment = NULL;
 
-  // Write NCPAR
-  psrfits_update_key (fptr, "NCPAR", ncpar);
+  fits_write_key_longwarn (fptr, &status);
+  fits_write_key_longstr (fptr, "YAML", const_cast<char*>(yaml.c_str()), comment, &status);
+
+  // Write NPARAM
+  psrfits_update_key (fptr, "NPARAM", nparam);
 
   // Write NCOVAR
   psrfits_update_key (fptr, "NCOVAR", ncovar);
 
   const ConfigurableProjectionExtension::Transformation* valid = 0;
   for (int ichan=0; ichan < nchan; ichan++)
-    if (pce->get_valid(ichan))
-      valid = pce->get_transformation(ichan);
+    if (cpe->get_valid(ichan))
+      valid = cpe->get_transformation(ichan);
 
   if (valid)
   {
-    assert (valid->get_nparam() == unsigned(ncpar));
+    assert (valid->get_nparam() == unsigned(nparam));
     for (unsigned iparam=0; iparam < valid->get_nparam(); iparam++)
     {
       string key = stringprintf ("PAR_%04d", iparam);
@@ -77,9 +81,9 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr,
     }
   }
 
-  Pulsar::unload (fptr, pce);
+  Pulsar::unload (fptr, cpe);
 
-  long dimension = nchan * ncpar;  
+  long dimension = nchan * nparam;  
   vector<float> data( dimension, 0.0 );
 
   int count = 0;
@@ -89,12 +93,12 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr,
   count = 0;
   for (int ichan = 0; ichan < nchan; ichan++)
   {
-    if (pce->get_valid(ichan))
+    if (cpe->get_valid(ichan))
     {
       DEBUG ("FITSArchive::unload ConfigurableProjectionExtension ichan=" << ichan << " valid");
-      for (int j = 0; j < ncpar; j++)
+      for (int j = 0; j < nparam; j++)
       {
-	data[count] = pce->get_transformation(ichan)->get_param(j);
+	data[count] = cpe->get_transformation(ichan)->get_param(j);
         DEBUG ("\t" << j << " " << data[count]);
 	count++;
       }
@@ -102,22 +106,22 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr,
     else
     {
       DEBUG ("FITSArchive::unload ConfigurableProjectionExtension ichan=" << ichan << " invalid");
-      count += ncpar;
+      count += nparam;
     }
   }
 
   assert (count == dimension);
 
   vector<unsigned> dimensions (2);
-  dimensions[0] = ncpar;
+  dimensions[0] = nparam;
   dimensions[1] = nchan;
 
   psrfits_write_col (fptr, "DATA", 1, data, dimensions);
 
   if (ncovar)
-    unload_covariances (fptr, pce, ncovar, data);
+    unload_covariances (fptr, cpe, ncovar, data);
   else
-    unload_variances (fptr, pce, ncpar, data);
+    unload_variances (fptr, cpe, nparam, data);
 
   if (verbose == 3)
     cerr << "FITSArchive::unload ConfigurableProjectionExtension exiting" << endl; 
@@ -129,30 +133,30 @@ catch (Error& error)
 }
 
 void unload_variances (fitsfile* fptr,
-		       const Pulsar::ConfigurableProjectionExtension* pce,
-		       int ncpar, vector<float>& data)
+		       const Pulsar::ConfigurableProjectionExtension* cpe,
+		       int nparam, vector<float>& data)
 {
-  unsigned nchan = pce->get_nchan();
+  unsigned nchan = cpe->get_nchan();
 
-  data.resize( ncpar * nchan );
+  data.resize( nparam * nchan );
 
   unsigned count = 0;
   for (unsigned i = 0; i < nchan; i++) {
-    if (pce->get_valid(i)) {
-      for (int j = 0; j < ncpar; j++) {
-	    data[count] = sqrt(pce->get_transformation(i)->get_variance(j));
+    if (cpe->get_valid(i)) {
+      for (int j = 0; j < nparam; j++) {
+	    data[count] = sqrt(cpe->get_transformation(i)->get_variance(j));
 	    count++;
       }
     }
     else {
-      count += ncpar;
+      count += nparam;
     }
   }
 
   assert (count == data.size());
 
   vector<unsigned> dimensions (2);
-  dimensions[0] = ncpar;
+  dimensions[0] = nparam;
   dimensions[1] = nchan;
 
   psrfits_write_col (fptr, "DATAERR", 1, data, dimensions);
@@ -160,10 +164,10 @@ void unload_variances (fitsfile* fptr,
 }
 
 void unload_covariances (fitsfile* fptr,
-			 const Pulsar::ConfigurableProjectionExtension* pce,
+			 const Pulsar::ConfigurableProjectionExtension* cpe,
 			 int ncovar, vector<float>& data)
 {
-  unsigned nchan = pce->get_nchan();
+  unsigned nchan = cpe->get_nchan();
 
   if (Pulsar::Archive::verbose == 3)
     cerr << "FITSArchive::unload ConfigurableProjectionExtension"
@@ -178,11 +182,11 @@ void unload_covariances (fitsfile* fptr,
   {
     bool zero = false;
 
-    if (!pce->get_valid(ichan))
+    if (!cpe->get_valid(ichan))
       zero = true;
 
     if (!zero)
-      pce->get_transformation(ichan)->get_covariance (covar);
+      cpe->get_transformation(ichan)->get_covariance (covar);
 
     if (covar.size() == 0)
     {

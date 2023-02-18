@@ -1,12 +1,11 @@
 /***************************************************************************
  *
- *   Copyright (C) 2003-2009 by Willem van Straten
+ *   Copyright (C) 2022 - 2023 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
 
 #include "Pulsar/ConfigurableProjectionExtension.h"
-#include "Pulsar/CalibratorType.h"
 #include "templates.h"
 
 #include <string.h>
@@ -26,7 +25,6 @@ void ConfigurableProjectionExtension::init ()
 {
   nparam = 0;
   has_covariance = false;
-  has_solver = false;
 }
 
 //! Copy constructor
@@ -52,7 +50,6 @@ ConfigurableProjectionExtension::operator=
   epoch = copy.get_epoch();
   nparam = copy.get_nparam();
   has_covariance = copy.get_has_covariance();
-  has_solver = copy.get_has_solver();
 
   unsigned nchan = copy.get_nchan();
   set_nchan (nchan);
@@ -67,14 +64,6 @@ ConfigurableProjectionExtension::operator=
 ConfigurableProjectionExtension::~ConfigurableProjectionExtension ()
 {
 }
-
-//! Set the type of the instrumental response parameterization
-void ConfigurableProjectionExtension::set_type (const Calibrator::Type* _type)
-{
-  type = _type;
-  nparam = type->get_nparam();
-}
-
 
 //! Set the number of frequency channels
 void ConfigurableProjectionExtension::set_nchan (unsigned _nchan)
@@ -128,28 +117,6 @@ void ConfigurableProjectionExtension::set_valid (unsigned ichan, bool valid)
 unsigned ConfigurableProjectionExtension::get_nparam () const
 {
   return nparam;
-}
-
-bool ConfigurableProjectionExtension::get_has_covariance () const
-{
-  return has_covariance;
-}
-
-void ConfigurableProjectionExtension::set_has_covariance (bool has)
-{
-  has_covariance = has;
-}
-
-//! Get if the covariances of the transformation parameters
-bool ConfigurableProjectionExtension::get_has_solver () const
-{
-  return has_solver;
-}
-
-//! Set if the covariances of the transformation parameters
-void ConfigurableProjectionExtension::set_has_solver (bool has)
-{
-  has_solver = has;
 }
 
 //! Get the transformation for the specified frequency channel
@@ -211,11 +178,6 @@ void ConfigurableProjectionExtension::frequency_append (Archive* to,
 		 "incompatible nparam this=%u other=%u",
 		 nparam, ext->nparam);
 
-  if (has_solver != ext->has_solver)
-    throw Error (InvalidState, "ConfigurableProjectionExtension::frequency_append",
-		 "incompatible has_solver this=%u other=%u",
-		 has_solver, ext->has_solver);
-
   if (has_covariance != ext->has_covariance)
     throw Error (InvalidState, "ConfigurableProjectionExtension::frequency_append",
 		 "incompatible has_covariance this=%u other=%u",
@@ -232,9 +194,6 @@ void ConfigurableProjectionExtension::frequency_append (Archive* to,
 ConfigurableProjectionExtension::Transformation::Transformation ()
 {
   valid = true;
-  chisq = 0.0;
-  nfree = 0;
-  nfit = 0;
 }
 
 unsigned
@@ -326,44 +285,6 @@ bool ConfigurableProjectionExtension::Transformation::get_valid () const
 void ConfigurableProjectionExtension::Transformation::set_valid (bool flag)
 {
   valid = flag;
-}
-
-double ConfigurableProjectionExtension::Transformation::get_chisq () const
-{
-  return chisq;
-}
-
-void ConfigurableProjectionExtension::Transformation::set_chisq (double c)
-{
-  chisq = c;
-}
-
-unsigned ConfigurableProjectionExtension::Transformation::get_nfree() const
-{
-  return nfree;
-}
-
-void ConfigurableProjectionExtension::Transformation::set_nfree (unsigned n)
-{
-  nfree = n;
-}
-
-unsigned ConfigurableProjectionExtension::Transformation::get_nfit() const
-{
-  return nfit;
-}
-
-void ConfigurableProjectionExtension::Transformation::set_nfit (unsigned n)
-{
-  nfit = n;
-}
-
-double ConfigurableProjectionExtension::Transformation::get_reduced_chisq () const
-{
-  if (nfree > 0)
-    return chisq / nfree;
-  else
-    return 0.0;
 }
 
 //! Get the covariance matrix of the model paramters
@@ -473,3 +394,4 @@ TextInterface::Parser* ConfigurableProjectionExtension::get_interface()
 {
   return new Interface( this );
 }
+
