@@ -82,6 +82,9 @@ ConfigurableProjection::ConfigurableProjection (const string& filename)
   YAML::Node node = YAML::LoadFile(filename);
 
   YAML::Emitter out;
+
+  node.SetStyle(YAML::EmitterStyle::Flow);
+
   out << node;
   configuration = out.c_str();
 
