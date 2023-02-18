@@ -530,16 +530,10 @@ GCOUNT  =                    1 / one data group (required keyword)
 TFIELDS =                    * / Number of fields per row
 #
 EXTNAME = CFGPROJ              / Name of this binary table extension
-LONGSTRN= 'OGIP 1.0'           / The OGIP Long String Convention is used.
-YAML    = '                  ' / [long string] YAML projection configuration
 NPARAM  =                    * / Number of parameters
 NCOVAR  =                    * / Number of parameter covariances
 NCHAN   =                    * / Number of frequency channels
-EPOCH   = '                  ' / [MJD] Epoch of calibration obs
 #
-TTYPE#  = DAT_FREQ             / [MHz] Centre frequency for each channel
-TFORM#  = D                    / NCHAN doubles
-TUNIT#  = MHz                  / Units of field
 TTYPE#  = DAT_WTS              / Weights for each channel
 TFORM#  = E                    / NCHAN floats
 TTYPE#  = DATA                 / Parameter values

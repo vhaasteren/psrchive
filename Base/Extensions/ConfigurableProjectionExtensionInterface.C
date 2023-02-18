@@ -6,7 +6,6 @@
  ***************************************************************************/
 
 #include "Pulsar/ConfigurableProjectionExtension.h"
-#include "Pulsar/CalibratorExtensionInterface.h"
 
 using namespace std;
 
@@ -16,8 +15,22 @@ Pulsar::ConfigurableProjectionExtension::Interface::Interface
   if (s_instance)
     set_instance (s_instance);
 
-  import ( CalibratorExtension::Interface() );
+  // read-only: requires resize
+  add( &ConfigurableProjectionExtension::get_nchan,
+       "nchan", "Number of frequency channels" );
 
+  add( &ConfigurableProjectionExtension::get_nchan,
+       "nparam", "Number of model parameters" );
+
+  add( &ConfigurableProjectionExtension::get_configuration,
+       &ConfigurableProjectionExtension::set_configuration,
+       "config", "Configuration string" );
+
+  VGenerator<float> fgenerator;
+  add_value(fgenerator( "wt", "Weight assigned to each channel",
+                        &ConfigurableProjectionExtension::get_weight,
+                        &ConfigurableProjectionExtension::set_weight,
+                        &ConfigurableProjectionExtension::get_nchan ));
   import( "eqn", Transformation::Interface(),
           (Transformation*(ConfigurableProjectionExtension::*)(unsigned))
 	  &ConfigurableProjectionExtension::get_transformation,

@@ -28,7 +28,7 @@ void unload_covariances (fitsfile*, const Pulsar::ConfigurableProjectionExtensio
 void Pulsar::FITSArchive::unload (fitsfile* fptr, 
 				  const ConfigurableProjectionExtension* cpe) try
 {
-  if (verbose == 3)
+  // if (verbose > 2)
     cerr << "FITSArchive::unload ConfigurableProjectionExtension entered" << endl;
   
   // Initialize the CFGPROJ Binary Table
@@ -46,24 +46,28 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr,
     throw Error (InvalidState, "FITSArchive::unload ConfigurableProjectionExtension",
 		 "number of model parameters == 0");
 
-  if (verbose > 2)
+  // if (verbose > 2)
     cerr << "FITSArchive::unload ConfigurableProjectionExtension nchan=" 
 	 << nchan <<  " nparam=" << nparam << " ncovar=" << ncovar << endl;
 
-  string yaml = cpe->get_yaml();
+  string config = cpe->get_configuration();
 
-  // Write YAML as long string
+  // Write configuration as long string
   int status = 0;
-  char* comment = NULL;
+  char* comment = "[Long String] Projection configuration";
 
   fits_write_key_longwarn (fptr, &status);
-  fits_write_key_longstr (fptr, "YAML", const_cast<char*>(yaml.c_str()), comment, &status);
+  fits_write_key_longstr (fptr, "CONFIG", const_cast<char*>(config.c_str()), 
+                          comment, &status);
 
   // Write NPARAM
   psrfits_update_key (fptr, "NPARAM", nparam);
 
   // Write NCOVAR
   psrfits_update_key (fptr, "NCOVAR", ncovar);
+
+  // Write NCHAN
+  psrfits_update_key (fptr, "NCHAN", nchan);
 
   const ConfigurableProjectionExtension::Transformation* valid = 0;
   for (int ichan=0; ichan < nchan; ichan++)
@@ -81,7 +85,17 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr,
     }
   }
 
-  Pulsar::unload (fptr, cpe);
+  vector<float> wts ( nchan );
+  for (int i = 0; i < nchan; i++)
+    wts[i] = cpe->get_valid(i);
+
+  vector<unsigned> dimensions;
+
+  // Write the weights
+  psrfits_write_col (fptr, "DAT_WTS", 1, wts, dimensions);
+
+  if (verbose > 2) cerr << "FITSArchive::unload CalibratorStokes"
+                 " weights written" << endl;
 
   long dimension = nchan * nparam;  
   vector<float> data( dimension, 0.0 );
@@ -112,7 +126,7 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr,
 
   assert (count == dimension);
 
-  vector<unsigned> dimensions (2);
+  dimensions.resize (2);
   dimensions[0] = nparam;
   dimensions[1] = nchan;
 
@@ -123,9 +137,8 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr,
   else
     unload_variances (fptr, cpe, nparam, data);
 
-  if (verbose == 3)
+  // if (verbose > 2)
     cerr << "FITSArchive::unload ConfigurableProjectionExtension exiting" << endl; 
-
 }
 catch (Error& error)
 {

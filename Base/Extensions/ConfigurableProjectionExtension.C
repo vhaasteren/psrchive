@@ -16,7 +16,7 @@ using namespace Pulsar;
 
 //! Default constructor
 ConfigurableProjectionExtension::ConfigurableProjectionExtension ()
-  : CalibratorExtension ("ConfigurableProjectionExtension")
+  : Archive::Extension ("ConfigurableProjectionExtension")
 {
   init ();
 }
@@ -30,7 +30,7 @@ void ConfigurableProjectionExtension::init ()
 //! Copy constructor
 ConfigurableProjectionExtension::ConfigurableProjectionExtension
 (const ConfigurableProjectionExtension& copy)
-  : CalibratorExtension (copy)
+  : Archive::Extension (copy)
 {
   operator = (copy);
 }
@@ -43,11 +43,9 @@ ConfigurableProjectionExtension::operator=
   if (this == &copy)
     return *this;
 
-  if (Archive::verbose == 3)
+  if (Archive::verbose > 2)
     cerr << "ConfigurableProjectionExtension::operator=" << endl;
 
-  type = copy.get_type();
-  epoch = copy.get_epoch();
   nparam = copy.get_nparam();
   has_covariance = copy.get_has_covariance();
 
@@ -68,14 +66,17 @@ ConfigurableProjectionExtension::~ConfigurableProjectionExtension ()
 //! Set the number of frequency channels
 void ConfigurableProjectionExtension::set_nchan (unsigned _nchan)
 {
-  CalibratorExtension::set_nchan( _nchan );
   response.resize( _nchan );
   construct ();
 }
 
+unsigned ConfigurableProjectionExtension::get_nchan () const
+{
+  return response.size();
+}
+
 void ConfigurableProjectionExtension::remove_chan (unsigned first, unsigned last)
 {
-  CalibratorExtension::remove_chan (first, last);
   remove (response, first, last);
 }
 
@@ -105,18 +106,36 @@ bool ConfigurableProjectionExtension::get_valid (unsigned ichan) const
 void ConfigurableProjectionExtension::set_valid (unsigned ichan, bool valid)
 {
   range_check (ichan, "ConfigurableProjectionExtension::set_valid");
-
-  if (!valid)
-    weight[ichan] = 0;
-  else
-    weight[ichan] = 1.0;
-
   response[ichan].set_valid (valid);
 }
 
 unsigned ConfigurableProjectionExtension::get_nparam () const
 {
   return nparam;
+}
+
+void ConfigurableProjectionExtension::set_nparam (unsigned _nparam)
+{
+  nparam = _nparam;
+  construct ();
+}
+
+bool ConfigurableProjectionExtension::get_has_covariance () const
+{
+  return has_covariance;
+}
+
+void ConfigurableProjectionExtension::set_has_covariance (bool has)
+{
+  has_covariance = has;
+}
+
+void ConfigurableProjectionExtension::range_check (unsigned ichan,
+                                       const char* method) const
+{
+  if (ichan >= response.size())
+    throw Error (InvalidRange, method, "ichan=%d >= nchan=%d",
+                 ichan, response.size());
 }
 
 //! Get the transformation for the specified frequency channel
@@ -154,14 +173,13 @@ void ConfigurableProjectionExtension::set_Estimate ( unsigned iparam, unsigned i
 
 void ConfigurableProjectionExtension::construct ()
 {
-  if (Archive::verbose == 3)
+  if (Archive::verbose > 2)
     cerr << "ConfigurableProjectionExtension::construct nchan="
-         << response.size() << " type=" << get_type()->get_name() << endl;
+         << response.size() << endl;
 
   for (unsigned ichan=0; ichan<response.size(); ichan++)
   {
     response[ichan].set_nparam (nparam);
-    weight[ichan] = 1.0;
   }
 }
 
@@ -184,7 +202,6 @@ void ConfigurableProjectionExtension::frequency_append (Archive* to,
 		 has_covariance, ext->has_covariance);
 
   bool in_order = in_frequency_order (to, from);
-  CalibratorExtension::frequency_append (ext, in_order);
   
   response.insert ( in_order ? response.end() : response.begin(),
 		    ext->response.begin(), ext->response.end() );

@@ -13,6 +13,7 @@
 
 #include "Pulsar/VariableProjectionCorrection.h"
 #include "Pulsar/VariableFaradayRotation.h"
+#include "Pulsar/ConfigurableProjection.h"
 
 #include "Pulsar/VariableBackendEstimate.h"
 #include "Pulsar/SystemCalibratorStepFinder.h"
@@ -21,6 +22,7 @@
 #include "Pulsar/FluxCalibrator.h"
 #include "Pulsar/HybridCalibrator.h"
 #include "Pulsar/PolnCalibratorExtension.h"
+#include "Pulsar/ConfigurableProjectionExtension.h"
 #include "Pulsar/CalibratorStokes.h"
 #include "Pulsar/PolarCalibrator.h"
 #include "Pulsar/InstrumentInfo.h"
@@ -1480,7 +1482,6 @@ SystemCalibrator::get_CalibratorStokes () const
 	 << ichan << " error\n" << error.get_message() << endl;
     ext->set_valid (ichan, false);
   }
-
   
   calibrator_stokes = ext;
   
@@ -2303,6 +2304,16 @@ SystemCalibrator::new_solution (const string& class_name) const try
   if (calibrator_estimate.size())
     output -> add_extension (get_CalibratorStokes()->clone());
 
+  if (projection)
+  {
+    auto cp = dynamic_cast<ConfigurableProjection*>( projection.get() );
+    if (cp)
+    {
+      cerr << "SystemCalibrator::new_solution adding ConfigurableProjectionExtension" << endl;
+      output -> add_extension (new ConfigurableProjectionExtension(cp));
+    }
+  }
+
   if (has_Receiver())
   {
     Receiver* rcvr = get_Receiver()->clone();
@@ -2319,7 +2330,7 @@ SystemCalibrator::new_solution (const string& class_name) const try
       set in the calibrator archive, leading to bug #3526460.
 
       WvS - 26 March 2017
-      The PulsarCalibrator class now removes the Receiver extesion that
+      The PulsarCalibrator class now removes the Receiver extension that
       gets taken from the well-calibrated pulsar template
     */
     

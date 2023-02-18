@@ -20,7 +20,7 @@ namespace Pulsar {
   //! Stores ConfigurableProjection parameters in an Archive instance
   /*! This Archive::Extension implements the storage of ConfigurableProjection data. */
 
-  class ConfigurableProjectionExtension : public CalibratorExtension
+  class ConfigurableProjectionExtension : public Pulsar::Archive::Extension
   {
     
   public:
@@ -55,14 +55,17 @@ namespace Pulsar {
     ConfigurableProjectionExtension (const ConfigurableProjection*);
 
     //! Return a short name
-    std::string get_short_name () const { return "pcal"; }
+    std::string get_short_name () const { return "proj"; }
 
-    //! Set the YAML string that configures this projection
-    void set_yaml (const std::string& text) { yaml = text; }
-    const std::string& get_yaml () const { return yaml; }
+    //! Set the string that configures this projection
+    void set_configuration (const std::string& text) { configuration = text; }
+    //! Get the string that configures this projection
+    const std::string& get_configuration () const { return configuration; }
 
     //! Set the number of frequency channels
     void set_nchan (unsigned nchan);
+    //! Get the number of frequency channels
+    unsigned get_nchan () const;
 
     //! Remove the inclusive range of channels
     void remove_chan (unsigned first, unsigned last);
@@ -74,6 +77,8 @@ namespace Pulsar {
 
     //! Get the number of parameters describing each transformation
     unsigned get_nparam () const;
+    //! Set the number of parameters describing each transformation
+    void set_nparam (unsigned);
 
     //! Get if the covariances of the transformation parameters
     bool get_has_covariance () const;
@@ -102,8 +107,8 @@ namespace Pulsar {
 
   protected:
 
-    //! YAML string that configures this projection
-    std::string yaml;
+    //! Configures this projection
+    std::string configuration;
 
     //! The instrumental response as a function of frequency
     std::vector<Transformation> response;
@@ -116,6 +121,8 @@ namespace Pulsar {
 
     //! Construct the response array according to the current attributes
     void construct ();
+
+    void range_check (unsigned ichan, const char* method) const;
 
   private:
     

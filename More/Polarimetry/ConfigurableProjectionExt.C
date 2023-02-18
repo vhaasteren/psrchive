@@ -26,7 +26,9 @@ void copy_name (MEAL::Complex2* to,
 void copy_name (Pulsar::ConfigurableProjectionExtension::Transformation* to,
 		const MEAL::Complex2* from)
 {
-  for (unsigned i=0; i<to->get_nparam(); i++)
+  unsigned nparam = from->get_nparam();
+  to->set_nparam( nparam );
+  for (unsigned i=0; i<nparam; i++)
   {
     to->set_param_name(i, from->get_param_name(i));
     to->set_param_description(i, from->get_param_description(i));
@@ -36,6 +38,8 @@ void copy_name (Pulsar::ConfigurableProjectionExtension::Transformation* to,
 template<class T, class F>
 void copy (T* to, const F* from)
 {
+  copy_name (to, from);
+
   if (to->get_nparam() != from->get_nparam())
     throw Error (InvalidParam, "copy<To,From>",
 		 "to nparam=%d != from nparam=%d",
@@ -43,30 +47,33 @@ void copy (T* to, const F* from)
 
   for (unsigned i=0; i<to->get_nparam(); i++)
     to->set_Estimate(i, from->get_Estimate(i));
-
-  copy_name (to, from);
 }
 
 //! Construct from a ConfigurableProjection instance
 Pulsar::ConfigurableProjectionExtension::ConfigurableProjectionExtension
 (const ConfigurableProjection* calibrator) try
-  : CalibratorExtension ("ConfigurableProjectionExtension") 
+  : Archive::Extension ("ConfigurableProjectionExtension") 
 {
   if (!calibrator)
     throw Error (InvalidParam, "", "null ConfigurableProjection*");
 
   init ();
 
-  if (Calibrator::verbose > 2)
-    cerr << "Pulsar::ConfigurableProjectionExtension (ConfigurableProjection*)" << endl;
+  // if (Calibrator::verbose > 2)
+    cerr << "Pulsar::ConfigurableProjectionExtension "
+         "construct from ConfigurableProjection with config=\n" 
+         << calibrator->get_configuration() << endl;
+
+  set_configuration( calibrator->get_configuration() );
 
   has_covariance = false; // calibrator->has_covariance ();
 
   bool first = true;
 
-  unsigned nchan = get_nchan();
+  unsigned nchan = calibrator->get_nchan ();
+  set_nchan (nchan);
 
-  if (Calibrator::verbose > 2)
+  // if (Calibrator::verbose > 2)
     cerr << "Pulsar::ConfigurableProjectionExtension nchan=" << nchan << endl;
 
   for (unsigned ichan=0; ichan < nchan; ichan++)
@@ -81,17 +88,30 @@ Pulsar::ConfigurableProjectionExtension::ConfigurableProjectionExtension
       continue;
     }
 
-    copy( get_transformation(ichan), 
-	  calibrator->get_transformation(ichan)->get_transformation() );
-    
+    const ConfigurableProjection::Transformation* transformation = calibrator->get_transformation(ichan);
+    const Calibration::VariableTransformation* xform = transformation->get_transformation();
+
+    copy( get_transformation(ichan), xform );
+
     set_valid (ichan, true);
 
-    if (Calibrator::verbose > 2 && first)
+    if (first)
     {
-      const MEAL::Function* f = calibrator->get_transformation(ichan)->get_transformation();
-      for (unsigned i=0; i<f->get_nparam(); i++)
-	cerr << "Pulsar::ConfigurableProjectionExtension name[" << i << "]=" 
-	     << f->get_param_name(i) << endl;
+      nparam = xform->get_nparam();
+
+      // if (Calibrator::verbose > 2)
+      {
+        const MEAL::Function* f = calibrator->get_transformation(ichan)->get_transformation();
+        for (unsigned i=0; i<f->get_nparam(); i++)
+	  cerr << "Pulsar::ConfigurableProjectionExtension name[" << i << "]=" 
+	       << f->get_param_name(i) << endl;
+      }
+    }
+    else if (get_nparam() != xform->get_nparam())
+    {
+      throw Error (InvalidParam, "Pulsar::ConfigurableProjectionExtension ctor",
+                 "nparam=%d != Trnaformation[ichan=%d]:nparam=%d",
+                 get_nparam(), ichan, xform->get_nparam());
     }
 
     first = false;
