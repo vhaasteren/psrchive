@@ -12,6 +12,8 @@
 #include "Pulsar/VariableProjectionCorrection.h"
 #include "Pulsar/VariableTransformation.h"
 
+#include "Pulsar/ConfigurableProjectionExtension.h"
+
 #include "MEAL/Axis.h"
 
 namespace Pulsar 
@@ -23,6 +25,12 @@ namespace Pulsar
 
     //! Construct from a configuration file
     ConfigurableProjection (const std::string& filename);
+
+    //! Construct from a ConfigurableProjectionExtension
+    ConfigurableProjection (const ConfigurableProjectionExtension*);
+
+    //! Construct from a configuration string
+    void construct (const std::string&);
 
     //! Set the Archive for which a tranformation will be computed
     void set_archive (const Archive* _archive);
@@ -49,6 +57,9 @@ namespace Pulsar
 
     //! Get the configuration text from which this instance was constructed
     const std::string& get_configuration() const { return configuration; }
+
+    //! Communicates parameters to plotting routines
+    class Info;
 
   protected:
 

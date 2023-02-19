@@ -93,7 +93,7 @@ void Pulsar::FITSArchive::load_ConfigurableProjectionExtension (fitsfile* fptr) 
   
   if (dimension == 0)
   {
-    if (verbose > 2)
+    // if (verbose > 2)
       cerr << "FITSArchive::load_ConfigurableProjectionExtension CFGPROJ HDU"
 	   << " contains no data. ConfigurableProjectionExtension not loaded" << endl;
     return;
@@ -162,7 +162,7 @@ void Pulsar::FITSArchive::load_ConfigurableProjectionExtension (fitsfile* fptr) 
 
   add_extension (cpe);
   
-  if (verbose > 2)
+  // if (verbose > 2)
     cerr << "FITSArchive::load_ConfigurableProjectionExtension exiting" << endl;
 
 }

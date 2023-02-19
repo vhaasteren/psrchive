@@ -18,6 +18,9 @@
 
 #include "Pulsar/CalibrationInterpolatorExtension.h"
 
+#include "Pulsar/ConfigurableProjectionExtension.h"
+#include "Pulsar/ConfigurableProjection.h"
+
 #include "Pulsar/Receiver.h"
 #include "Pulsar/BasisCorrection.h"
 #include "Pulsar/BackendCorrection.h"
@@ -98,6 +101,10 @@ Pulsar::PolnCalibrator::PolnCalibrator (const Archive* archive)
   if (poln_extension)
     extension = poln_extension;
 
+  auto cpe = archive->get<ConfigurableProjectionExtension>();
+  if (cpe)
+    set_projection( new ConfigurableProjection(cpe) );
+
   filenames.push_back( archive->get_filename() );
 }
 
@@ -137,6 +144,22 @@ void Pulsar::PolnCalibrator::set_calibrator (const Archive* archive)
   transformation.resize(0);
   
   Calibrator::set_calibrator (archive);
+}
+
+void Pulsar::PolnCalibrator::set_projection (ConfigurableProjection* proj)
+{
+  projection = proj;
+  built = false;
+}
+
+const Pulsar::ConfigurableProjection* Pulsar::PolnCalibrator::get_projection () const
+{
+  return projection;
+}
+
+Pulsar::ConfigurableProjection* Pulsar::PolnCalibrator::get_projection ()
+{
+  return projection;
 }
 
 void Pulsar::PolnCalibrator::set_subint (const Index& isub)
@@ -953,10 +976,5 @@ Pulsar::PolnCalibrator::new_Extension () const
     cerr << "Pulsar::PolnCalibrator::new_Extension" << endl;
 
   return new PolnCalibratorExtension (this);
-}
-
-Pulsar::Calibrator::Info* Pulsar::PolnCalibrator::get_Info () const
-{
-  return PolnCalibrator::Info::create (this);
 }
 

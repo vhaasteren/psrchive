@@ -75,6 +75,12 @@ T* construct (const YAML::Node& node, Factory factory)
 
 typedef MEAL::Nvariate<MEAL::Scalar> NvariateScalar;
 
+ConfigurableProjection::ConfigurableProjection (const ConfigurableProjectionExtension* ext)
+{
+  cerr << "ConfigurableProjection construct from ConfigurableProjectionExtension" << endl;
+  construct (ext->get_configuration());
+}
+
 ConfigurableProjection::ConfigurableProjection (const string& filename)
 {
 #if HAVE_YAMLCPP
@@ -86,22 +92,42 @@ ConfigurableProjection::ConfigurableProjection (const string& filename)
   node.SetStyle(YAML::EmitterStyle::Flow);
 
   out << node;
-  configuration = out.c_str();
+  
+  construct (out.c_str());
 
-  if (Archive::verbose > 1)
-    cerr << "ConfigurableProjection::ctor cfg='" << configuration << "'" << endl;
+#else
+  throw Error (InvalidState, "ConfigurableProjection::construct",
+               "yaml-cpp required and not available");
+#endif
+}
+
+void ConfigurableProjection::construct (const string& text)
+{
+#if HAVE_YAMLCPP
+
+  // if (Archive::verbose > 1)
+    cerr << "ConfigurableProjection::construct cfg='" << text << "'" << endl;
+
+  YAML::Node node = YAML::Load (text);
+
+  configuration = text;
 
   transformation = new Calibration::VariableTransformation;
 
   Calibration::TransformationFactory xform_factory;
-  MEAL::Complex2* model = construct<MEAL::Complex2> (node, xform_factory);
-  transformation->set_model ( model );
+  MEAL::Complex2* model = ::construct<MEAL::Complex2> (node, xform_factory);
+  transformation->set_model (model);
+
+  cerr << "ConfigurableProjection::construct model parsed" << endl;
 
   MEAL::NvariateScalarFactory function_factory;
 
   for (auto it=node.begin(); it!=node.end(); ++it)
   {
     string key = it->first.as<string>();
+
+    cerr << "ConfigurableProjection::construct key=" << key << endl;
+
     if ( key == "chain" )
     {
       YAML::Node chain = it->second;
@@ -132,7 +158,7 @@ ConfigurableProjection::ConfigurableProjection (const string& filename)
 
 
       cerr << "parsing chain model" << endl;
-      NvariateScalar* func = construct<NvariateScalar> (chain, function_factory);
+      NvariateScalar* func = ::construct<NvariateScalar> (chain, function_factory);
 
       transformation->set_constraint (iparam, func);
 
@@ -174,7 +200,7 @@ ConfigurableProjection::ConfigurableProjection (const string& filename)
   }
 
 #else
-  throw Error (InvalidState, "ConfigurableProjection ctor",
+  throw Error (InvalidState, "ConfigurableProjection::construct",
                "yaml-cpp required and not available");
 #endif
 }

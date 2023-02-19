@@ -5,10 +5,11 @@
  *
  ***************************************************************************/
 
+#include "Pulsar/PolnCalibratorInfo.h"
 #include "Pulsar/CalibratorTypes.h"
 
-#include "Pulsar/SingleAxisCalibrator.h"
-#include "Pulsar/PolarCalibrator.h"
+#include "Pulsar/SingleAxisCalibratorInfo.h"
+#include "Pulsar/PolarCalibratorInfo.h"
 #include "Pulsar/InstrumentInfo.h"
 #include "Pulsar/BrittonInfo.h"
 
@@ -138,3 +139,9 @@ int Pulsar::PolnCalibrator::Info::get_graph_marker (unsigned iclass,
 
   return nice_markers[iparam];
 }
+
+Pulsar::Calibrator::Info* Pulsar::PolnCalibrator::get_Info () const
+{
+  return PolnCalibrator::Info::create (this);
+}
+

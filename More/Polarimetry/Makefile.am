@@ -17,6 +17,7 @@ nobase_include_HEADERS = \
         Pulsar/CoherencyMeasurementSet.h \
 	Pulsar/ComplexRVMFit.h \
 	Pulsar/ConfigurableProjection.h \
+	Pulsar/ConfigurableProjectionInfo.h \
 	Pulsar/ConstantGainInfo.h \
         Pulsar/ConvertMJD.h \
         Pulsar/Database.h \
@@ -61,8 +62,10 @@ nobase_include_HEADERS = \
         Pulsar/OffPulseCalibrator.h \
         Pulsar/Parallactic.h \
         Pulsar/PolarCalibrator.h \
+	Pulsar/PolarCalibratorInfo.h \
         Pulsar/Polarization.h \
         Pulsar/PolnCalibrator.h \
+	Pulsar/PolnCalibratorInfo.h \
 	Pulsar/PolnCalExtFreqIntegrate.h \
         Pulsar/PolnProfile.h \
         Pulsar/PolnProfileFit.h \
@@ -87,6 +90,7 @@ nobase_include_HEADERS = \
         Pulsar/SignalPath.h \
         Pulsar/Simulation.h \
         Pulsar/SingleAxisCalibrator.h \
+	Pulsar/SingleAxisCalibratorInfo.h \
         Pulsar/SingleAxis.h \
         Pulsar/SingleAxisPolynomial.h \
         Pulsar/SingleAxisSolver.h \
@@ -134,6 +138,7 @@ libPolarimetry_la_SOURCES = \
         CoherencyMeasurementSet.C \
 	ComplexRVMFit.C \
 	ConfigurableProjection.C \
+	ConfigurableProjectionInfo.C \
 	ConfigurableProjectionExt.C \
 	ConstantGainInfo.C \
         ConvertMJD.C \
@@ -183,6 +188,7 @@ libPolarimetry_la_SOURCES = \
         OffPulseCalibrator.C \
         Parallactic.C \
         PolarCalibrator.C \
+	PolarCalibratorInfo.C \
         Polarization.C \
         Polar_solve.C \
         PolnCalibrator.C \
@@ -212,6 +218,7 @@ libPolarimetry_la_SOURCES = \
         Simulation.C \
         SingleAxis.C \
         SingleAxisCalibrator.C \
+	SingleAxisCalibratorInfo.C \
         SingleAxisPolynomial.C \
         SingleAxisSolver.C \
 	SolverInfo.C \
