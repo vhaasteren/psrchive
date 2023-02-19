@@ -79,6 +79,17 @@ ConfigurableProjection::ConfigurableProjection (const ConfigurableProjectionExte
 {
   cerr << "ConfigurableProjection construct from ConfigurableProjectionExtension" << endl;
   construct (ext->get_configuration());
+
+  unsigned nchan = ext->get_nchan();
+  set_nchan (nchan); // also resizes
+
+  for (unsigned ichan=0; ichan < nchan; ichan++)
+  {
+    Transformation* transformation = get_transformation(ichan);
+    MEAL::Complex2* xform = transformation->get_transformation ();
+
+    copy (xform, ext->get_transformation(ichan));
+  }
 }
 
 ConfigurableProjection::ConfigurableProjection (const string& filename)

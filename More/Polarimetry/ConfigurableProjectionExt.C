@@ -10,8 +10,20 @@
 
 using namespace std;
 
-void copy_name (MEAL::Complex2* to,
-		const Pulsar::ConfigurableProjectionExtension::Transformation* from)
+template<class T, class F>
+void copy_estimates (T* to, const F* from)
+{
+  if (to->get_nparam() != from->get_nparam())
+    throw Error (InvalidParam, "copy_estimates<To,From>",
+                 "to nparam=%d != from nparam=%d",
+                 to->get_nparam(), from->get_nparam());
+
+  for (unsigned i=0; i<to->get_nparam(); i++)
+    to->set_Estimate(i, from->get_Estimate(i));
+}
+
+void Pulsar::copy (MEAL::Complex2* to,
+                   const ConfigurableProjectionExtension::Transformation* from)
 {
   for (unsigned i=0; i<to->get_nparam(); i++)
   {
@@ -21,10 +33,12 @@ void copy_name (MEAL::Complex2* to,
 		   "iparam=%d name=%s != model=%s",
 		   i, param_name.c_str(), to->get_param_name(i).c_str());
   }
+
+  copy_estimates (to, from);
 }
 
-void copy_name (Pulsar::ConfigurableProjectionExtension::Transformation* to,
-		const MEAL::Complex2* from)
+void Pulsar::copy (ConfigurableProjectionExtension::Transformation* to,
+                   const MEAL::Complex2* from)
 {
   unsigned nparam = from->get_nparam();
   to->set_nparam( nparam );
@@ -33,20 +47,8 @@ void copy_name (Pulsar::ConfigurableProjectionExtension::Transformation* to,
     to->set_param_name(i, from->get_param_name(i));
     to->set_param_description(i, from->get_param_description(i));
   }
-}
 
-template<class T, class F>
-void copy (T* to, const F* from)
-{
-  copy_name (to, from);
-
-  if (to->get_nparam() != from->get_nparam())
-    throw Error (InvalidParam, "copy<To,From>",
-		 "to nparam=%d != from nparam=%d",
-		 to->get_nparam(), from->get_nparam());
-
-  for (unsigned i=0; i<to->get_nparam(); i++)
-    to->set_Estimate(i, from->get_Estimate(i));
+  copy_estimates (to, from);
 }
 
 //! Construct from a ConfigurableProjection instance

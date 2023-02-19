@@ -60,6 +60,9 @@ namespace Pulsar {
     //! Indeces of parameters with estimates
     std::vector<unsigned> parameters;
 
+    //! Names of parameters with estimates
+    std::vector<std::string> names;
+
     //! Number of parameters plotted in one panel
     unsigned together;
 

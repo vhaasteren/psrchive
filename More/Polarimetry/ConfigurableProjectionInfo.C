@@ -26,6 +26,8 @@ Pulsar::ConfigurableProjection::Info::Info (const ConfigurableProjection* cal)
 
   cerr << "ConfigurableProjection::Info nchan=" << nchan << endl;
 
+  const MEAL::Complex2* valid = 0;
+
   // find the indeces of all parameters with estimates
   for (unsigned ichan = 0; ichan < nchan; ichan++)
   {
@@ -35,6 +37,9 @@ Pulsar::ConfigurableProjection::Info::Info (const ConfigurableProjection* cal)
     const ConfigurableProjection::Transformation* transformation = cal->get_transformation (ichan);
     const MEAL::Complex2* xform = transformation->get_transformation ();
     nparam = xform->get_nparam();
+
+    if (!valid)
+      valid = xform;
 
     for (unsigned iparam = 0; iparam < nparam; iparam++)
     {
@@ -46,9 +51,30 @@ Pulsar::ConfigurableProjection::Info::Info (const ConfigurableProjection* cal)
   parameters.insert (parameters.begin(), indeces.begin(), indeces.end());
   sort (parameters.begin(), parameters.end());
 
-  together = 1;
+  together = 2;
 
   cerr << "Pulsar::ConfigurableProjection::Info " << parameters.size() << " out of " << nparam << " parameters have estimates" << endl; 
+
+  unsigned nclass = get_nclass();
+  names.resize (nclass);
+
+  nparam = parameters.size();
+  unsigned iparam = 0;
+
+  for (unsigned iclass = 0; iclass < nclass; iclass++)
+  {
+    string name;
+    for (unsigned i=0; i<together && iparam<nparam; i++)
+    {
+      if (i > 0)
+        name += " ";
+
+      name += valid->get_param_name( parameters[iparam] );
+      iparam ++;
+    }
+
+    names[iclass] = name;
+  }
 }
 
 unsigned Pulsar::ConfigurableProjection::Info::get_nchan () const
@@ -75,7 +101,7 @@ string Pulsar::ConfigurableProjection::Info::get_title () const
 /*! The name of each parameter is unknown */
 string Pulsar::ConfigurableProjection::Info::get_name (unsigned iclass) const
 {
-  return "unknown";
+  return names[iclass];
 }
 
 /*! Each parameter of the Transformation is treated as a separate class. */

@@ -121,6 +121,13 @@ namespace Pulsar
     bool get_transformation_valid (unsigned ichan) const;
 
   };
+
+  void copy (MEAL::Complex2* to,
+             const ConfigurableProjectionExtension::Transformation* from);
+
+  void copy (ConfigurableProjectionExtension::Transformation* to,
+             const MEAL::Complex2* from);
+
 }
 
 #endif
