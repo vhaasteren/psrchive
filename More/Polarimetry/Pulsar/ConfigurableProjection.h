@@ -61,10 +61,6 @@ namespace Pulsar
     //! Communicates parameters to plotting routines
     class Info;
 
-    //! Update the model parameters to match the integration
-    /*! Returns true if transformation should be recomputed */
-    bool update (unsigned subint);
-
     //! Calibrate an observation
     /*! \pre The backend should be fully corrected and calibrated, and the basis should be corrected */
     void calibrate (Archive*);

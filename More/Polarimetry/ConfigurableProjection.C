@@ -353,27 +353,6 @@ double ConfigurableProjection::get_value (const std::string& name)
   return result;
 }
 
-bool ConfigurableProjection::update (unsigned _subint)
-{
-  unsigned nchan = get_nchan();
-
-  cerr << "ConfigurableProjection::update subint=" << _subint 
-       << " nchan=" << nchan << endl;
-
-  set_subint (_subint);
-
-  for (unsigned ichan=0; ichan < nchan; ichan++)
-  {
-    set_chan (ichan);
-
-    MEAL::Argument::Value* arg = new_value (get_transformation(ichan));
-    arg->apply();
-    delete arg;
-  }
-
-  return true;
-}
-
 void ConfigurableProjection::calibrate (Archive* arch)
 {
   cerr << "ConfigurableProjection::calibrate" << endl;
@@ -391,12 +370,16 @@ void ConfigurableProjection::calibrate (Archive* arch)
 
   for (unsigned isub=0; isub < nsubint; isub++)
   {
-    update (isub);
+    set_subint (isub);
 
     Integration* subint = arch->get_Integration (isub);
 
     for (unsigned ichan=0; ichan < nchan; ichan++)
     {
+      set_chan (chan);
+
+      update ();
+
       if (get_transformation_valid(ichan))
       {
         response[ichan] = inv(get_transformation(ichan)->get_transformation()->evaluate());

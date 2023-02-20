@@ -320,7 +320,6 @@ void ReceptionCalibrator::set_previous (const Archive* data)
 }
 
 
-//! Add the specified pulsar observation to the set of constraints
 bool ReceptionCalibrator::match (const Archive* data, bool throw_exception)
 {
   check_ready ("Pulsar::ReceptionCalibrator::match", false);

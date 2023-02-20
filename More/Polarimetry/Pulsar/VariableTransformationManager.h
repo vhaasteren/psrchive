@@ -44,6 +44,9 @@ namespace Pulsar {
     //! Set the frequency channel for which a tranformation will be computed
     virtual void set_chan (unsigned _chan);
 
+    //! Update the tranformation for the current archive / subint / chan
+    virtual void update ();
+
     //! Set the number of frequency channels for which get_transformation will be called
     virtual void set_nchan (unsigned);
 

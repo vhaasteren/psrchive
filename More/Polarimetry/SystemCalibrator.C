@@ -603,7 +603,9 @@ catch (Error& error)
   throw error += "SystemCalibrator::add_pulsar subint";
 }
 
-//! Add the specified pulsar observation to the set of constraints
+/*! If the data do not match the calibrator 
+    - if throw_exception is true, throw an exception 
+    - otherwise, return false */
 bool SystemCalibrator::match (const Archive* data, bool throw_exception)
 {
   if (verbose)
@@ -2174,6 +2176,8 @@ void SystemCalibrator::precalibrate (Archive* data)
 	continue;
       }
 
+      projection->set_chan (ichan);
+      projection->update();
 
       try
       {
@@ -2238,7 +2242,7 @@ void SystemCalibrator::precalibrate (Archive* data)
 
 MEAL::Complex2* 
 SystemCalibrator::get_transformation (const Archive* data,
-					      unsigned isubint, unsigned ichan)
+				      unsigned isubint, unsigned ichan)
 {
   const Integration* integration = data->get_Integration (isubint);
   MJD epoch = integration->get_epoch();

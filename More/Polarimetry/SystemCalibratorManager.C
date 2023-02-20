@@ -171,7 +171,10 @@ MJD SystemCalibratorManager::get_end_epoch () const
   return 0.0;
 }
 
-//! Pre-calibrate the polarization of the given archive
-void SystemCalibratorManager::precalibrate (Archive* archive)
+//! Calibrate the the given archive using the current state of the model
+void SystemCalibratorManager::precalibrate (Archive* data)
 {
+  SystemCalibrator* model = get_calibrator (data);
+  model->precalibrate (data);
 }
+
