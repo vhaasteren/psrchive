@@ -266,8 +266,6 @@ void ReceptionCalibrator::submit_calibrator_data ()
 //! Add the specified pulse phase bin to the set of state constraints
 void ReceptionCalibrator::add_state (unsigned phase_bin)
 {
-  check_ready ("Pulsar::ReceptionCalibrator::add_state", false);
-
   if (verbose > 2)
     cerr << "Pulsar::ReceptionCalibrator::add_state phase bin=" 
 	 << phase_bin << endl;
@@ -322,8 +320,6 @@ void ReceptionCalibrator::set_previous (const Archive* data)
 
 bool ReceptionCalibrator::match (const Archive* data, bool throw_exception)
 {
-  check_ready ("Pulsar::ReceptionCalibrator::match", false);
-
   if (verbose > 1)
     cerr << "ReceptionCalibrator::match" << endl;
   
@@ -652,20 +648,6 @@ void ReceptionCalibrator::integrate_calibrator_solution
     SystemCalibrator::integrate_calibrator_solution (data);
 }
 
-
-//! Add the ReferenceCalibrator observation to the set of constraints
-void 
-ReceptionCalibrator::add_calibrator (const ReferenceCalibrator* p) try 
-{
-  check_ready ("Pulsar::ReceptionCalibrator::add_calibrator");
-
-  SystemCalibrator::add_calibrator (p);
-}
-catch (Error& error)
-{
-  throw error += "Pulsar::ReceptionCalibrator::add_calibrator (ReferenceCalibrator)";
-}
-
 void ReceptionCalibrator::export_prepare () const
 {
   const_cast<ReceptionCalibrator*>(this)->solve_prepare();
@@ -673,9 +655,6 @@ void ReceptionCalibrator::export_prepare () const
 
 void ReceptionCalibrator::solve_prepare () try
 {
-  if (!get_prepared())
-    check_ready ("Pulsar::ReceptionCalibrator::solve");
-
   bool set_equal_ellipticities = equal_ellipticities;
   bool fit_gain = true;
 
@@ -771,21 +750,6 @@ void ReceptionCalibrator::solve_prepare () try
 catch (Error& error)
 {
   throw error += "ReceptionCalibrator::solve_prepare";
-}
-
-void ReceptionCalibrator::check_ready (const char* method, bool unc)
-{
-  if (get_solved())
-    throw Error (InvalidState, method,
-		 "Model has been solved. Cannot add data.");
-
-  if (get_prepared())
-    throw Error (InvalidState, method,
-		 "Model has been initialized. Cannot add data.");
-
-  if (unc && !has_calibrator())
-    throw Error (InvalidState, method,
-		 "Initial observation required.");
 }
 
 /*! Mask invalid SourceEstimate states */

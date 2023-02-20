@@ -105,9 +105,6 @@ namespace Pulsar
     //! Add the calibrator observation to the set of constraints
     void add_calibrator (const Archive* data);
     
-    //! Add the ReferenceCalibrator observation to the set of constraints
-    void add_calibrator (const ReferenceCalibrator* polncal);
-    
     //! Return true if any flux calibrator observations are available
     bool has_fluxcal () const;
 
@@ -153,9 +150,6 @@ namespace Pulsar
 
     //! Initialize the SignalPath of the specified channel
     void init_model (unsigned ichan);
-
-    //! Check that the model is ready to receive additional constraints
-    void check_ready (const char* method, bool init = true);
 
     //! Initialization performed using the first observation added
     void initial_observation (const Archive* data);

@@ -27,7 +27,7 @@ void load_covariances (fitsfile* fptr, Pulsar::ConfigurableProjectionExtension* 
 
 void Pulsar::FITSArchive::load_ConfigurableProjectionExtension (fitsfile* fptr) try
 {
-  // if (verbose > 2)
+  if (verbose > 2)
     cerr << "FITSArchive::load_ConfigurableProjectionExtension entered" << endl;
   
   // Move to the CFGPROJ HDU
@@ -36,7 +36,7 @@ void Pulsar::FITSArchive::load_ConfigurableProjectionExtension (fitsfile* fptr) 
   
   if (status == BAD_HDU_NUM)
   {
-    // if (verbose > 2)
+    if (verbose > 2)
       cerr << "Pulsar::FITSArchive::load_ConfigurableProjectionExtension"
 	" no CFGPROJ HDU" << endl;
     return;
@@ -56,8 +56,9 @@ void Pulsar::FITSArchive::load_ConfigurableProjectionExtension (fitsfile* fptr) 
   cpe->set_configuration (longstr);
   fits_free_memory (longstr, &status);
 
-  cerr << "FITSArchive::load_ConfigurableProjectionExtension CONFIG=\n"
-       << cpe->get_configuration ();
+  if (verbose > 2)
+    cerr << "FITSArchive::load_ConfigurableProjectionExtension CONFIG=\n"
+         << cpe->get_configuration () << endl;
 
   // Get NPARAM 
   int nparam = 0;
@@ -72,9 +73,10 @@ void Pulsar::FITSArchive::load_ConfigurableProjectionExtension (fitsfile* fptr) 
   int nchan = 0;
   psrfits_read_key (fptr, "NCHAN", &nchan, 0, verbose > 2);
 
-  cerr << "FITSArchive::load_ConfigurableProjectionExtension "
-       "NCHAN=" << nchan << " NPARAM=" << nparam << " NCOVAR=" << ncovar 
-       << endl;
+  if (verbose > 2)
+    cerr << "FITSArchive::load_ConfigurableProjectionExtension "
+         "NCHAN=" << nchan << " NPARAM=" << nparam << " NCOVAR=" << ncovar 
+         << endl;
 
   cpe->set_nchan( nchan );
   cpe->set_nparam( nparam );
@@ -93,7 +95,7 @@ void Pulsar::FITSArchive::load_ConfigurableProjectionExtension (fitsfile* fptr) 
   
   if (dimension == 0)
   {
-    // if (verbose > 2)
+    if (verbose > 2)
       cerr << "FITSArchive::load_ConfigurableProjectionExtension CFGPROJ HDU"
 	   << " contains no data. ConfigurableProjectionExtension not loaded" << endl;
     return;
@@ -162,7 +164,7 @@ void Pulsar::FITSArchive::load_ConfigurableProjectionExtension (fitsfile* fptr) 
 
   add_extension (cpe);
   
-  // if (verbose > 2)
+  if (verbose > 2)
     cerr << "FITSArchive::load_ConfigurableProjectionExtension exiting" << endl;
 
 }

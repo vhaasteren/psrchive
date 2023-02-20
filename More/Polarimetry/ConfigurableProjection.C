@@ -17,6 +17,8 @@
 #include "Pulsar/IntegrationExpert.h"
 #include "MEAL/NvariateScalarFactory.h"
 
+#include "debug.h"
+
 #if HAVE_YAMLCPP
 #include <yaml-cpp/yaml.h>
 #endif
@@ -64,7 +66,7 @@ T* construct (const YAML::Node& node, Factory factory)
 
     string value = it->second.as<string>();
 
-    // cerr << "parsing key='" << key << "' value='" << value << "'" << endl;
+    DEBUG("parsing key='" << key << "' value='" << value << "'");
     interface->set_value (key, value);
   }
 
@@ -77,7 +79,9 @@ typedef MEAL::Nvariate<MEAL::Scalar> NvariateScalar;
 
 ConfigurableProjection::ConfigurableProjection (const ConfigurableProjectionExtension* ext)
 {
-  cerr << "ConfigurableProjection construct from ConfigurableProjectionExtension" << endl;
+  if (Archive::verbose > 2)
+    cerr << "ConfigurableProjection construct from ConfigurableProjectionExtension" << endl;
+
   construct (ext->get_configuration());
 
   unsigned nchan = ext->get_nchan();
@@ -116,7 +120,7 @@ void ConfigurableProjection::construct (const string& text)
 {
 #if HAVE_YAMLCPP
 
-  // if (Archive::verbose > 1)
+  if (Archive::verbose > 2)
     cerr << "ConfigurableProjection::construct cfg='" << text << "'" << endl;
 
   YAML::Node node = YAML::Load (text);
@@ -129,7 +133,8 @@ void ConfigurableProjection::construct (const string& text)
   MEAL::Complex2* model = ::construct<MEAL::Complex2> (node, xform_factory);
   transformation->set_model (model);
 
-  cerr << "ConfigurableProjection::construct model parsed" << endl;
+  if (Archive::verbose > 2)
+    cerr << "ConfigurableProjection::construct model parsed" << endl;
 
   MEAL::NvariateScalarFactory function_factory;
 
@@ -137,7 +142,7 @@ void ConfigurableProjection::construct (const string& text)
   {
     string key = it->first.as<string>();
 
-    cerr << "ConfigurableProjection::construct key=" << key << endl;
+    DEBUG("ConfigurableProjection::construct key=" << key);
 
     if ( key == "chain" )
     {
@@ -146,7 +151,7 @@ void ConfigurableProjection::construct (const string& text)
         throw Error (InvalidParam, "ConfigurableProjection::load",
                      "YAML value for 'chain' is not a map");
 
-      cerr << "parsing chain param" << endl;
+      DEBUG("parsing chain param");
       if ( !chain["param"] )
         throw Error (InvalidParam, "ConfigurableProjection::load",
                      "YAML chain map does not contain 'param'");
@@ -168,7 +173,7 @@ void ConfigurableProjection::construct (const string& text)
                      "in model named '" + model->get_name() + "'");
 
 
-      cerr << "parsing chain model" << endl;
+      DEBUG("parsing chain model");
       NvariateScalar* func = ::construct<NvariateScalar> (chain, function_factory);
 
       transformation->set_constraint (iparam, func);
@@ -177,7 +182,7 @@ void ConfigurableProjection::construct (const string& text)
         throw Error (InvalidParam, "ConfigurableProjection::load",
                      "YAML chain map does not contain 'args'");
 
-      cerr << "parsing arguments" << endl;
+      DEBUG("parsing arguments");
       YAML::Node args = chain["args"];
 
       vector<string> params;
@@ -348,14 +353,16 @@ double ConfigurableProjection::get_value (const std::string& name)
 
   double result = fromstring<double>( parser->get_value (param) );
 
-  // cerr << "ConfigurableProjection::get_value name=" << param << " val=" << result << endl;
+  DEBUG("ConfigurableProjection::get_value name=" << param << " val=" << result);
 
   return result;
 }
 
 void ConfigurableProjection::calibrate (Archive* arch)
 {
-  cerr << "ConfigurableProjection::calibrate" << endl;
+  if (Archive::verbose > 2)
+    cerr << "ConfigurableProjection::calibrate" << endl;
+
   set_archive (arch);
 
   unsigned nsubint = arch->get_nsubint();

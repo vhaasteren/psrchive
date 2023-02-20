@@ -622,6 +622,8 @@ bool SystemCalibrator::match (const Archive* data, bool throw_exception)
 
   if (!match.match (get_calibrator(), data))
   {
+    mismatch_reason = match.get_reason();
+
     if (throw_exception)
       throw Error (InvalidParam, "SystemCalibrator::match",
 		   "'" + data->get_filename() + "' does not match "
@@ -966,8 +968,9 @@ void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
       Estimate<double> calI = data.observation[0];
       if (calI.get_value() < cal_intensity_threshold * calI.get_error())
       {
-        cerr << "Pulsar::SystemCalibrator::add_calibrator ichan=" << ichan
-             << " signal not detected" << endl;
+        if (Archive::verbose > 1)
+          cerr << "Pulsar::SystemCalibrator::add_calibrator ichan=" << ichan
+               << " signal not detected" << endl;
         continue;
       }
 
@@ -2126,6 +2129,8 @@ void SystemCalibrator::precalibrate (Archive* data)
 {
   if (verbose > 2)
     cerr << "SystemCalibrator::precalibrate" << endl;
+
+  preprocess (data);
 
   string reason;
   if (!calibrator_match (data, reason))

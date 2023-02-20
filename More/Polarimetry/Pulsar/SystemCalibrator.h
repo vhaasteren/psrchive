@@ -290,6 +290,8 @@ namespace Pulsar
     /*! By default, will throw exception */
     virtual bool match (const Archive*, bool throw_exception = true);
 
+    std::string get_mismatch_reason () const { return mismatch_reason; }
+
     //! Solution unloading policy
     class Unloader;
 
@@ -297,7 +299,8 @@ namespace Pulsar
 
     friend class SystemCalibratorManager;
     bool match_check_nchan;
-    
+    std::string mismatch_reason;
+  
     //! SystemCalibrator with whom common reception model is shared
     /* and common polarimetric transformations */
     Reference::To<SystemCalibrator> partner;

@@ -28,7 +28,7 @@ void unload_covariances (fitsfile*, const Pulsar::ConfigurableProjectionExtensio
 void Pulsar::FITSArchive::unload (fitsfile* fptr, 
 				  const ConfigurableProjectionExtension* cpe) try
 {
-  // if (verbose > 2)
+  if (verbose > 2)
     cerr << "FITSArchive::unload ConfigurableProjectionExtension entered" << endl;
   
   // Initialize the CFGPROJ Binary Table
@@ -46,7 +46,7 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr,
     throw Error (InvalidState, "FITSArchive::unload ConfigurableProjectionExtension",
 		 "number of model parameters == 0");
 
-  // if (verbose > 2)
+  if (verbose > 2)
     cerr << "FITSArchive::unload ConfigurableProjectionExtension nchan=" 
 	 << nchan <<  " nparam=" << nparam << " ncovar=" << ncovar << endl;
 
@@ -137,7 +137,7 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr,
   else
     unload_variances (fptr, cpe, nparam, data);
 
-  // if (verbose > 2)
+  if (verbose > 2)
     cerr << "FITSArchive::unload ConfigurableProjectionExtension exiting" << endl; 
 }
 catch (Error& error)
@@ -182,7 +182,7 @@ void unload_covariances (fitsfile* fptr,
 {
   unsigned nchan = cpe->get_nchan();
 
-  if (Pulsar::Archive::verbose == 3)
+  if (Pulsar::Archive::verbose > 2)
     cerr << "FITSArchive::unload ConfigurableProjectionExtension"
       " ncovar = " << ncovar << endl;
 

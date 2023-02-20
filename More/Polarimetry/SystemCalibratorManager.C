@@ -64,6 +64,8 @@ SystemCalibrator* SystemCalibratorManager::get_calibrator (const Archive* data)
 
     if (match)
       return cal;
+    else
+      cerr << "SystemCalibratorManager::get_calibrator mismatch reason=" << cal->get_mismatch_reason() << endl;
   }
   
   throw Error (InvalidState, "SystemCalibratorManager::get_calibrator",

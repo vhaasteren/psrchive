@@ -84,6 +84,9 @@ public:
   void setup ();
 
   //! Process the given archive
+  void preprocess (Pulsar::Archive*);
+
+  //! Process the given archive
   void process (Pulsar::Archive*);
 
   //! Unload the total
@@ -1416,7 +1419,7 @@ void check_phase (Pulsar::Archive* archive)
   }
 }
 
-void pcm::process (Pulsar::Archive* archive)
+void pcm::preprocess (Pulsar::Archive* archive)
 {
   if (archive->get_type() == Signal::Pulsar)
   {
@@ -1452,6 +1455,11 @@ void pcm::process (Pulsar::Archive* archive)
       }
     }
   }
+}
+
+void pcm::process (Pulsar::Archive* archive)
+{
+  preprocess (archive);
 
   if (!model_manager)
   {
@@ -1648,8 +1656,9 @@ void pcm::finalize ()
 
     cout << "pcm: loaded archive: " << filenames[i] << endl;
 
-    standard_options->process ( archive );
-    model_manager->precalibrate( archive );
+    standard_options->process (archive);
+    preprocess (archive);
+    model_manager->precalibrate (archive);
 
     if (unload_each_calibrated)
     {
