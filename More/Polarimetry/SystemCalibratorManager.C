@@ -177,7 +177,20 @@ MJD SystemCalibratorManager::get_end_epoch () const
 //! Calibrate the the given archive using the current state of the model
 void SystemCalibratorManager::precalibrate (Archive* data)
 {
+  SystemCalibrator* fiducial = get_model();
   SystemCalibrator* model = get_calibrator (data);
+
+  unsigned nchan = fiducial->get_nchan();
+  for (unsigned ichan=0; ichan < nchan; ichan++)
+  {
+    if (!fiducial->get_valid(ichan) && model->get_valid(ichan))
+    {
+      if (Archive::verbose > 2)
+        cerr << "SystemCalibratorManager::precalibrate invalid ichan=" << ichan << " in fiducial model" << endl;
+      model->set_valid (ichan, false, "invalid in fiducial model");
+    }
+  }
+
   model->precalibrate (data);
 }
 

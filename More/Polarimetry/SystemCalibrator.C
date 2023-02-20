@@ -2090,6 +2090,16 @@ bool SystemCalibrator::get_solved () const
   return is_solved;
 }
 
+bool SystemCalibrator::get_valid (unsigned ichan) const
+{
+  return model[ichan]->get_valid();
+}
+
+void SystemCalibrator::set_valid (unsigned ichan, bool flag, const string& reason)
+{
+  model[ichan]->set_valid (flag, reason.c_str());
+}
+
 bool SystemCalibrator::has_valid () const
 {
   unsigned nchan = model.size();
@@ -2169,8 +2179,11 @@ void SystemCalibrator::precalibrate (Archive* data)
     {
       assert (ichan < model.size());
 
-      if (!model[ichan]->get_valid())
+      if (!get_transformation_valid(ichan))
       {
+        if (model[ichan]->get_valid())
+          cerr << "SystemCalibrator::precalibrate transformation not valid but model valid ichan=" << ichan << endl;
+
 	if (verbose > 2)
 	  cerr << "SystemCalibrator::precalibrate ichan=" << ichan 
 	       << " zero weight" << endl;

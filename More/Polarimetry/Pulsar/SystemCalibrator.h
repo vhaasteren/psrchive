@@ -264,6 +264,10 @@ namespace Pulsar
     //! Get the status of the model
     virtual bool get_solved () const;
 
+    //! Return true if the model for the specified channel is valid
+    virtual bool get_valid (unsigned ichan) const;
+    virtual void set_valid (unsigned ichan, bool value, const std::string& reason);
+
     //! Returns true if at least one channel returns get_valid == true
     virtual bool has_valid () const;
 
