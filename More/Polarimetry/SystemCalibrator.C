@@ -2314,7 +2314,9 @@ SystemCalibrator::new_solution (const string& class_name) const try
     auto cp = dynamic_cast<ConfigurableProjection*>( projection.get() );
     if (cp)
     {
-      cerr << "SystemCalibrator::new_solution adding ConfigurableProjectionExtension" << endl;
+      if (verbose > 2)
+        cerr << "SystemCalibrator::new_solution "
+             "adding ConfigurableProjectionExtension" << endl;
       output -> add_extension (new ConfigurableProjectionExtension(cp));
     }
   }

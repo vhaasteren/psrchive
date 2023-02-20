@@ -61,7 +61,7 @@ Pulsar::ConfigurableProjectionExtension::ConfigurableProjectionExtension
 
   init ();
 
-  // if (Calibrator::verbose > 2)
+  if (Calibrator::verbose > 2)
     cerr << "Pulsar::ConfigurableProjectionExtension "
          "construct from ConfigurableProjection with config=\n" 
          << calibrator->get_configuration() << endl;
@@ -75,7 +75,7 @@ Pulsar::ConfigurableProjectionExtension::ConfigurableProjectionExtension
   unsigned nchan = calibrator->get_nchan ();
   set_nchan (nchan);
 
-  // if (Calibrator::verbose > 2)
+  if (Calibrator::verbose > 2)
     cerr << "Pulsar::ConfigurableProjectionExtension nchan=" << nchan << endl;
 
   for (unsigned ichan=0; ichan < nchan; ichan++)
@@ -101,7 +101,7 @@ Pulsar::ConfigurableProjectionExtension::ConfigurableProjectionExtension
     {
       nparam = xform->get_nparam();
 
-      // if (Calibrator::verbose > 2)
+      if (Calibrator::verbose > 2)
       {
         const MEAL::Function* f = calibrator->get_transformation(ichan)->get_transformation();
         for (unsigned i=0; i<f->get_nparam(); i++)
