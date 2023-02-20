@@ -23,7 +23,6 @@
 namespace Pulsar {
 
   class PolnCalibratorExtension;
-  class ConfigurableProjection;
   class FeedExtension;
   class Receiver;
   class Integration;
@@ -58,11 +57,6 @@ namespace Pulsar {
 
     //! Set the sub-integration index
     void set_subint (const Index& isub);
-
-    //! Set the configurable projection transformation
-    void set_projection (ConfigurableProjection*);
-    const ConfigurableProjection* get_projection () const;
-    ConfigurableProjection* get_projection ();
 
     // ///////////////////////////////////////////////////////////////////
     //
@@ -166,9 +160,6 @@ namespace Pulsar {
 
     //! The FeedExtension of the Archive passed during construction
     Reference::To<const FeedExtension> feed;
-
-    //! The ConfigurableProjection of the Archive passed during construction
-    Reference::To<ConfigurableProjection> projection;
 
     //! Flag set when response has been built
     bool built;

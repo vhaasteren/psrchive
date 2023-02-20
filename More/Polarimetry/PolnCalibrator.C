@@ -18,9 +18,6 @@
 
 #include "Pulsar/CalibrationInterpolatorExtension.h"
 
-#include "Pulsar/ConfigurableProjectionExtension.h"
-#include "Pulsar/ConfigurableProjection.h"
-
 #include "Pulsar/Receiver.h"
 #include "Pulsar/BasisCorrection.h"
 #include "Pulsar/BackendCorrection.h"
@@ -101,10 +98,6 @@ Pulsar::PolnCalibrator::PolnCalibrator (const Archive* archive)
   if (poln_extension)
     extension = poln_extension;
 
-  auto cpe = archive->get<ConfigurableProjectionExtension>();
-  if (cpe)
-    set_projection( new ConfigurableProjection(cpe) );
-
   filenames.push_back( archive->get_filename() );
 }
 
@@ -144,22 +137,6 @@ void Pulsar::PolnCalibrator::set_calibrator (const Archive* archive)
   transformation.resize(0);
   
   Calibrator::set_calibrator (archive);
-}
-
-void Pulsar::PolnCalibrator::set_projection (ConfigurableProjection* proj)
-{
-  projection = proj;
-  built = false;
-}
-
-const Pulsar::ConfigurableProjection* Pulsar::PolnCalibrator::get_projection () const
-{
-  return projection;
-}
-
-Pulsar::ConfigurableProjection* Pulsar::PolnCalibrator::get_projection ()
-{
-  return projection;
 }
 
 void Pulsar::PolnCalibrator::set_subint (const Index& isub)
@@ -846,7 +823,7 @@ void Pulsar::PolnCalibrator::calibration_setup (const Archive* arch)
       DEBUG("PolnCalibrator::calibration_setup calling Variation::update");
       variation->update (arch->get_Integration(0));
     }
-    
+
     build( arch->get_nchan() );
   }
   catch (Error& error)
@@ -882,12 +859,13 @@ void Pulsar::PolnCalibrator::calibrate (Archive* arch) try
     {
       Integration* subint = arch->get_Integration (isub);
 
+      bool rebuild_needed = false;
+
       if (variation)
-      {
-	bool rebuild_needed = variation->update (subint);
-	if (rebuild_needed)
-	  build (subint->get_nchan());
-      }
+	rebuild_needed |= variation->update (subint);
+
+      if (rebuild_needed)
+        build (subint->get_nchan());
       
       subint->expert()->transform (response);
     }

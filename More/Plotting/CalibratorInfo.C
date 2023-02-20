@@ -62,8 +62,12 @@ void Pulsar::CalibratorInfo::prepare (const Archive* data)
 
   else if (configurable_projection)
   {
-    Reference::To<PolnCalibrator> pcal = new PolnCalibrator(data);
-    auto projection = pcal->get_projection (); 
+    auto ext = data->get<ConfigurableProjectionExtension>();
+    if (!ext)
+      throw Error (InvalidParam, "Pulsar::CalibratorInfo::prepare", 
+                   "archive has no ConfigurableProjectionExtension");
+
+    auto projection = new ConfigurableProjection (ext);
     info = new ConfigurableProjection::Info (projection);
   }
 

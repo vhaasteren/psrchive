@@ -1506,7 +1506,7 @@ void SystemCalibrator::create_model () try
 
   MEAL::Complex2* basis = 0;
 
-  // if not basis correction is required, then default to identity matrix
+  // if no basis correction is required, then default to identity matrix
   invert_basis = 1.0;
 
   if (has_Receiver())

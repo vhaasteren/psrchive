@@ -14,7 +14,7 @@
 
 #include "Pulsar/ArchiveInterface.h"
 #include "Pulsar/IntegrationInterface.h"
-
+#include "Pulsar/IntegrationExpert.h"
 #include "MEAL/NvariateScalarFactory.h"
 
 #if HAVE_YAMLCPP
@@ -353,4 +353,61 @@ double ConfigurableProjection::get_value (const std::string& name)
   return result;
 }
 
+bool ConfigurableProjection::update (unsigned _subint)
+{
+  unsigned nchan = get_nchan();
+
+  cerr << "ConfigurableProjection::update subint=" << _subint 
+       << " nchan=" << nchan << endl;
+
+  set_subint (_subint);
+
+  for (unsigned ichan=0; ichan < nchan; ichan++)
+  {
+    set_chan (ichan);
+
+    MEAL::Argument::Value* arg = new_value (get_transformation(ichan));
+    arg->apply();
+    delete arg;
+  }
+
+  return true;
+}
+
+void ConfigurableProjection::calibrate (Archive* arch)
+{
+  cerr << "ConfigurableProjection::calibrate" << endl;
+  set_archive (arch);
+
+  unsigned nsubint = arch->get_nsubint();
+  unsigned nchan = arch->get_nchan();
+
+  if (nchan != get_nchan())
+    throw Error (InvalidState, "ConfigurableProjection::calibrate",
+                 "Archive::nchan=%d != ConfigurableProjection::nchan=%d",
+                 nchan, get_nchan());
+
+  vector< Jones<float> > response (nchan);
+
+  for (unsigned isub=0; isub < nsubint; isub++)
+  {
+    update (isub);
+
+    Integration* subint = arch->get_Integration (isub);
+
+    for (unsigned ichan=0; ichan < nchan; ichan++)
+    {
+      if (get_transformation_valid(ichan))
+      {
+        response[ichan] = inv(get_transformation(ichan)->get_transformation()->evaluate());
+      }
+      else
+      {
+        response[ichan] = 1.0;
+      }
+    }
+
+    subint->expert()->transform (response);
+  }
+}
 

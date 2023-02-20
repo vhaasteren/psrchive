@@ -1348,7 +1348,7 @@ void match_channels (Pulsar::Archive* calarch, const Pulsar::Archive* arch)
   flux calibration of the original pulsar observation.
 */      
 Pulsar::FluxCalibrator* 
-Database::generateFluxCalibrator (Archive* arch, bool allow_raw) try {
+Database::generateFluxCalibrator (const Archive* arch, bool allow_raw) try {
 
   const Entry* match = best_match (criteria(arch, new CalibratorTypes::Flux));
 
@@ -1387,7 +1387,7 @@ catch (Error& error)
 }
 
 Pulsar::FluxCalibrator* 
-Database::rawFluxCalibrator (Pulsar::Archive* arch)
+Database::rawFluxCalibrator (const Pulsar::Archive* arch)
 {
   vector<const Entry*> oncals;
   all_matching (criteria (arch, Signal::FluxCalOn), oncals);
@@ -1430,7 +1430,7 @@ Database::rawFluxCalibrator (Pulsar::Archive* arch)
   observation. */
 
 Pulsar::PolnCalibrator* 
-Database::generatePolnCalibrator (Archive* arch,
+Database::generatePolnCalibrator (const Archive* arch,
 				  const Calibrator::Type* type)
 {
   if (!arch)
@@ -1566,7 +1566,7 @@ Database::generatePolnCalibrator (Archive* arch,
 
 Pulsar::HybridCalibrator* 
 Database::generateHybridCalibrator (ReferenceCalibrator* arcal,
-					    Archive* arch)
+					    const Archive* arch)
 {
   if (!arch) throw Error (InvalidParam,
 			  "Database::generateHybridCalibrator",
