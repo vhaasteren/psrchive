@@ -393,7 +393,8 @@ void ConfigurableProjection::calibrate (Archive* arch)
       }
       else
       {
-        response[ichan] = 1.0;
+        DEBUG("ConfigurableProjection::calibrate bad chan=" << ichan);
+        response[ichan] = 0.0;
       }
     }
 

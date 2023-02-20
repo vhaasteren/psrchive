@@ -1004,7 +1004,7 @@ void SystemCalibrator::submit_calibrator_data () try
 {
   unsigned nsub = calibrator_data.size();
   
-  // if (verbose > 2)
+  if (verbose > 2)
     cerr << "SystemCalibrator::add_calibrator nsub=" << nsub << endl;
 
   if (!nsub)
@@ -2177,7 +2177,7 @@ void SystemCalibrator::precalibrate (Archive* data)
 
 	integration->set_weight (ichan, 0.0);
 
-	response[ichan] = Jones<double>::identity();
+	response[ichan] = 0.0;
 	continue;
       }
 
@@ -2199,8 +2199,7 @@ void SystemCalibrator::precalibrate (Archive* data)
 	       << endl << error.get_message() << endl;
 
         integration->set_weight (ichan, 0.0);
-        response[ichan] = Jones<float>::identity();
-
+        response[ichan] = 0.0;
 	continue;
       }
 
@@ -2211,13 +2210,10 @@ void SystemCalibrator::precalibrate (Archive* data)
                << " faulty response" << endl;
 
         integration->set_weight (ichan, 0.0);
-        response[ichan] = Jones<float>::identity();
-
+        response[ichan] = 0.0;
 	continue;
       }
 
-      // TO DO TO-DO TODO: NEED TO HANDLE PROJECTION TRANSFORMATION
-      
       response[ichan] = inv( response[ichan] );
     }
 

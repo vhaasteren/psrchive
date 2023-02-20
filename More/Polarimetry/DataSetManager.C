@@ -172,8 +172,7 @@ void DataSetManager::incorporate (const Archive* data, Method method)
       return;
     }
 
-  cerr << "DataSetManager::incorporate starting new data set name="
-       << data->get_source() << endl;
+  DEBUG("DataSetManager::incorporate starting new data set name=" << data->get_source());
 
   DataSet* ds = new DataSet;
   (ds->*method) (data);

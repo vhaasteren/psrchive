@@ -64,7 +64,7 @@ SystemCalibrator* SystemCalibratorManager::get_calibrator (const Archive* data)
 
     if (match)
       return cal;
-    else
+    else if (Archive::verbose > 2)
       cerr << "SystemCalibratorManager::get_calibrator mismatch reason=" << cal->get_mismatch_reason() << endl;
   }
   
@@ -82,14 +82,15 @@ void SystemCalibratorManager::solve ()
       throw Error (InvalidState, "SystemCalibratorManager::solve",
 		   "SystemCalibrator for " + cal->get_name() + " has no data");
     
-    cerr << "SystemCalibratorManager::solve preparing name="
-	 << cal->get_calibrator()->get_source () << endl;
+    if (Archive::verbose > 2)
+      cerr << "SystemCalibratorManager::solve preparing name="
+	   << cal->get_calibrator()->get_source () << endl;
     
     cal->solve_prepare ();
   }
 
-  cerr << "SystemCalibratorManager::solve calling SystemCalibrator::solve"
-       << endl;
+  if (Archive::verbose > 2)
+    cerr << "SystemCalibratorManager::solve calling SystemCalibrator::solve" << endl;
   
   get_model()->solve ();
 }
