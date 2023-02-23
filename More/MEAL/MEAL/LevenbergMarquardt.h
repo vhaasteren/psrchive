@@ -17,7 +17,6 @@
 #include "Error.h"
 
 #include <iostream>
-#include <cassert>
 #include <cmath>
 
 namespace MEAL
@@ -849,7 +848,9 @@ try
     if (model.get_infit(ifit))
     {
       double term = traits.to_real (w_delta_y * gradient[ifit]);
-      assert (isfinite(term));
+      if (!isfinite(term))
+        throw Error (InvalidState, "MEAL::lmcoff1"
+                     "non-finite contribution to beta");
 
       // Equation 15.5.6 (with 15.5.8)
       beta[ifit] += term;
@@ -868,7 +869,10 @@ try
 	if (model.get_infit(jfit))
         {
           double term = traits.to_real (w_gradient * gradient[jfit]);
-          assert (isfinite(term));
+          if (!isfinite(term))
+            throw Error (InvalidState, "MEAL::lmcoff1"
+                         "non-finite contribution to alpha");
+
           alpha[ifit][jfit] += term;
         }
     }
