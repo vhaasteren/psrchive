@@ -56,7 +56,7 @@ using namespace std;
 using namespace Pulsar;
 
 // A command line tool for calibrating Pulsar::Archives
-const char* args = "A:aBbC:cDd:Ee:fFGghiIJ:j:K:k:lLM:m:Nn:O:op:PqQ:Rr:sSt:Tu:UvVwWxXyY:Z";
+const char* args = "A:aBbC:cDd:Ee:fFGghIJ:j:K:k:lLM:m:Nn:O:op:PqQ:Rr:sSt:Tu:UvVwWxXyY:Z";
 
 void usage ()
 {
@@ -65,7 +65,6 @@ void usage ()
     "  -q             Quiet mode\n"
     "  -v             Verbose mode\n"
     "  -V             Very verbose mode\n"
-    "  -i             Show revision information\n"
     "\n"
     "Database options: \n"
     "  -d database    Read calibration database summary \n"   
@@ -256,13 +255,14 @@ int main (int argc, char *argv[]) try
       break;
 
     case 'V':
-      verbose = true;
-      Archive::set_verbosity(3);
+      {
+	cerr << "pac: increasing verbosity" << endl;
+        verbose = true;
+	static unsigned verbosity = 2;
+	verbosity ++;
+        Archive::set_verbosity(verbosity);
+      }
       break;
-
-    case 'i':
-      cout << "$Id: pac.C,v 1.109 2011/02/17 07:43:53 straten Exp $" << endl;
-      return 0;
 
     case 'k':
       database_filename = optarg;
