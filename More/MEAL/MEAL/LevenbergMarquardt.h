@@ -849,7 +849,7 @@ try
     if (model.get_infit(ifit))
     {
       double term = traits.to_real (w_delta_y * gradient[ifit]);
-      if (!isfinite(term))
+      if (!myfinite(term))
         throw Error (InvalidState, "MEAL::lmcoff1"
                      "non-finite contribution to beta");
 
@@ -870,7 +870,7 @@ try
 	if (model.get_infit(jfit))
         {
           double term = traits.to_real (w_gradient * gradient[jfit]);
-          if (!isfinite(term))
+          if (!myfinite(term))
             throw Error (InvalidState, "MEAL::lmcoff1"
                          "non-finite contribution to alpha");
 
@@ -882,7 +882,7 @@ try
   // Equation 15.5.5
   float chisq = weight.get_weighted_norm (delta_y);
 
-  if (LevenbergMarquardt<Grad>::verbose > 1 || !isfinite(chisq))
+  if (LevenbergMarquardt<Grad>::verbose > 1 || !myfinite(chisq))
     std::cerr << "MEAL::lmcoff1 chisq=" << chisq << std::endl;
 
   return chisq;

@@ -1428,14 +1428,6 @@ void pcm::do_reparallactify (Pulsar::Archive* archive)
     throw Error (InvalidState, "pcm reparallactify",
                  "no Receiver extension available");
 
-  cerr << "pcm: re-parallactifying data" << endl;
-  ProjectionCorrection projection;
-
-  Pulsar::Receiver* rcvr = archive->get<Receiver>();
-  if (!rcvr)
-    throw Error (InvalidState, "pcm reparallactify",
-                 "no Receiver extension available");
-
   if ( rcvr->get_projection_corrected () )
   {
     cerr << "pcm: re-parallactifying data" << endl;
@@ -1529,6 +1521,9 @@ void pcm::process (Pulsar::Archive* archive)
 
 void pcm::finalize ()
 {
+
+#if 0 
+  // TO-DO TODO FIX
   if (solve_each)
   {
     if (total)
@@ -1544,6 +1539,7 @@ void pcm::finalize ()
     cerr << "pcm: writing total uncalibrated pulsar archive" << endl;
     total->unload ("first.ar");
   }
+#endif
 
 #if HAVE_PGPLOT
 

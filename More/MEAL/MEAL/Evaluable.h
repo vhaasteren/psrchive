@@ -67,7 +67,7 @@ namespace MEAL {
     T evaluate (std::vector<T>* grad=0) const
     { 
       T result = evaluation_policy->evaluate (grad);
-      if (!isfinite(result))
+      if (!myfinite(result))
         throw Error (InvalidState, "MEAL::Evaluable::evaluate for " + this->get_name(),
                      "non-finite result");
       return result;

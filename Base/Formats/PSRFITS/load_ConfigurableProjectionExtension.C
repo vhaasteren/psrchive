@@ -10,6 +10,7 @@
 
 #include "psrfitsio.h"
 #include "strutil.h"
+#include "myfinite.h"
 
 // #define _DEBUG 1
 #include "debug.h"
@@ -109,10 +110,10 @@ void Pulsar::FITSArchive::load_ConfigurableProjectionExtension (fitsfile* fptr) 
   if (verbose > 2)
     cerr << "FITSArchive::load_ConfigurableProjectionExtension weights read" << endl;
 
-  for (unsigned ichan=0; ichan < nchan; ichan++)
+  for (int ichan=0; ichan < nchan; ichan++)
   {
     float weight = data[ichan];
-    if ( weight == 0 || !isfinite(weight) )
+    if ( weight == 0 || !myfinite(weight) )
     {
       if (verbose > 2)
         cerr << "FITSArchive::load_ConfigurableProjectionExtension ichan=" << ichan
@@ -140,7 +141,7 @@ void Pulsar::FITSArchive::load_ConfigurableProjectionExtension (fitsfile* fptr) 
       {
 	cpe->get_transformation(ichan)->set_param_name (j, param_names[j]);
 
-	if (!isfinite(data[count]))
+	if (!myfinite(data[count]))
 	  valid = false;
 	else
         {
@@ -199,7 +200,7 @@ void load_variances (fitsfile* fptr, Pulsar::ConfigurableProjectionExtension* cp
       {
 	float err = data[count];
 
-	if (!isfinite(err))
+	if (!myfinite(err))
 	  valid = false;
 	else
 	  cpe->get_transformation(ichan)->set_variance (j,err*err);

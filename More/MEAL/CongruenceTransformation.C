@@ -76,7 +76,7 @@ MEAL::CongruenceTransformation::calculate (Jones<double>& result,
   // compute input and partial derivatives with respect to input parameters
   Jones<double> input_jones = input->evaluate (input_grad_ptr);
 
-  if (!isfinite (xform_jones))
+  if (!myfinite (xform_jones))
   {
 #if _DEBUG
     cerr << "MEAL::CongruenceTransformation::calculate non-finite transformation" << endl;
@@ -91,7 +91,7 @@ MEAL::CongruenceTransformation::calculate (Jones<double>& result,
     throw error;
   }
 
-  if (!isfinite (input_jones))
+  if (!myfinite (input_jones))
   {
 #if _DEBUG
     cerr << "MEAL::CongruenceTransformation::calculate non-finite input" << endl;
