@@ -47,19 +47,25 @@ void Pulsar::FITSArchive::load_ConfigurableProjectionExtension (fitsfile* fptr) 
     throw FITSError (status, "FITSArchive::load_ConfigurableProjectionExtension", 
 		     "fits_movnam_hdu CFGPROJ");
 
-  Reference::To<ConfigurableProjectionExtension> cpe = new ConfigurableProjectionExtension;
-
   // Read configuration as long string
   char* comment = NULL;
   char* longstr = NULL;
 
   fits_read_key_longstr  (fptr, "CONFIG", &longstr, comment, &status);
+  if (status != 0)
+  {
+    if (verbose > 2)
+      cerr << "FITSArchive::load_ConfigurableProjectionExtension fits_read_key_longstr CONFIG failed" << endl;
+    return;
+  }
+
+  Reference::To<ConfigurableProjectionExtension> cpe = new ConfigurableProjectionExtension;
+
   cpe->set_configuration (longstr);
   fits_free_memory (longstr, &status);
 
   if (verbose > 2)
-    cerr << "FITSArchive::load_ConfigurableProjectionExtension CONFIG=\n"
-         << cpe->get_configuration () << endl;
+    cerr << "FITSArchive::load_ConfigurableProjectionExtension CONFIG=\n" << cpe->get_configuration () << endl;
 
   // Get NPARAM 
   int nparam = 0;
