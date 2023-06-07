@@ -20,6 +20,7 @@
 #include "ModifyRestore.h"
 #include "Pauli.h"
 #include "Error.h"
+#include "myfinite.h"
 
 #ifdef sun
 #include <ieeefp.h>
@@ -366,7 +367,7 @@ void Pulsar::PolnProfile::transform (const Jones<double>& response)
   unsigned nbin = get_Profile(0)->get_nbin();
 
   float Gain = abs( det(response) );
-  if (!isfinite(Gain))
+  if (!myfinite(Gain))
     throw Error (InvalidParam, "Pulsar::PolnProfile::transform",
                  "non-invertbile response.  det(J)=%f", Gain);
 
@@ -700,7 +701,8 @@ void Pulsar::PolnProfile::get_rss
 
   float* amps = rss->get_amps();
 
-  for (unsigned ipol=jpol; ipol <= kpol; ipol++) {
+  for (unsigned ipol=jpol; ipol <= kpol; ipol++)
+  {
     const float *a = get_Profile(ipol)->get_amps();
     for (ibin=0; ibin<nbin; ibin++)
       amps[ibin] += a[ibin]*a[ibin];

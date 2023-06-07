@@ -81,7 +81,7 @@ namespace Pulsar {
     const Profile& operator = (const Profile& profile);
 
     //! does the work for copy constructor and assignment operator
-    void copy (const Profile*);
+    void copy (const Profile*, bool clone_strategy = true);
 
     //! set this to the weighted average of this and that
     void average (const Profile* that);
@@ -109,6 +109,9 @@ namespace Pulsar {
 
     //! rotates the profile by phase (in turns)
     void rotate_phase (double phase);
+
+    //! compute the derivative of profile with respect to index
+    void derivative ();
 
     //! set all amplitudes to zero
     void zero ();

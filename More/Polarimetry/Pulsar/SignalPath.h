@@ -71,6 +71,9 @@ namespace Calibration
     //! Set the response transformation
     void set_response (MEAL::Complex2*);
 
+    //! Reset the response to its initial/unmodified value
+    void reset ();
+
     //! Allow the specified response parameter to vary as a function of time
     void set_response_variation (unsigned iparam,
 				 MEAL::Univariate<MEAL::Scalar>*);
@@ -250,9 +253,9 @@ namespace Calibration
     //! validity flag
     bool valid;
 
-    //! in not valid, a reason
+    //! reason for valid == false
     std::string invalid_reason;
-    
+
     //! The measurement equation
     Reference::To< Calibration::ReceptionModel > equation;
 
@@ -268,6 +271,9 @@ namespace Calibration
       of time, variations between signals of different types, etc. */
     
     Reference::To< MEAL::Complex2 > response;
+
+    //! Clone of newly created/unmodified respone used to implement reset
+    Reference::To< MEAL::Complex2 > initial_response;
 
     //! The basis correction computed by the BasisCorrection class
     Reference::To<MEAL::Complex2> basis;

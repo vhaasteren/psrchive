@@ -21,7 +21,10 @@ namespace Pulsar {
   class Profile::Strategies : public Reference::Able
   {
   public:
-    
+
+    //! Destructor
+    virtual ~Strategies () {}
+
     //! The implementation of the baseline finding algorithm
     virtual ProfileWeightFunction* baseline () const = 0;
 
@@ -33,6 +36,9 @@ namespace Pulsar {
 
     //! The implementation of the pulse width estimator
     virtual WidthEstimator* width () const = 0;
+
+    //! Clone
+    virtual Strategies* clone () const = 0;
   };
 
   // forward declaration of ProfileStats class, which manages strategies
@@ -127,7 +133,7 @@ namespace Pulsar {
       SNRatioEstimator, as this would create a dependence on the
       library defined in More/.  However, it is necessary for the
       Integration class to inform each of its Profile instances that
-      its strategies are being centrally managed.  Therefore, this
+      its strategies are centrally managed.  Therefore, this
       class is just a place-holder.  When Profile::get_strategy
       (defined in More/) is called, this method will check and see
       that its strategy instance is of type ManagedStrategies.  If so,
@@ -142,6 +148,12 @@ namespace Pulsar {
 
     //! Construct with a pointer to the container
     ManagedStrategies (Integration*);
+
+    //! Copy constructor
+    ManagedStrategies (const ManagedStrategies&);
+
+    //! Destructor
+    ~ManagedStrategies ();
 
     //! Return the container
     Integration* get_container();
@@ -158,6 +170,8 @@ namespace Pulsar {
     //! The implementation of the pulse width estimator
     WidthEstimator* width () const;
 
+    //! Clone
+    ManagedStrategies* clone () const;
   };
 }
 

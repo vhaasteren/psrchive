@@ -20,8 +20,9 @@
 #include "MEAL/LevenbergMarquardt.h"
 
 #include "templates.h"
+#include "myfinite.h"
 
-//#define _DEBUG 1
+// #define _DEBUG 1
 #include "debug.h"
 
 #include <cassert>
@@ -130,12 +131,12 @@ void Pulsar::ComplexRVMFit::init (MEAL::OrthoRVM* rvm)
   if (!rvm)
     return;
 
-  if (notset( rvm->dPsi_dphi ))
-    rvm->dPsi_dphi->set_param (0, delpsi_delphi);
+  if (notset( rvm->kappa ))
+    rvm->kappa->set_param (0, 2.0/delpsi_delphi);  // I don't know why ... factor of two suspected through experiment only
 
   // start with most probable value as first guess
-  if (notset( rvm->atanh_cos_zeta ))
-    rvm->atanh_cos_zeta->set_param (0, 0.0);
+  if (notset( rvm->lambda ))
+    rvm->lambda->set_param (0, 0.0);
 }
 
 //! Set the data to which model will be fit
@@ -190,7 +191,7 @@ void Pulsar::ComplexRVMFit::set_observation (const PolnProfile* _data)
         cerr << "Pulsar::ComplexRVMFit::set_observation phase=" << phase 
              << " L=" << L << endl;
 
-      get_model()->add_state (phase, L);
+      get_model()->add_state (phase, linear[ibin]);
 
       count ++;
     }
@@ -268,30 +269,6 @@ void Pulsar::ComplexRVMFit::find_delpsi_delphi_max ()
 
   delpsi_delphi = 0;
 
-  // the Profile class initializes the amps array = zero
-  Profile real (nbin);
-  float* re = real.get_amps();
-  Profile imag (nbin);
-  float* im = imag.get_amps();
-
-  std::complex< Estimate<double> > cross;
-
-  for (unsigned ibin=0; ibin < nbin; ibin++)
-  {
-    cross = std::conj(linear[ibin]) * linear[ (ibin+1) % nbin ];
-    
-    re[ibin] = cross.real().get_value();
-    im[ibin] = cross.imag().get_value();
-  }
-
-#if _DEBUG
-  {
-    std::ofstream out ("reim.txt");
-    for (unsigned ibin=0; ibin < nbin; ibin++)
-      out << re[ibin] << " " << im[ibin] << endl;
-  }
-#endif
-  
   PhaseWeight mask (nbin, 1.0);
   for (unsigned ibin=0; ibin < nbin; ibin++)
   {
@@ -307,60 +284,59 @@ void Pulsar::ComplexRVMFit::find_delpsi_delphi_max ()
 #endif
   }
 
-  
-  if (guess_smooth)
-  {
-    {
-      SmoothMean smooth;
-      smooth.set_bins (guess_smooth);
-      
-      smooth (&real);
-      smooth (&imag);
-    }
-
-    {
-      MaskSmooth smooth;
-      smooth.set_bins (guess_smooth);
-      smooth.set_masked_bins (1);
-
-      smooth (&mask);
-    }
-  }
-
 #if _DEBUG
-  for (unsigned ibin=0; ibin < nbin; ibin++)
-    cerr << "smimag: " << ibin << " " << im[ibin] << endl;
-
-  std::ofstream out ("reimphi.txt");  
+  std::ofstream out ("delpsi_delphi.txt");  
 #endif
 
   int max_bin = -1;
-  double max_angle = 0.0;
+  double max_slope = 0.0;
+
+  const Profile* q = data->get_Profile(1);
+  const Profile* u = data->get_Profile(2);
+  const float* Q = q->get_amps();
+  const float* U = u->get_amps();
+
+  Profile* dq = q->clone();
+  Profile* du = u->clone();
+
+  dq->derivative();
+  du->derivative();
+  const float* dQ = dq->get_amps();
+  const float* dU = du->get_amps();
+
+  double phi_per_bin = gate * 2*M_PI / nbin;
 
   for (unsigned ibin=0; ibin < nbin; ibin++)
   {
     if (mask[ibin] == 0)
       continue;
     
-    double angle = fabs( atan2 (im[ibin], re[ibin]) );
-    
+    double slope = Q[ibin]*dU[ibin] - U[ibin]*dQ[ibin];
+    double norm = 2.0 * (Q[ibin]*Q[ibin] + U[ibin]*U[ibin]) * phi_per_bin;
+    double slope2 = 0.0;
+
+    if (ibin > 0 && mask[ibin-1] != 0)
+    {
+      std::complex< Estimate<double> > L0 = linear[ibin-1];
+      double pa0 = 0.5 * atan2(L0.imag().get_value(), L0.real().get_value());
+      std::complex< Estimate<double> > L1 = linear[ibin];
+      double pa1 = 0.5 * atan2(L1.imag().get_value(), L1.real().get_value());
+      slope2 = (pa1 - pa0) / phi_per_bin;
+    }
+
 #if _DEBUG
-    out << ibin << " " << im[ibin] << " " << re[ibin] << " " << angle << endl;
-    cerr << "angle: " << ibin << " " << angle
-	 << " " << im[ibin] << " " << re[ibin] << " " << mask[ibin] << endl;
+    out << ibin << " " << slope << " " << slope2*norm << endl;
 #endif
     
-    if (max_bin < 0 || angle > max_angle) 
+    if (max_bin < 0 || fabs(slope) > max_slope) 
     {
       max_bin = ibin;
-      max_angle = angle;
+      max_slope = fabs(slope);
+      delpsi_delphi = slope / norm;
     }
   }
 
-  double phi_per_bin = gate * 2*M_PI / nbin;
-
   peak_phase = (max_bin + 0.5) * phi_per_bin;
-  delpsi_delphi = 0.5 * atan2(im[max_bin],re[max_bin]) / phi_per_bin;
   
   std::complex< Estimate<double> > L0 = linear[max_bin];
   peak_pa = 0.5 * atan2(L0.imag().get_value(), L0.real().get_value());
@@ -454,16 +430,19 @@ double sign (double x)
 }
 
 /*
-  This function effectively marginalizes over L_i 
+  This function effectively marginalizes over L_i
   as in Desvignes et al (2019; see Equations S1 and S2
   of the Supplementary Material).
 */
 void Pulsar::ComplexRVMFit::renormalize()
 {
   MEAL::ComplexRVM* cRVM = get_model();
-  
+
+  if (cRVM->get_gains_maximum_likelihood())
+    return;
+
   cRVM->set_gains_infit (false);
-  
+
   const unsigned nstate = cRVM->get_nstate();
 
   // MEAL::Function::verbose = true;
@@ -493,11 +472,11 @@ void Pulsar::ComplexRVMFit::solve ()
   MEAL::LevenbergMarquardt< complex<double> > fit;
   fit.verbose = MEAL::Function::verbose;
 
-  renormalize ();
-      
+  renormalize();
+
   float last_chisq = chisq = fit.init (data_x, data_y, *model);
 
-  if (!isfinite(chisq))
+  if (!myfinite(chisq))
     throw Error (InvalidState, "Pulsar::ComplexRVMFit::solve",
 		 "non-finite chisq");
 
@@ -509,11 +488,11 @@ void Pulsar::ComplexRVMFit::solve ()
 
   MEAL::ComplexRVM* cRVM = get_model();
   MEAL::OrthoRVM* ortho = dynamic_cast<MEAL::OrthoRVM*> (cRVM->get_rvm());
-  bool fit_cos_zeta = false;
+  bool fit_cot_zeta = false;
   if (ortho)
-    fit_cos_zeta = ortho->atanh_cos_zeta->get_infit(0);
+    fit_cot_zeta = ortho->lambda->get_infit(0);
       
-  bool reset_cos_zeta = false;
+  bool reset_cot_zeta = false;
   
   while (not_improving < 25)
   {
@@ -522,25 +501,25 @@ void Pulsar::ComplexRVMFit::solve ()
 
     renormalize ();
 
-    if (fit_cos_zeta)
+    if (fit_cot_zeta)
     {
-      double gamma = ortho->atanh_cos_zeta->get_param(0);
-       double gamma_limit = 5.0;
+      double lambda = ortho->lambda->get_param(0);
+      double lambda_limit = 5.0;
       
-      if (fabs(gamma) > gamma_limit)
+      if (fabs(lambda) > lambda_limit)
 	{
 	  // set zeta to 1 degree away from extreme
 	  double fix_zeta = 1.0; // deg
-	  gamma = sign(gamma) * atanh(cos(fix_zeta*M_PI/180));
+	  lambda = sign(lambda) / tan(fix_zeta*M_PI/180);
 	  cerr << "Pulsar::ComplexRVMFit::solve fix zeta =" << fix_zeta << endl;
 	  
-	  ortho->atanh_cos_zeta->set_param(0, gamma);
-	  ortho->atanh_cos_zeta->set_infit(0, false);
+	  ortho->lambda->set_param(0, lambda);
+	  ortho->lambda->set_infit(0, false);
 
 	  fit.init (data_x, data_y, *model);
 	  
-	  fit_cos_zeta = false;
-	  reset_cos_zeta = true;
+	  fit_cot_zeta = false;
+	  reset_cot_zeta = true;
 	}
     }
     
@@ -549,7 +528,7 @@ void Pulsar::ComplexRVMFit::solve ()
     if (verbose)
       cerr << "     chisq = " << nchisq << endl;
 
-    if (!isfinite (nchisq))
+    if (!myfinite (nchisq))
       throw Error (InvalidState, "Pulsar::ComplexRVMFit::solve",
 		   "non-finite chisq");
 
@@ -578,9 +557,9 @@ void Pulsar::ComplexRVMFit::solve ()
   if (chisq_map)
     return;
 
-  if (reset_cos_zeta)
+  if (reset_cot_zeta)
   {
-    ortho->atanh_cos_zeta->set_infit(0, true);
+    ortho->lambda->set_infit(0, true);
     fit.init (data_x, data_y, *model);
   }
   
@@ -661,7 +640,7 @@ void Pulsar::ComplexRVMFit::check_parameters (MEAL::RotatingVectorModel* rvm)
     phi0 -= M_PI;
   }
 
-  DEBUG("alpha=" << alpha << " zeta=" << zeta << " neg=" << negative_count);
+  DEBUG("alpha=" << alpha << " zeta=" << zeta);
 
   // ensure that phi0 lies on 0 -> 2pi
   phi0 = twopi (phi0);
@@ -1030,8 +1009,8 @@ void Pulsar::ComplexRVMFit::search_1D (unsigned nsearch)
   ortho_rvm = dynamic_cast<MEAL::OrthoRVM*> (rvm);
   if (ortho_rvm)
   {
-    search = ortho_rvm->atanh_cos_zeta;
-    other = ortho_rvm->dPsi_dphi;
+    search = ortho_rvm->lambda;
+    other = ortho_rvm->kappa;
   }
 
   double initial_other = other->get_param (0);

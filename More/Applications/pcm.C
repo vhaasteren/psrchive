@@ -153,6 +153,8 @@ public:
   // Construct a calibrator model for METM mode
   SystemCalibrator* matrix_template_matching (const string& stdname);
 
+  void do_reparallactify (Archive* archive);
+
 protected:
 
   //! Add command line options
@@ -1419,6 +1421,41 @@ void check_phase (Pulsar::Archive* archive)
   }
 }
 
+void pcm::do_reparallactify (Pulsar::Archive* archive)
+{
+  Pulsar::Receiver* rcvr = archive->get<Receiver>();
+  if (!rcvr)
+    throw Error (InvalidState, "pcm reparallactify",
+                 "no Receiver extension available");
+
+  cerr << "pcm: re-parallactifying data" << endl;
+  ProjectionCorrection projection;
+
+  Pulsar::Receiver* rcvr = archive->get<Receiver>();
+  if (!rcvr)
+    throw Error (InvalidState, "pcm reparallactify",
+                 "no Receiver extension available");
+
+  if ( rcvr->get_projection_corrected () )
+  {
+    cerr << "pcm: re-parallactifying data" << endl;
+    ProjectionCorrection projection;
+
+    rcvr->set_projection_corrected (false);
+    projection.set_archive( archive );
+
+    unsigned nsub = archive->get_nsubint();
+    for (unsigned isub=0; isub < nsub; isub++)
+    {
+      Pulsar::Integration* subint = archive->get_Integration (isub);
+ 
+      // the returned matrix transforms from the corrected to the observed
+      Jones<double> xform = projection (isub);
+      subint->expert()->transform (xform);
+    }
+  }
+}
+
 void pcm::preprocess (Pulsar::Archive* archive)
 {
   if (archive->get_type() == Signal::Pulsar)
@@ -1427,33 +1464,9 @@ void pcm::preprocess (Pulsar::Archive* archive)
       cerr << "pcm: preparing pulsar data" << endl;
 
     prepare->prepare (archive);
-  }
 
-  if (reparallactify)
-  {
-    Pulsar::Receiver* rcvr = archive->get<Receiver>();
-    if (!rcvr)
-      throw Error (InvalidState, "pcm reparallactify",
-                   "no Receiver extension available");
-
-    if ( rcvr->get_projection_corrected () )
-    {
-      cerr << "pcm: re-parallactifying data" << endl;
-      ProjectionCorrection projection;
-
-      rcvr->set_projection_corrected (false);
-      projection.set_archive( archive );
-
-      unsigned nsub = archive->get_nsubint();
-      for (unsigned isub=0; isub < nsub; isub++)
-      {
-        Pulsar::Integration* subint = archive->get_Integration (isub);
- 
-        // the returned matrix transforms from the corrected to the observed
-        Jones<double> xform = projection (isub);
-        subint->expert()->transform (xform);
-      }
-    }
+    if (reparallactify)
+      do_reparallactify (archive);
   }
 }
 
@@ -1516,6 +1529,22 @@ void pcm::process (Pulsar::Archive* archive)
 
 void pcm::finalize ()
 {
+  if (solve_each)
+  {
+    if (total)
+    {
+      cerr << "pcm: writing total calibrated pulsar archive" << endl;
+      total->unload ("total.ar");
+    }
+    return;
+  }
+
+  if (total)
+  {
+    cerr << "pcm: writing total uncalibrated pulsar archive" << endl;
+    total->unload ("first.ar");
+  }
+
 #if HAVE_PGPLOT
 
   try {
