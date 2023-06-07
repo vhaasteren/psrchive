@@ -383,7 +383,7 @@ void ConfigurableProjection::calibrate (Archive* arch)
 
     for (unsigned ichan=0; ichan < nchan; ichan++)
     {
-      set_chan (chan);
+      set_chan (ichan);
 
       update ();
 
