@@ -43,7 +43,7 @@ ConfigurableProjectionExtension::operator=
   if (this == &copy)
     return *this;
 
-  // if (Archive::verbose > 2)
+  if (Archive::verbose > 2)
     cerr << "ConfigurableProjectionExtension::operator=" << endl;
 
   configuration = copy.get_configuration();
