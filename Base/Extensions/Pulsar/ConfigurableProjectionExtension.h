@@ -48,7 +48,7 @@ namespace Pulsar {
     class Interface : public TextInterface::To<ConfigurableProjectionExtension>
     {
       public:
-	Interface( ConfigurableProjectionExtension *s_instance = NULL );
+	      Interface( ConfigurableProjectionExtension *s_instance = NULL );
     };
 
     //! Construct from a ConfigurableProjection instance
@@ -187,7 +187,7 @@ namespace Pulsar {
     class Interface : public TextInterface::To<Transformation>
     {
       public:
-	Interface();
+	      Interface();
     };
 
   protected:

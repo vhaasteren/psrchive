@@ -16,7 +16,6 @@
 #include "MEAL/ChainRule.h"
 #include "MEAL/Value.h"
 #include "MEAL/Complex2.h"
-// #include "MEAL/Axis.h"
 
 #include "Estimate.h"
 #include "Stokes.h"
@@ -67,6 +66,12 @@ namespace Calibration {
 
     //! Set the multivariate function that constrains the specified parameter
     void set_constraint (unsigned index, MEAL::Nvariate<MEAL::Scalar>*);
+
+    //! Get the number of constrained parameters
+    unsigned get_nconstraint () const { return function.size(); }
+
+    //! Return true if the index is constrained
+    bool has_constraint (unsigned index) { return function.find(index) != function.end(); }
 
     class Argument
     {

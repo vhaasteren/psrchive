@@ -7,6 +7,8 @@
 
 #include "Pulsar/Application.h"
 #include "Pulsar/ConfigurableProjectionExtension.h"
+#include "Pulsar/ConfigurableProjection.h"
+
 #include "pairutil.h"
 
 using namespace std;
@@ -33,14 +35,20 @@ protected:
   //! Print a two-dimensional grid of configurable projection model
   bool configurable_projection_grid;
 
-  //! the parameter index on each axis
-  std::pair<unsigned,unsigned> configurable_projection_index; 
+  //! the abscissa index on each axis
+  std::pair<unsigned,unsigned> configurable_projection_abscissae; 
+
+  //! the index of the model parameter value to be printed at each point of grid
+  unsigned configurable_projection_model_index;
+
+  //! the frequency channel for which to extract a grid
+  unsigned grid_ichan;
 
   //! the number of grid points on each axis
-  std::pair<unsigned,unsigned> configurable_projection_points; 
+  std::pair<unsigned,unsigned> grid_points; 
 
   //! the minimum and maximum value on each axis
-  std::pair<double, double> configurable_projection_range[2]; 
+  std::pair<double, double> grid_range[2]; 
 
   //! Add command line options
   void add_options (CommandLine::Menu&);
@@ -52,20 +60,23 @@ pcmtxt::pcmtxt ()
 {
   configurable_projection_grid = false;
 
-  configurable_projection_index.first = 0;
-  configurable_projection_index.second = 1;
+  configurable_projection_model_index = 0;
+  configurable_projection_abscissae.first = 0;
+  configurable_projection_abscissae.second = 1;
+
+  grid_ichan = 0;
 
   // a 100x100 grid
-  configurable_projection_points.first = 100;
-  configurable_projection_points.second = 100;
+  grid_points.first = 100;
+  grid_points.second = 100;
 
   // range in hour angle (degrees)
-  configurable_projection_range[0].first = -20;
-  configurable_projection_range[0].second = +20;
+  grid_range[0].first = -20;
+  grid_range[0].second = +20;
 
   // range in declination (degrees)
-  configurable_projection_range[1].first = -60;
-  configurable_projection_range[1].second = +30;
+  grid_range[1].first = -60;
+  grid_range[1].second = +30;
 }
 
 
@@ -82,24 +93,35 @@ void pcmtxt::add_options (CommandLine::Menu& menu)
   // add a blank line and a header to the output of -h
   menu.add ("\n" "Configurable projection grid options:");
 
-  // set the indeces on each axis
+  // enable printing the configurable projection
   arg = menu.add (configurable_projection_grid, "cp");
-  arg->set_help ("print the configurable projection evaluated on a grid");
+  arg->set_help ("print configurable projection parameter on a grid");
 
   // set the indeces on each axis
-  arg = menu.add (configurable_projection_index, 'i', "ix,iy");
-  arg->set_help ("configurable projection model index on each grid axis");
+  arg = menu.add (configurable_projection_model_index, 'm', "index");
+  arg->set_help ("index of configurable projection model parameter");
 
   // set the indeces on each axis
-  arg = menu.add (configurable_projection_points, 'N', "Nx,Ny");
+  arg = menu.add (configurable_projection_abscissae, 'a', "ix,iy");
+  arg->set_help ("configurable projection abscissa index for each grid axis");
+
+  // add a blank line and a header to the output of -h
+  menu.add ("\n" "Generic grid options:");
+
+  // set the frequency axis
+  arg = menu.add (grid_ichan, 'c', "ichan");
+  arg->set_help ("frequency channel index of model data");
+
+  // set the indeces on each axis
+  arg = menu.add (grid_points, 'N', "Nx,Ny");
   arg->set_help ("number of points on each grid axis");
 
   // set the range on x-axis
-  arg = menu.add (configurable_projection_points, 'x', "xmin,xmax");
+  arg = menu.add (grid_range[0], 'x', "xmin,xmax");
   arg->set_help ("range on grid x-axis");
 
   // set the range on y-axis
-  arg = menu.add (configurable_projection_points, 'y', "ymin,ymax");
+  arg = menu.add (grid_range[1], 'y', "ymin,ymax");
   arg->set_help ("range on grid y-axis");
 }
 
@@ -124,9 +146,16 @@ void pcmtxt::process (Pulsar::Archive* archive)
 
 void pcmtxt::print (ConfigurableProjectionExtension* ext)
 {
+  auto projection = new ConfigurableProjection (ext);
 
+  auto xform = projection->get_transformation (grid_ichan)->get_transformation();
+
+  if (!xform->has_constraint(configurable_projection_model_index))
+    throw Error (InvalidParam, "pcmtxt::print", 
+                "model index=%u is not constrained", configurable_projection_model_index);
+
+  auto model = xform->get_model();
 }
-
 
 
 /*!

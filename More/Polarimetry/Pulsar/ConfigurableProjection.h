@@ -99,8 +99,7 @@ namespace Pulsar
       Transformation (Calibration::VariableTransformation* xform)
       {
         transformation = xform;
-        argument.signal.connect (xform,
-                                   &Calibration::VariableTransformation::set_argument);
+        argument.signal.connect (xform, &Calibration::VariableTransformation::set_argument);
       }
   
       //! The transformation
