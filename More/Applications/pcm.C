@@ -147,8 +147,7 @@ public:
   void disable_plotting ();
   
   // Construct a calibrator model for MEM mode
-  SystemCalibrator* measurement_equation_modeling (const string& binfile,
-						   unsigned nbin);
+  SystemCalibrator* measurement_equation_modeling (const string& binfile, unsigned nbin);
 
   // Construct a calibrator model for METM mode
   SystemCalibrator* matrix_template_matching (const string& stdname);
@@ -820,8 +819,7 @@ void pcm::set_projection (const string& filename)
   catch (Error& error)
   {
     if (verbose)
-      cerr << "pcm: failed to load ConfigurableProjection from "
-           << filename << endl;
+      cerr << "pcm: failed to load ConfigurableProjection from " << filename << endl;
   }
 
   cerr << "pcm: loading projection transformations from " << filename << endl;
