@@ -92,7 +92,7 @@ void pcmtxt::add_options (CommandLine::Menu& menu)
   arg->set_help ("name of configurable projection model parameter to be gridded");
 
   // set the indeces on each axis
-  arg = menu.add (configurable_projection_abscissae, 'a', "ix,iy");
+  arg = menu.add (configurable_projection_abscissae, 'a', "ix:iy");
   arg->set_help ("configurable projection abscissa index for each grid axis");
 
   // add a blank line and a header to the output of -h
@@ -103,15 +103,15 @@ void pcmtxt::add_options (CommandLine::Menu& menu)
   arg->set_help ("frequency channel index of model data");
 
   // set the indeces on each axis
-  arg = menu.add (grid_points, 'N', "Nx,Ny");
+  arg = menu.add (grid_points, 'N', "Nx:Ny");
   arg->set_help ("number of points on each grid axis");
 
   // set the range on x-axis
-  arg = menu.add (grid_range[0], 'x', "xmin,xmax");
+  arg = menu.add (grid_range[0], 'x', "xmin:xmax");
   arg->set_help ("range on grid x-axis");
 
   // set the range on y-axis
-  arg = menu.add (grid_range[1], 'y', "ymin,ymax");
+  arg = menu.add (grid_range[1], 'y', "ymin:ymax");
   arg->set_help ("range on grid y-axis");
 }
 
