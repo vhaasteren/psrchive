@@ -55,6 +55,9 @@ namespace Pulsar
     //! Return the value associated with the parameter name
     double get_value (const std::string& name);
 
+    //! Return the attribute names for each abscissa of the function constraining the specified index
+    const std::vector<std::string>& get_abscissa_names (unsigned index) { return parameters.at(index); }
+
     //! Get the configuration text from which this instance was constructed
     const std::string& get_configuration() const { return configuration; }
 

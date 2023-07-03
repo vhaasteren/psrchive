@@ -70,13 +70,13 @@ pcmtxt::pcmtxt ()
   grid_points.first = 100;
   grid_points.second = 100;
 
-  // range in hour angle (degrees)
-  grid_range[0].first = -20;
-  grid_range[0].second = +20;
+  // range in hour angle (radians)
+  grid_range[0].first = -1;
+  grid_range[0].second = +1;
 
-  // range in declination (degrees)
-  grid_range[1].first = -60;
-  grid_range[1].second = +30;
+  // range in declination (radians)
+  grid_range[1].first = -1;
+  grid_range[1].second = +1;
 }
 
 
@@ -149,10 +149,10 @@ void pcmtxt::print (ConfigurableProjectionExtension* ext)
   auto projection = new ConfigurableProjection (ext);
 
   auto xform = projection->get_transformation (grid_ichan)->get_transformation();
+  auto model = xform->get_model();
 
   if (!xform->has_constraint(configurable_projection_model_index))
   {
-    auto model = xform->get_model();
     string info = "\n\t" "constrained indeces include:";
     unsigned nconstraint = xform->get_nconstraint();
     for (unsigned jconstraint=0; jconstraint < nconstraint; jconstraint++)
@@ -166,7 +166,8 @@ void pcmtxt::print (ConfigurableProjectionExtension* ext)
   }
 
   auto constraint = xform->get_constraint (configurable_projection_model_index);
-
+  string model_parameter_name = model->get_param_name(configurable_projection_model_index);
+  vector<string> abscissa_names = projection->get_abscissa_names (configurable_projection_model_index);
   const unsigned ndim = constraint->get_ndim();
 
   if (ndim < 2)
@@ -193,6 +194,8 @@ void pcmtxt::print (ConfigurableProjectionExtension* ext)
     double y_min = grid_range[1].first;
     double y_max = grid_range[1].second;
     double y_step = (y_max - y_min) / (grid_points.second - 1);
+
+    cout << "# " << abscissa_names[x_index] << " " << abscissa_names[y_index] << " " << model_parameter_name << endl;
 
     for (unsigned ix=0; ix < grid_points.first; ix++)
     {
