@@ -32,14 +32,11 @@ public:
 
 protected:
 
-  //! Print a two-dimensional grid of configurable projection model
-  bool configurable_projection_grid;
+  //! Output a two-dimensional grid of the named configurable projection model parameter
+  string configurable_projection_parameter_name;
 
   //! the abscissa index on each axis
-  std::pair<unsigned,unsigned> configurable_projection_abscissae; 
-
-  //! the index of the model parameter value to be printed at each point of grid
-  unsigned configurable_projection_model_index;
+  std::pair<unsigned,unsigned> configurable_projection_abscissae;
 
   //! the frequency channel for which to extract a grid
   unsigned grid_ichan;
@@ -58,9 +55,6 @@ protected:
 pcmtxt::pcmtxt ()
   : Application ("pcmtxt", "print data extracted/derived from pcm.fits files")
 {
-  configurable_projection_grid = false;
-
-  configurable_projection_model_index = 0;
   configurable_projection_abscissae.first = 0;
   configurable_projection_abscissae.second = 1;
 
@@ -70,11 +64,11 @@ pcmtxt::pcmtxt ()
   grid_points.first = 100;
   grid_points.second = 100;
 
-  // range in hour angle (radians)
+  // range on x-axis (e.g. hour angle in radians)
   grid_range[0].first = -1;
   grid_range[0].second = +1;
 
-  // range in declination (radians)
+  // range on y-axis (e.g. declination in radians)
   grid_range[1].first = -1;
   grid_range[1].second = +1;
 }
@@ -93,13 +87,9 @@ void pcmtxt::add_options (CommandLine::Menu& menu)
   // add a blank line and a header to the output of -h
   menu.add ("\n" "Configurable projection grid options:");
 
-  // enable printing the configurable projection
-  arg = menu.add (configurable_projection_grid, "cp");
-  arg->set_help ("print configurable projection parameter on a grid");
-
   // set the indeces on each axis
-  arg = menu.add (configurable_projection_model_index, 'm', "index");
-  arg->set_help ("index of configurable projection model parameter");
+  arg = menu.add (configurable_projection_parameter_name, "cp", "name");
+  arg->set_help ("name of configurable projection model parameter to be gridded");
 
   // set the indeces on each axis
   arg = menu.add (configurable_projection_abscissae, 'a', "ix,iy");
@@ -134,7 +124,7 @@ void pcmtxt::add_options (CommandLine::Menu& menu)
 
 void pcmtxt::process (Pulsar::Archive* archive)
 {
-  if (configurable_projection_grid)
+  if (configurable_projection_parameter_name != "")
   {
     auto ext = archive->get<ConfigurableProjectionExtension>();
     if (!ext)
@@ -151,7 +141,24 @@ void pcmtxt::print (ConfigurableProjectionExtension* ext)
   auto xform = projection->get_transformation (grid_ichan)->get_transformation();
   auto model = xform->get_model();
 
-  if (!xform->has_constraint(configurable_projection_model_index))
+  unsigned nparam = model->get_nparam();
+  int model_index = -1;
+  for (unsigned iparam=0; iparam < nparam; iparam++)
+    if (model->get_param_name(iparam) == configurable_projection_parameter_name)
+      model_index = iparam;
+
+  if (model_index == -1)
+  {
+    string info = "\n\t" "constrained model parameter names include:";
+    for (unsigned iparam=0; iparam < nparam; iparam++)
+      info += " " + model->get_param_name(iparam);
+
+    throw Error (InvalidParam, "pcmtxt::print",
+                "parameter name='%s' not found %s",
+                configurable_projection_parameter_name.c_str(), info.c_str());
+  }
+
+  if (!xform->has_constraint(model_index))
   {
     string info = "\n\t" "constrained indeces include:";
     unsigned nconstraint = xform->get_nconstraint();
@@ -162,12 +169,12 @@ void pcmtxt::print (ConfigurableProjectionExtension* ext)
     }
 
     throw Error (InvalidParam, "pcmtxt::print", 
-                "model index=%u is not constrained %s", configurable_projection_model_index, info.c_str());
+                "model index=%u is not constrained %s", model_index, info.c_str());
   }
 
-  auto constraint = xform->get_constraint (configurable_projection_model_index);
-  string model_parameter_name = model->get_param_name(configurable_projection_model_index);
-  vector<string> abscissa_names = projection->get_abscissa_names (configurable_projection_model_index);
+  auto constraint = xform->get_constraint (model_index);
+  string model_parameter_name = model->get_param_name(model_index);
+  vector<string> abscissa_names = projection->get_abscissa_names (model_index);
   const unsigned ndim = constraint->get_ndim();
 
   if (ndim < 2)
