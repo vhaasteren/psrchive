@@ -151,10 +151,67 @@ void pcmtxt::print (ConfigurableProjectionExtension* ext)
   auto xform = projection->get_transformation (grid_ichan)->get_transformation();
 
   if (!xform->has_constraint(configurable_projection_model_index))
-    throw Error (InvalidParam, "pcmtxt::print", 
-                "model index=%u is not constrained", configurable_projection_model_index);
+  {
+    auto model = xform->get_model();
+    string info = "\n\t" "constrained indeces include:";
+    unsigned nconstraint = xform->get_nconstraint();
+    for (unsigned jconstraint=0; jconstraint < nconstraint; jconstraint++)
+    {
+      unsigned index = xform->get_index(jconstraint);
+      info += "\n\t" + tostring(index) + " " + model->get_param_name(index);
+    }
 
-  auto model = xform->get_model();
+    throw Error (InvalidParam, "pcmtxt::print", 
+                "model index=%u is not constrained %s", configurable_projection_model_index, info.c_str());
+  }
+
+  auto constraint = xform->get_constraint (configurable_projection_model_index);
+
+  const unsigned ndim = constraint->get_ndim();
+
+  if (ndim < 2)
+  {
+    cerr << "pcmtxt::print cannot grid constraint with only " << ndim << " dimensions" << endl;
+  }
+  else
+  {
+    unsigned x_index = configurable_projection_abscissae.first;
+    unsigned y_index = configurable_projection_abscissae.second;
+
+    if (x_index >= ndim)
+      throw Error (InvalidParam, "pcmtxt::print", "invalid x abscissa index=%u >= ndim=%u",
+                  x_index, ndim);
+
+    if (y_index >= ndim)
+      throw Error (InvalidParam, "pcmtxt::print", "invalid y abscissa index=%u >= ndim=%u",
+                  y_index, ndim);
+
+    double x_min = grid_range[0].first;
+    double x_max = grid_range[0].second;
+    double x_step = (x_max - x_min) / (grid_points.first -1);
+
+    double y_min = grid_range[1].first;
+    double y_max = grid_range[1].second;
+    double y_step = (y_max - y_min) / (grid_points.second - 1);
+
+    for (unsigned ix=0; ix < grid_points.first; ix++)
+    {
+      double x_value = x_min + x_step * ix;
+      constraint->set_abscissa_value (x_index, x_value);
+
+      for (unsigned iy=0; iy < grid_points.second; iy++)
+      {
+        double y_value = y_min + y_step * iy;
+        constraint->set_abscissa_value (y_index, y_value);
+
+        double model_value = constraint->evaluate();
+
+        cout << x_value << " " << y_value << " " << model_value << endl;
+      }
+
+      cout << endl;      
+    }
+  } 
 }
 
 

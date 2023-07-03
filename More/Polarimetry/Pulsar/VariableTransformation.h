@@ -70,8 +70,14 @@ namespace Calibration {
     //! Get the number of constrained parameters
     unsigned get_nconstraint () const { return function.size(); }
 
+    //! Get the index of the jth constrained parameter
+    unsigned get_index (unsigned j);
+    
     //! Return true if the index is constrained
     bool has_constraint (unsigned index) { return function.find(index) != function.end(); }
+
+    //! Get the constraining function for the specified index
+    MEAL::Nvariate<MEAL::Scalar>* get_constraint (unsigned index) { return function.at(index); }
 
     class Argument
     {

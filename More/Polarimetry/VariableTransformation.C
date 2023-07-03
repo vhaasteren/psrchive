@@ -94,6 +94,23 @@ void VariableTransformation::set_constraint (unsigned index,
   chain.set_constraint (index, func);
 }
 
+unsigned VariableTransformation::get_index (unsigned jconstraint)
+{
+  auto it = function.begin();
+  unsigned j = 0;
+  while (j < jconstraint && it != function.end())
+  {
+    j++;
+    it++;
+  }
+
+  if (j != jconstraint)
+    throw Error (InvalidParam, "VariableTransformation::get_index",
+          "jconstraint=%u >= nconstraint=%u", jconstraint, function.size());
+
+  return it->first;
+}
+
 void VariableTransformation::set_argument (const Argument& argset)
 {
   if ( argset.arguments.size() != function.size() )
