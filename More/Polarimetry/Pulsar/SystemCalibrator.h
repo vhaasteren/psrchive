@@ -234,6 +234,9 @@ namespace Pulsar
     //! Report on the number of failed attempts to add data
     virtual void set_report_input_failed (bool flag = true);
 
+    //! Report on the data and model before and after the fit
+    virtual void set_report_data_and_model (bool flag = true);
+
     //! Set the threshold used to reject outliers when computing CAL levels
     void set_cal_outlier_threshold (float f) { cal_outlier_threshold = f; }
 
@@ -498,6 +501,9 @@ namespace Pulsar
 
     //! Report the number of input failures
     bool report_input_failed;
+
+    //! Report on the data and model before and after the fit
+    bool report_data_and_model;
 
     //! Threshold used to reject outliers when computing CAL levels
     double cal_outlier_threshold;

@@ -643,7 +643,8 @@ Calibration::ReceptionModel::Solver* new_solver (const string& name)
 static bool output_report = false;
 static bool prefit_report = false;
 static bool failed_report = false;
-static bool input_data = false;
+static bool input_data_report = false;
+static bool data_and_model_report = false;
 
 static bool plot_guess = false;
 static bool plot_residual = false;
@@ -661,7 +662,10 @@ void pcm::enable_diagnostic (const string& name)
     prefit_report = true;
 
   else if (name == "input")
-    input_data = true;
+    input_data_report = true;
+
+  else if (name == "data")
+    data_and_model_report = true;
 
   else if (name == "chisq" || name == "report")
     output_report = true;
@@ -1282,9 +1286,10 @@ void configure_model (Pulsar::SystemCalibrator* model)
     model->set_step_finder( new RobustStepFinder (step_threshold) );
 
   model->set_report_initial_state (prefit_report);
-  model->set_report_input_data (input_data);
+  model->set_report_input_data (input_data_report);
   model->set_report_input_failed (failed_report);
-
+  model->set_report_data_and_model (data_and_model_report);
+  
   if (response)
     model->set_response( response );
 

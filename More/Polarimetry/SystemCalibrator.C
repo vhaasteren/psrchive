@@ -29,6 +29,7 @@
 
 #include "Pulsar/ModelParametersReport.h"
 #include "Pulsar/InputDataReport.h"
+#include "Pulsar/DataAndModelReport.h"
 
 #include "Pulsar/ArchiveMatch.h"
 #include "Pulsar/IntegrationExpert.h"
@@ -40,6 +41,7 @@
 #include "BatchQueue.h"
 #include "Pauli.h"
 
+#include "strutil.h"
 // #define _DEBUG 1
 #include "debug.h"
 
@@ -81,6 +83,7 @@ SystemCalibrator::SystemCalibrator (Archive* archive)
   report_initial_state = false;
   report_input_data = false;
   report_input_failed = false;
+  report_data_and_model = false;
 
   cal_outlier_threshold = 0.0;
   cal_intensity_threshold = 1.0;    // sigma
@@ -1662,16 +1665,27 @@ void SystemCalibrator::init_model (unsigned ichan)
 
   Calibration::ReceptionModel* equation = model[ichan]->get_equation();
 
+  string filename;
+
   if (report_initial_state)
   {
-    string filename = "prefit_model_" + tostring(ichan) + ".txt";
+   filename = stringprintf("prefit_model_ichan%04d.txt",ichan);
     equation->add_prefit_report ( new Calibration::ModelParametersReport(filename) );
   }
 
   if (report_input_data)
   {
-    string filename = "input_data_" + tostring(ichan) + ".txt";
+    filename = stringprintf("input_data_ichan%04d.txt",ichan);
     equation->add_prefit_report ( new Calibration::InputDataReport(filename) );
+  }
+
+  if (report_data_and_model)
+  {
+    filename = stringprintf("results_init_ichan%04d.dat",ichan);
+    equation->add_prefit_report ( new Calibration::DataAndModelReport(filename) );
+    
+    filename = stringprintf("results_ichan%04d.dat",ichan);
+    equation->add_postfit_report ( new Calibration::DataAndModelReport(filename) );
   }
 }
 
@@ -2397,6 +2411,12 @@ void SystemCalibrator::set_report_initial_state (bool flag)
 void SystemCalibrator::set_report_input_data (bool flag)
 {
   report_input_data = flag;
+}
+
+//! Report on the data and model before and after the fit
+void SystemCalibrator::set_report_data_and_model (bool flag)
+{
+  report_data_and_model = flag;
 }
 
 void SystemCalibrator::set_report_input_failed (bool flag)

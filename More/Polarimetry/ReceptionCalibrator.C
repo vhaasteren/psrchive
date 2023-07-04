@@ -700,12 +700,9 @@ void ReceptionCalibrator::solve_prepare () try
 
   if (previous_cal)
   {
-    cerr << "Pulsar::ReceptionCalibrator::solve_prepare using previous solution"
-	 << endl;
+    cerr << "Pulsar::ReceptionCalibrator::solve_prepare using previous solution" << endl;
     for (unsigned ichan=0; ichan<model.size(); ichan++)
-      calibrator_estimate[ichan]->source
-	-> set_stokes( (Stokes< Estimate<double> >)
-		       previous_cal->get_stokes (ichan) );
+      calibrator_estimate[ichan]->source -> set_stokes( (Stokes< Estimate<double> >) previous_cal->get_stokes (ichan) );
   }
   
   SystemCalibrator::solve_prepare ();

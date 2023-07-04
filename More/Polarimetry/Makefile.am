@@ -10,90 +10,91 @@ nobase_include_HEADERS = \
 	Pulsar/BoostShiftAnalysis.h \
 	Pulsar/Britton2000.h \
 	Pulsar/BrittonInfo.h \
-        Pulsar/CalibratorStokesInfo.h \
+	Pulsar/CalibratorStokesInfo.h \
 	Pulsar/CalInterpreter.h \
-        Pulsar/ChannelSubsetMatch.h \
-        Pulsar/CoherencyMeasurement.h \
-        Pulsar/CoherencyMeasurementSet.h \
+	Pulsar/ChannelSubsetMatch.h \
+	Pulsar/CoherencyMeasurement.h \
+	Pulsar/CoherencyMeasurementSet.h \
 	Pulsar/ComplexRVMFit.h \
 	Pulsar/ConfigurableProjection.h \
 	Pulsar/ConfigurableProjectionInfo.h \
 	Pulsar/ConstantGainInfo.h \
-        Pulsar/ConvertMJD.h \
-        Pulsar/Database.h \
+	Pulsar/ConvertMJD.h \
+	Pulsar/DataAndModelReport.h \
+	Pulsar/Database.h \
 	Pulsar/DataSetManager.h \
-        Pulsar/DeltaPA.h \
-        Pulsar/DeltaRM.h \
+	Pulsar/DeltaPA.h \
+	Pulsar/DeltaRM.h \
 	Pulsar/Distortion.h \
-        Pulsar/DoPCalibrator.h \
-        Pulsar/Faraday.h \
-        Pulsar/FaradayRotation.h \
-        Pulsar/Feed.h \
+	Pulsar/DoPCalibrator.h \
+	Pulsar/Faraday.h \
+	Pulsar/FaradayRotation.h \
+	Pulsar/Feed.h \
 	Pulsar/FitGoodnessReport.h \
-        Pulsar/FluxCalibrator.h \
-        Pulsar/FluxCalibratorInfo.h \
-        Pulsar/FluxCalibratorPolicy.h \
+	Pulsar/FluxCalibrator.h \
+	Pulsar/FluxCalibratorInfo.h \
+	Pulsar/FluxCalibratorPolicy.h \
 	Pulsar/FluxCalManager.h \
 	Pulsar/FluxCalManagerInfo.h \
 	Pulsar/FourthMomentInterpreter.h \
 	Pulsar/FourthMomentStats.h \
 	Pulsar/FrontendCorrection.h \
-        Pulsar/HybridCalibrator.h \
+	Pulsar/HybridCalibrator.h \
 	Pulsar/InputDataReport.h \
-        Pulsar/Instrument.h \
+	Pulsar/Instrument.h \
 	Pulsar/InstrumentInfo.h \
-        Pulsar/IonosphereCalibrator.h \
-        Pulsar/IRIonosphere.h \
+	Pulsar/IonosphereCalibrator.h \
+	Pulsar/IRIonosphere.h \
 	Pulsar/IXRInfo.h \
 	Pulsar/KnownVariableTransformation.h \
-        Pulsar/ManualPolnCalibrator.h \
+	Pulsar/ManualPolnCalibrator.h \
 	Pulsar/VariableTransformationFile.h \
-        Pulsar/MeanCoherency.h \
-        Pulsar/MeanFeed.h \
-        Pulsar/MeanInstrument.h \
+	Pulsar/MeanCoherency.h \
+	Pulsar/MeanFeed.h \
+	Pulsar/MeanInstrument.h \
 	Pulsar/MeanJones.h \
-        Pulsar/MeanPolar.h \
-        Pulsar/MeanSingleAxis.h \
-        Pulsar/MeasurementEquation.h \
+	Pulsar/MeanPolar.h \
+	Pulsar/MeanSingleAxis.h \
+	Pulsar/MeasurementEquation.h \
 	Pulsar/ModelParametersReport.h \
 	Pulsar/ModeSeparation.h \
 	Pulsar/NancayProjectionCorrection.h \
-        Pulsar/ObservationUncertainty.h \
-        Pulsar/OffPulseCalibrator.h \
-        Pulsar/Parallactic.h \
-        Pulsar/PolarCalibrator.h \
+	Pulsar/ObservationUncertainty.h \
+	Pulsar/OffPulseCalibrator.h \
+	Pulsar/Parallactic.h \
+	Pulsar/PolarCalibrator.h \
 	Pulsar/PolarCalibratorInfo.h \
-        Pulsar/Polarization.h \
-        Pulsar/PolnCalibrator.h \
+	Pulsar/Polarization.h \
+	Pulsar/PolnCalibrator.h \
 	Pulsar/PolnCalibratorInfo.h \
 	Pulsar/PolnCalExtFreqIntegrate.h \
-        Pulsar/PolnProfile.h \
-        Pulsar/PolnProfileFit.h \
-        Pulsar/PolnProfileFitAnalysis.h \
-        Pulsar/PolnProfileStats.h \
-        Pulsar/PolnProfileStatsInterface.h \
+	Pulsar/PolnProfile.h \
+	Pulsar/PolnProfileFit.h \
+	Pulsar/PolnProfileFitAnalysis.h \
+	Pulsar/PolnProfileStats.h \
+	Pulsar/PolnProfileStatsInterface.h \
 	Pulsar/PolnSpectrumStats.h \
 	Pulsar/PolnStatistics.h \
 	Pulsar/PolynomialInfo.h \
 	Pulsar/ProjectionCorrection.h \
-        Pulsar/PulsarCalibrator.h \
-        Pulsar/ReceptionCalibrator.h \
-        Pulsar/ReceptionModel.h \
+	Pulsar/PulsarCalibrator.h \
+	Pulsar/ReceptionCalibrator.h \
+	Pulsar/ReceptionModel.h \
 	Pulsar/ReceptionModelReport.h \
 	Pulsar/ReceptionModelSolver.h \
 	Pulsar/ReceptionModelSolveGSL.h \
 	Pulsar/ReceptionModelSolveMEAL.h \
-        Pulsar/ReferenceCalibrator.h \
-        Pulsar/ReflectStokes.h \
+	Pulsar/ReferenceCalibrator.h \
+	Pulsar/ReflectStokes.h \
 	Pulsar/RobustStepFinder.h \
 	Pulsar/RotatingVectorModelOptions.h \
-        Pulsar/SignalPath.h \
-        Pulsar/Simulation.h \
-        Pulsar/SingleAxisCalibrator.h \
+	Pulsar/SignalPath.h \
+	Pulsar/Simulation.h \
+	Pulsar/SingleAxisCalibrator.h \
 	Pulsar/SingleAxisCalibratorInfo.h \
-        Pulsar/SingleAxis.h \
-        Pulsar/SingleAxisPolynomial.h \
-        Pulsar/SingleAxisSolver.h \
+	Pulsar/SingleAxis.h \
+	Pulsar/SingleAxisPolynomial.h \
+	Pulsar/SingleAxisSolver.h \
 	Pulsar/SolverInfo.h \
 	Pulsar/SourceDeltaEstimate.h \
 	Pulsar/SourceEstimate.h \
@@ -102,14 +103,15 @@ nobase_include_HEADERS = \
 	Pulsar/StandardPrepare.h \
 	Pulsar/StandardSpectra.h \
 	Pulsar/StepsInfo.h \
-	Pulsar/StokesCovariance.h Pulsar/StokesCrossCovariance.h \
-        Pulsar/SystemCalibrator.h \
-        Pulsar/SystemCalibratorManager.h \
+	Pulsar/StokesCovariance.h \
+	Pulsar/StokesCrossCovariance.h \
+	Pulsar/SystemCalibrator.h \
+	Pulsar/SystemCalibratorManager.h \
 	Pulsar/SystemCalibratorStepFinder.h \
 	Pulsar/SystemCalibratorUnloader.h \
 	Pulsar/UnloadJones.h \
-        Pulsar/TemplateUncertainty.h \
-        Pulsar/TotalCovariance.h \
+	Pulsar/TemplateUncertainty.h \
+	Pulsar/TotalCovariance.h \
 	Pulsar/TransformationFactory.h \
 	Pulsar/VariableBackend.h \
 	Pulsar/VariableBackendEstimate.h \
@@ -129,113 +131,114 @@ libPolarimetry_la_SOURCES = \
 	BoostShiftAnalysis.C \
 	Britton2000.C \
 	BrittonInfo.C \
-        CalibratorStokesInfo.C \
+	CalibratorStokesInfo.C \
 	CalibratorType_factory.C \
 	CalInterpreter.C \
-        ChannelSubsetMatch.C \
-        choose.C \
-        CoherencyMeasurement.C \
-        CoherencyMeasurementSet.C \
+	ChannelSubsetMatch.C \
+	choose.C \
+	CoherencyMeasurement.C \
+	CoherencyMeasurementSet.C \
 	ComplexRVMFit.C \
 	ConfigurableProjection.C \
 	ConfigurableProjectionInfo.C \
 	ConfigurableProjectionExt.C \
 	ConstantGainInfo.C \
-        ConvertMJD.C \
-        Database.C \
+	ConvertMJD.C \
+	DataAndModelReport.C \
+	Database.C \
 	DataSetManager.C \
-        DeltaPA.C \
-        DeltaRM.C \
+	DeltaPA.C \
+	DeltaRM.C \
 	Distortion.C \
-        DoPCalibrator.C \
-        Faraday.C \
-        FaradayRotation.C \
-        Feed.C \
-        Feed_load.C \
+	DoPCalibrator.C \
+	Faraday.C \
+	FaradayRotation.C \
+	Feed.C \
+	Feed_load.C \
 	FitGoodnessReport.C \
-        FluxCalibrator.C \
+	FluxCalibrator.C \
 	FluxCalibratorExt.C \
-        FluxCalibratorInfo.C \
-        FluxCalibratorPolicy.C \
+	FluxCalibratorInfo.C \
+	FluxCalibratorPolicy.C \
 	FluxCalibratorConstantGain.C \
-        FluxCalibratorVariableGain.C \
+	FluxCalibratorVariableGain.C \
 	FluxCalManager.C \
 	FluxCalManagerInfo.C \
 	FourthMomentInterpreter.C \
 	FourthMomentStats.C \
 	FrontendCorrection.C \
-        HybridCalibrator.C \
+	HybridCalibrator.C \
 	InputDataReport.C \
-        Instrument.C \
-        InstrumentInfo.C \
-        Integration_defaraday.C \
-        IonosphereCalibrator.C \
-        IRIonosphere.C \
+	Instrument.C \
+	InstrumentInfo.C \
+	Integration_defaraday.C \
+	IonosphereCalibrator.C \
+	IRIonosphere.C \
 	IXRInfo.C \
 	KnownVariableTransformation.C \
 	ManualPolnCalibrator.C \
-        MeanCoherency.C \
-        MeanFeed.C \
-        MeanInstrument.C \
+	MeanCoherency.C \
+	MeanFeed.C \
+	MeanInstrument.C \
 	MeanJones.C \
-        MeanPolar.C \
-        MeanSingleAxis.C \
-        MeasurementEquation.C \
+	MeanPolar.C \
+	MeanSingleAxis.C \
+	MeasurementEquation.C \
 	ModelParametersReport.C \
 	ModeSeparation.C \
 	NancayProjectionCorrection.C \
-        ObservationUncertainty.C \
-        OffPulseCalibrator.C \
-        Parallactic.C \
-        PolarCalibrator.C \
+	ObservationUncertainty.C \
+	OffPulseCalibrator.C \
+	Parallactic.C \
+	PolarCalibrator.C \
 	PolarCalibratorInfo.C \
-        Polarization.C \
-        Polar_solve.C \
-        PolnCalibrator.C \
-        PolnCalibratorExt.C \
-        PolnCalibratorInfo.C \
+	Polarization.C \
+	Polar_solve.C \
+	PolnCalibrator.C \
+	PolnCalibratorExt.C \
+	PolnCalibratorInfo.C \
 	PolnCalExtFreqIntegrate.C \
-        PolnProfile.C \
-        PolnProfileFit.C \
-        PolnProfileFitAnalysis.C \
-        PolnProfileStats.C \
-        PolnProfileStatsInterface.C \
+	PolnProfile.C \
+	PolnProfileFit.C \
+	PolnProfileFitAnalysis.C \
+	PolnProfileStats.C \
+	PolnProfileStatsInterface.C \
 	PolnSpectrumStats.C \
 	PolnStatistics.C \
 	PolynomialInfo.C \
 	ProjectionCorrection.C \
-        PulsarCalibrator.C \
-        ReceptionCalibrator.C \
-        ReceptionModel.C \
+	PulsarCalibrator.C \
+	ReceptionCalibrator.C \
+	ReceptionModel.C \
 	ReceptionModelReport.C \
 	ReceptionModelSolver.C \
 	ReceptionModelSolveMEAL.C \
-        ReferenceCalibrator.C \
-        ReflectStokes.C \
+	ReferenceCalibrator.C \
+	ReflectStokes.C \
 	RobustStepFinder.C \
 	RotatingVectorModelOptions.C \
-        SignalPath.C \
-        Simulation.C \
-        SingleAxis.C \
-        SingleAxisCalibrator.C \
+	SignalPath.C \
+	Simulation.C \
+	SingleAxis.C \
+	SingleAxisCalibrator.C \
 	SingleAxisCalibratorInfo.C \
-        SingleAxisPolynomial.C \
-        SingleAxisSolver.C \
+	SingleAxisPolynomial.C \
+	SingleAxisSolver.C \
 	SolverInfo.C \
 	SourceDeltaEstimate.C \
 	SourceEstimate.C \
-        SourceInfo.C \
+	SourceInfo.C \
 	StandardData.C \
 	StandardPrepare.C \
 	StandardSpectra.C \
 	StepsInfo.C \
 	StokesCovariance.C StokesCrossCovariance.C \
-        SystemCalibrator.C \
-        SystemCalibratorManager.C \
+	SystemCalibrator.C \
+	SystemCalibratorManager.C \
 	SystemCalibratorUnloader.C \
 	UnloadJones.C \
-        TemplateUncertainty.C \
-        TotalCovariance.C \
+	TemplateUncertainty.C \
+	TotalCovariance.C \
 	TransformationFactory.C \
 	VariableBackend.C \
 	VariableBackendEstimate.C \
