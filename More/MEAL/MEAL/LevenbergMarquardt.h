@@ -290,15 +290,12 @@ namespace MEAL
 
     float get_weighted_norm (const val_type& data) const
     { 
-      return data.real()*data.real()*inv_var_real 
-	+ data.imag()*data.imag()*inv_var_imag;
+      return data.real()*data.real()*inv_var_real + data.imag()*data.imag()*inv_var_imag;
     }
 
     var_type inv_var_real;
     var_type inv_var_imag;
-
   };
-
 
 
   //! Calculates alpha and beta
@@ -377,8 +374,7 @@ float MEAL::LevenbergMarquardt<Grad>::init
 }
 
 template<class T>
-void verify_orthogonal (const std::vector<std::vector<double > >& alpha,
-			const T& model)
+void verify_orthogonal (const std::vector<std::vector<double > >& alpha, const T& model)
 {
   unsigned nrow = alpha.size();
 
@@ -436,23 +432,27 @@ void verify_orthogonal (const std::vector<std::vector<double > >& alpha,
     for (unsigned irow=krow+1; irow<nfree; irow++)
     {
       if (row_mod[irow] == 0)
-	continue;
+      {
+      	continue;
+      }
 
       double degen = 0.0;
       for (unsigned jcol=0; jcol<nfree; jcol++)
+      {
         degen += alpha[krow][jcol] * alpha[irow][jcol];
+      }
 
       degen /= row_mod[krow] * row_mod[irow];
 
       if (degen > 0.8)
       {
         double ival = model.get_param(indeces[irow]);
-	double kval = model.get_param(indeces[krow]);
+	      double kval = model.get_param(indeces[krow]);
 
-	std::cerr << "degen(" << names[krow] << "," << names[irow] << ") = "
-		  << degen << std::endl 
-		  << "\t" << names[krow] << " = " << kval << std::endl
-		  << "\t" << names[irow] << " = " << ival << std::endl;
+        std::cerr << "degen(" << names[krow] << "," << names[irow] << ") = "
+          << degen << std::endl 
+          << "\t" << names[krow] << " = " << kval << std::endl
+          << "\t" << names[irow] << " = " << ival << std::endl;
       }
 
       if (!myfinite(degen))
@@ -469,12 +469,14 @@ std::string MEAL::get_name (const Mt& model, unsigned iparam)
 {
   unsigned ifree = 0;
   for (unsigned i=0; i < model.get_nparam(); i++)
+  {
     if (model.get_infit(i))
     {
       if (ifree == iparam)
-	return model.get_param_name(i);
+	      return model.get_param_name(i);
       ifree ++;
     }
+  }
   return "unknown";
 }
 
@@ -498,33 +500,40 @@ void MEAL::LevenbergMarquardt<Grad>::solve_delta (const Mt& model)
     std::cerr << "MEAL::LevenbergMarquardt<Grad>::solve_delta" << std::endl;
 
   if (alpha.size() != model.get_nparam())
+  {
     throw Error (InvalidState, 
 		 "MEAL::LevenbergMarquardt<Grad>::solve_delta",
 		  "alpha.size=%d != model.nparam=%d", 
 		 alpha.size(), model.get_nparam());
+  }
 
   if (verbose > 0)
+  {
     std::cerr << "MEAL::LevenbergMarquardt<Grad>::solve_delta lamda="
-	 << lamda << " nparam=" << model.get_nparam() << std::endl;
+	     << lamda << " nparam=" << model.get_nparam() << std::endl;
+  }
 
   unsigned iinfit = 0;
   for (unsigned ifit=0; ifit<model.get_nparam(); ifit++)
   {
     if (verbose > 0)
       std::cerr << "MEAL::LevenbergMarquardt<Grad>::solve_delta i=" << ifit
-		<< " " << model.get_param_name(ifit);
+		    << " " << model.get_param_name(ifit);
  
     if (model.get_infit(ifit))
     {
       if (verbose > 0)
-	std::cerr << " in fit" << std::endl;
+	      std::cerr << " in fit" << std::endl;
       
       unsigned jinfit = 0;
       for (unsigned jfit=0; jfit<model.get_nparam(); jfit++)
-	if (model.get_infit(jfit)) {
-	  alpha[iinfit][jinfit]=best_alpha[ifit][jfit];
-	  jinfit ++;
-	}
+      {
+      	if (model.get_infit(jfit))
+        {
+	        alpha[iinfit][jinfit]=best_alpha[ifit][jfit];
+	        jinfit ++;
+	      }
+      }
 
       alpha[iinfit][iinfit] *= (1.0 + lamda);
       delta[iinfit][0]=best_beta[ifit];
@@ -538,13 +547,10 @@ void MEAL::LevenbergMarquardt<Grad>::solve_delta (const Mt& model)
   }
 
   if (iinfit == 0)
-    throw Error (InvalidState,
-		 "MEAL::LevenbergMarquardt<Grad>::solve_delta"
-		  "no parameters in fit");
+    throw Error (InvalidState, "MEAL::LevenbergMarquardt<Grad>::solve_delta", "no parameters in fit");
 
   if (verbose > 2)
-    std::cerr << "MEAL::LevenbergMarquardt<Grad>::solve_delta for " << iinfit
-	 << " parameters" << std::endl;
+    std::cerr << "MEAL::LevenbergMarquardt<Grad>::solve_delta for " << iinfit << " parameters" << std::endl;
 
   //! curvature matrix
   std::vector<std::vector<double> > temp_copy (alpha);
@@ -562,8 +568,7 @@ void MEAL::LevenbergMarquardt<Grad>::solve_delta (const Mt& model)
   }
 
   if (verbose > 2)
-    std::cerr << "MEAL::LevenbergMarquardt<Grad>::solve_delta exit" 
-	      << std::endl;
+    std::cerr << "MEAL::LevenbergMarquardt<Grad>::solve_delta exit" << std::endl;
 }
 
 // /////////////////////////////////////////////////////////////////////////
@@ -603,8 +608,7 @@ float MEAL::LevenbergMarquardt<Grad>::iter
   // parameters.  Update the model.
 
   if (verbose > 2)
-    std::cerr << "MEAL::LevenbergMarquardt<Grad>::iter update model"
-	      << std::endl;
+    std::cerr << "MEAL::LevenbergMarquardt<Grad>::iter update model" << std::endl;
 
   unsigned iinfit = 0;
   for (unsigned ifit=0; ifit<model.get_nparam(); ifit++)
@@ -626,8 +630,8 @@ float MEAL::LevenbergMarquardt<Grad>::iter
   }
 
   if (verbose > 2)
-    std::cerr << "MEAL::LevenbergMarquardt<Grad>::iter"
-      " calculate new chisq" << std::endl;
+    std::cerr << "MEAL::LevenbergMarquardt<Grad>::iter calculate new chisq" << std::endl;
+
   float new_chisq = calculate_chisq (x, y, model);
 
   if (new_chisq < best_chisq)
@@ -669,8 +673,8 @@ float MEAL::LevenbergMarquardt<Grad>::iter
 // /////////////////////////////////////////////////////////////////////////
 
 /*! After a call to init or iter, best_alpha contains the last
-   curvature matrix computed.  A call is made to solve_delta with
-   lamda=0; member "alpha" will then contain the covariance matrix.
+   curvature matrix computed.  A call is made to solve_delta with lamda=0; 
+   member "alpha" will then be equal to 2 times the covariance matrix.
 
    \retval covar the covariance matrix
    \retval curve the curvature matrix
@@ -702,20 +706,23 @@ void MEAL::LevenbergMarquardt<Grad>::result
     covar[idim].resize (model.get_nparam());
  
     if (!model.get_infit(idim))
+    {
       for (unsigned jdim=0; jdim < model.get_nparam(); jdim++)
-	covar[idim][jdim] = 0;
+	      covar[idim][jdim] = 0;
+    }
     else
     {
       unsigned jindim = 0;
       for (unsigned jdim=0; jdim < model.get_nparam(); jdim++)
-	if (model.get_infit(jdim))
+      {
+      	if (model.get_infit(jdim))
         {
-	  covar[idim][jdim] = alpha [iindim][jindim];
-	  jindim ++;
-	}
-	else
-	  covar[idim][jdim] = 0;
-
+      	  covar[idim][jdim] = alpha [iindim][jindim];
+	        jindim ++;
+	      }
+	      else
+	        covar[idim][jdim] = 0;
+      }
       iindim ++;
     }
   }  
@@ -768,11 +775,9 @@ float MEAL::LevenbergMarquardt<Grad>::calculate_chisq
   for (unsigned ipt=0; ipt < x.size(); ipt++)
   {
     if (verbose > 2)
-      std::cerr << "MEAL::LevenbergMarquardt<Grad>::chisq lmcoff[" << ipt
-	   << "/" << x.size() << "]" << std::endl;
+      std::cerr << "MEAL::LevenbergMarquardt<Grad>::chisq lmcoff[" << ipt << "/" << x.size() << "]" << std::endl;
 
-    Chisq += lmcoff (model, x[ipt], y[ipt],
-		     gradient, alpha, beta);
+    Chisq += lmcoff (model, x[ipt], y[ipt], gradient, alpha, beta);
   }
 
   // populate the symmetric half of the curvature matrix
@@ -867,15 +872,16 @@ try
 
       // Equation 15.5.11
       for (unsigned jfit=0; jfit <= ifit; jfit++)
+      {
 	if (model.get_infit(jfit))
         {
           double term = traits.to_real (w_gradient * gradient[jfit]);
           if (!myfinite(term))
-            throw Error (InvalidState, "MEAL::lmcoff1"
-                         "non-finite contribution to alpha");
+            throw Error (InvalidState, "MEAL::lmcoff1", "non-finite contribution to alpha");
 
           alpha[ifit][jfit] += term;
         }
+      }
     }
   }
 

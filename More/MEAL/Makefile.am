@@ -249,7 +249,7 @@ TESTS = \
 	test_StokesError test_StokesCovariance test_Vectorize		 \
 	test_UnitTangent test_ComplexCorrelation	 \
 	test_Spinor test_CrossCoherency test_JonesMueller test_bessi0    \
-	test_GaussJordan
+	test_GaussJordan test_lm_covar
 
 check_PROGRAMS = $(TESTS) test_Function_load test_NvariateScalarFactory
 
@@ -277,6 +277,7 @@ test_CrossCoherency_SOURCES	= test_CrossCoherency.C
 test_JonesMueller_SOURCES	= test_JonesMueller.C
 test_NvariateScalarFactory_SOURCES = test_NvariateScalarFactory.C
 test_GaussJordan_SOURCES	= test_GaussJordan.C
+test_lm_covar_SOURCES           = test_lm_covar.C
 
 ##############################################################################
 #
