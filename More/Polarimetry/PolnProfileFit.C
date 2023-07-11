@@ -141,8 +141,7 @@ void valvar( const Stokes< complex< Estimate<double> > >& data,
   }
 }
 
-void PolnProfileFit::set_regions (const PhaseWeight& on,
-					  const PhaseWeight& off)
+void PolnProfileFit::set_regions (const PhaseWeight& on, const PhaseWeight& off)
 {
   get_spectra()->get_stats()->set_regions ( on, off );
   regions_set = true;
@@ -571,7 +570,7 @@ Estimate<double> PolnProfileFit::get_phase () const
 
   if (phases->get_ngradient() == 0)
     throw Error (InvalidState, "PolnProfileFit::get_phase",
-		 "no phases have been added to the equation");
+                 "no phases have been added to the equation");
 
   return phases -> get_Estimate (0);
 }

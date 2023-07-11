@@ -89,7 +89,7 @@ namespace MEAL
       singular_threshold = 1e-8;
       restore_policy = NULL;
     }
-    
+
     //! returns initial chi-squared
     /*!
       At = abscissa type
@@ -870,7 +870,7 @@ try
       if (LevenbergMarquardt<Grad>::verbose > 2)
         std::cerr << "MEAL::lmcoff1 add to curvature matrix" << std::endl;
 
-      // Equation 15.5.11
+      // Equation 15.5.11 of NR
       for (unsigned jfit=0; jfit <= ifit; jfit++)
       {
 	if (model.get_infit(jfit))

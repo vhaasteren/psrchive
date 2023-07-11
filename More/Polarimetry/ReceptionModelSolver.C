@@ -69,8 +69,7 @@ void Calibration::ReceptionModel::Solver::count_constraint () try
       unsigned source_index = equation->data[idat][isource].get_input_index();
 
       if (source_index >= equation->get_num_input())
-	throw Error (InvalidRange,
-		     "Calibration::ReceptionModel::Solver::count_constraint",
+	      throw Error (InvalidRange, "Calibration::ReceptionModel::Solver::count_constraint",
 		     "isource=%u >= nsource=%u",
 		     source_index, equation->get_num_input());
       
@@ -224,26 +223,19 @@ void Calibration::ReceptionModel::Solver::set_variances ()
 
     if (verbose)
       cerr << "Calibration::ReceptionModel::Solver::set_variances"
-	" variance[" << iparam << "]=" << variance << endl;
+	      " variance[" << iparam << "]=" << variance << endl;
 
     if (!myfinite(variance))
-      throw Error (InvalidState, 
-		   "Calibration::ReceptionModel::Solver::set_variances",
-		   "non-finite variance "
-		   + equation->get_param_name(iparam));
+      throw Error (InvalidState, "Calibration::ReceptionModel::Solver::set_variances",
+		   "non-finite variance " + equation->get_param_name(iparam));
 
     if (!equation->get_infit(iparam) && variance != 0)
-      throw Error (InvalidState,
-		   "Calibration::ReceptionModel::Solver::set_variances",
-		   "non-zero unfit variance "
-		   + equation->get_param_name(iparam)
-		   + " = " + tostring(variance) );
+      throw Error (InvalidState, "Calibration::ReceptionModel::Solver::set_variances",
+		   "non-zero unfit variance " + equation->get_param_name(iparam) + " = " + tostring(variance) );
 
     if (variance < 0)
-      throw Error (InvalidState,
-		   "Calibration::ReceptionModel::Solver::set_variances",
-		   "invalid variance " + equation->get_param_name(iparam)
-		   + " = " + tostring(variance) );
+      throw Error (InvalidState, "Calibration::ReceptionModel::Solver::set_variances",
+		   "invalid variance " + equation->get_param_name(iparam) + " = " + tostring(variance) );
 
     // cerr << iparam << ".var=" << variance << endl;
 
