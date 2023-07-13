@@ -172,6 +172,7 @@ libPolarimetry_la_SOURCES = \
 	Instrument.C \
 	InstrumentInfo.C \
 	Integration_defaraday.C \
+        Integration_transform.C \
 	IonosphereCalibrator.C \
 	IRIonosphere.C \
 	IXRInfo.C \
@@ -306,9 +307,8 @@ test_IRIonosphere_SOURCES	= test_IRIonosphere.C
 
 if HAVE_YAMLCPP
 
-  check_PROGRAMS += test_yaml test_ConfigurableProjection
+  check_PROGRAMS += test_yaml
   test_yaml_SOURCES = test_yaml.C
-  test_ConfigurableProjection_SOURCES = test_ConfigurableProjection.C
 
 endif
 

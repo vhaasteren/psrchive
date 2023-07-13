@@ -225,7 +225,6 @@ libGeneral_la_SOURCES = \
         Integration_remove_baseline.C \
         Integration_rotate.C \
         Integration_total.C \
-        Integration_transform.C \
         Integration_weighted_frequency.C \
 	IntegrationBarycentre.C \
 	IntegrationWeight.C \
@@ -302,6 +301,7 @@ libGeneral_la_SOURCES = \
 	width.C \
 	WidthEstimator.C
 
+
 ##############################################################################
 #
 # GSL-dependent code
@@ -317,6 +317,7 @@ libGeneral_la_SOURCES += ProfilePCA.C
 endif
 endif
 
+
 ##############################################################################
 #
 # SPLINTER-dependent code
@@ -330,6 +331,7 @@ libGeneral_la_SOURCES += SplineSmooth.C \
 nobase_include_HEADERS += Pulsar/SplineSmooth.h
 
 endif
+
 
 #############################################################################
 #
