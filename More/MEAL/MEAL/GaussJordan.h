@@ -118,12 +118,11 @@ void MEAL::GaussJordan (std::vector<std::vector<T> >& a,
     if (big <= singular_threshold)
     {
       if (names)
-        for (unsigned k=i; k<nrow; k++)
+        for (int k=i; k<nrow; k++)
           std::cerr << "MEAL::GaussJordan singular irow=" << k << " name=" << (*names)[k] << std::endl;
 
       throw Error (InvalidState, "MEAL::GaussJordan",
-		   "Singular Matrix.  icol=%d nrow=%d pivot=%le",
-		   i, nrow, big);
+		   "Singular Matrix.  icol=%d nrow=%d pivot=%le", i, nrow, big);
     }
 
     assert (irow != -1 && icol != -1);

@@ -11,10 +11,10 @@
 
 using namespace std;
 
+const unsigned dim = 73;
+
 int once ()
 {
-  unsigned dim = 273;
-
   vector< vector<double> > test (dim, vector<double>(dim) );
   random_matrix (test, 10.0);
 
@@ -50,6 +50,7 @@ int main ()
   unsigned ntrial = 1000;
   unsigned nerr = 0;
 
+  cerr << "performing Gauss-Jordan elimination on " << ntrial << " " << dim << "x" << dim << " matrices" << endl;
   for (unsigned i=0; i < ntrial; i++) try
   {
     if (once () != 0)
