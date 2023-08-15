@@ -745,7 +745,10 @@ void Pulsar::FluxCalibrator::calibrate (Integration* subint)
 //! Get the number of frequency channels in the calibrator
 unsigned Pulsar::FluxCalibrator::get_nchan () const
 {
-  return data.size();
+  if (!data.size() && flux_extension) 
+    return flux_extension->get_nchan();
+  else
+    return data.size();
 }
 
 //! Get the number of receptors
