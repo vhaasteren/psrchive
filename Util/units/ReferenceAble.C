@@ -53,7 +53,7 @@ static pthread_mutex_t* get_mutex ()
 {
   static pthread_mutex_t* mutex = 0;
   if (!mutex)
-    mutex = recursive_mutex ();
+    mutex = ::recursive_mutex ();
   return mutex;
 }
 

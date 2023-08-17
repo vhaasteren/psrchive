@@ -279,9 +279,9 @@ void Pulsar::StokesCovariancePlot::get_profiles (const Archive* data) try
     
   }
 
-  set (plotter.plot_sci, plot_colours);
-  set (plotter.plot_sls, plot_lines);
-  set (plotter.plot_slw, plot_widths);
+  ::set (plotter.plot_sci, plot_colours);
+  ::set (plotter.plot_sls, plot_lines);
+  ::set (plotter.plot_slw, plot_widths);
 }
 
  catch (Error& error)
