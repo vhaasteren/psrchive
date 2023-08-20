@@ -204,7 +204,7 @@ class ArchiveComparisons::Interface
 
     add( &ArchiveComparisons::get_way,
 	 &ArchiveComparisons::set_way,
-	 "way", "'time' or 'freq'" );
+	 "way", "'time' or 'freq' or 'all'" );
   }
 };
 
