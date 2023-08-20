@@ -85,7 +85,8 @@ TESTS = test_ndIndex test_ndArray test_Alias test_tostring test_Error	\
 	test_circular_Reference test_Registry test_Functor		\
 	test_Callback test_separate test_TextInterface			\
 	test_parse_indeces test_TextIndex test_DynamicInterface		\
-	test_substitute test_escape test_ModifyRestore test_MethodFunction
+	test_substitute test_escape test_ModifyRestore test_MethodFunction \
+	test_stringtok
 
 check_PROGRAMS = $(TESTS) many_references many_calls benchmark_tostring
 
@@ -112,6 +113,7 @@ test_TextIndex_SOURCES		= test_TextIndex.C
 
 test_ModifyRestore_SOURCES      = test_ModifyRestore.C
 test_MethodFunction_SOURCES	= test_MethodFunction.C
+test_stringtok_SOURCES		= test_stringtok.C
 
 many_references_SOURCES		= many_references.C
 many_calls_SOURCES		= many_calls.C
