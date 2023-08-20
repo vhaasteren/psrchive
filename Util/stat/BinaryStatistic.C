@@ -23,13 +23,13 @@ using namespace std;
 
 namespace BinaryStatistics {
 
-  class CrossCorrelation : public BinaryStatistic
+  class NormalizedCrossCorrelation : public BinaryStatistic
   {
   public:
-    CrossCorrelation ()
-      : BinaryStatistic ("ccc", "cross-correlation coefficient")
+    NormalizedCrossCorrelation ()
+      : BinaryStatistic ("ncc", "Pearson correlation coefficient")
       {
-        add_alias ("ccf");
+	add_alias ("pcc");
       }
 
     double get (const vector<double>& dat1, const vector<double>& dat2)
@@ -51,7 +51,7 @@ namespace BinaryStatistics {
       return coeff / ( dat1.size() * sqrt( mu1[1] * mu2[1] ) );
     }
 
-    CrossCorrelation* clone () const { return new CrossCorrelation; }
+    NormalizedCrossCorrelation* clone () const { return new NormalizedCrossCorrelation; }
   };
 
   //! based on Kullback-Leibler divergence
@@ -64,7 +64,7 @@ namespace BinaryStatistics {
       : BinaryStatistic ("rse", "relative spectral entropy")
       {
 	// exponential distribution has a long tail
-	threshold = 9.0; // sigma
+	threshold = 3.0; // sigma
 
         add_alias ("kld");  // Kullback-Leibler divergence
       }
@@ -74,10 +74,10 @@ namespace BinaryStatistics {
       /* robust_variance returns the variance of dat1; which is the
 	 standard deviation of the exponentially distributed PSD */
       vector<float> fps1;
-      double cut1 = robust_variance (dat1, &fps1) * threshold;
+      double cut1 = robust_variance (dat1, &fps1) * threshold*threshold;
 
       vector<float> fps2;
-      double cut2 = robust_variance (dat2, &fps2) * threshold;
+      double cut2 = robust_variance (dat2, &fps2) * threshold*threshold;
 
       unsigned istart = 1; // skip DC
       double sum1 = 0.0;
@@ -86,6 +86,7 @@ namespace BinaryStatistics {
       
       for (unsigned i=istart; i < fps1.size(); i++)
       {
+        // ignore the noise
 	if (fps1[i] < cut1 || fps2[i] < cut2)
 	  continue;
       
@@ -150,7 +151,7 @@ void BinaryStatistic::build ()
  
   unsigned start_count = instance_count;
  
-  instances->push_back( new CrossCorrelation );
+  instances->push_back( new NormalizedCrossCorrelation );
   instances->push_back( new ChiSquared );
   instances->push_back( new GeneralizedChiSquared );
   instances->push_back( new RelativeSpectralEntropy );
