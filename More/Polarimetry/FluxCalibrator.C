@@ -193,6 +193,9 @@ Pulsar::FluxCalibrator::get_CalibratorStokes () const try
   if (calibrator_stokes)
     return calibrator_stokes;
   
+  // Set up the information if needed.
+  const_cast<FluxCalibrator*>(this)->setup();
+
   // Check that we have both polns
   if (get_nreceptor() != 2) 
     throw Error (InvalidState, "Pulsar::FluxCalibrator::get_CalibratorStokes",
