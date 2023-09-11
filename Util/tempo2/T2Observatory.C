@@ -199,6 +199,21 @@ void load_observatories ()
         if (!line.length())
             continue;
 
+
+        // Check for empty strings
+        bool valid=false;
+        for(unsigned index = 0; index < line.length(); index++){
+            if(!std::isspace(line[index])) {
+                valid=true;
+                break;
+            }
+        }
+
+        if (!valid) {
+            // if the string is empty just skip over it
+            continue;
+        }
+
         istringstream istr (line);
 
         double x, y, z;
