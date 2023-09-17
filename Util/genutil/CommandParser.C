@@ -56,6 +56,7 @@ string CommandParser::script (const vector<string>& cmds)
 {
   string result;
   fault=false;
+  quit=false;
 
   for (unsigned i=0; i<cmds.size(); i++)
   {
@@ -77,8 +78,15 @@ string CommandParser::script (const vector<string>& cmds)
 
     if (out)
       *out << response;
-    else 
+    else
       result += response;
+
+    if (quit)
+    {
+      if (debug)
+        cerr << "CommandParser::script breaking script because quit=true" << endl;
+      break;
+    }
   }
 
   startCommand = false;

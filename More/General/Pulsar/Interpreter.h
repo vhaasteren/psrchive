@@ -53,7 +53,7 @@ namespace Pulsar {
     
   public:
 
-    enum Status { Good, Warn, Fail, Undefined };
+    enum Status { Good, Warn, Fail, TestFailed, Undefined };
 
     //! default constructor
     Interpreter ();
@@ -83,7 +83,7 @@ namespace Pulsar {
     Archive* getmap (const std::string& name, bool throw_exception = true);
 
     //! get the status after the last command
-    Status get_status () const;
+    Status get_status () const { return status; }
 
     //! set to false to disable the 'ok' reply
     void set_reply (bool f) { reply = f; }
@@ -125,6 +125,7 @@ namespace Pulsar {
     std::string edit (const std::string& args);
 
     //! test a boolean expression
+    /*! If the test evaluates to false, then status is set to TestFailed */
     std::string test (const std::string& args);
 
     //! edit the configuration parameters

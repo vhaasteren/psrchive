@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *   Copyright (C) 2006 by Willem van Straten
+ *   Copyright (C) 2006 - 2023 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -382,20 +382,31 @@ string Pulsar::Interpreter::response (Status s, const string& text)
   if (status == Fail)
     fault = true;
 
+  if (status == TestFailed)
+    quit = true;
+
   if (!reply)
     return text;
 
   string out;
 
-  switch (status) {
+  switch (status)
+  {
   case Good:
-    out = "ok";      break;
+    out = "ok";
+    break;
   case Warn:
-    out = "warning"; break;
+    out = "warning";
+    break;
   case Fail:
-    out = "fail";    break;
+    out = "fail";
+    break;
+  case TestFailed:
+    out = "testfailed";
+    break;
   default:
-    out = "?";       break;
+    out = "?";
+    break;
   }
 
   if (!text.length())
@@ -540,13 +551,13 @@ string Pulsar::Interpreter::unload (const string& args) try
     if ( (filename.substr(0,4) == "ext=" || mapname.substr(0,4) == "ext=") && (filename.substr(0,4) == "dir=" || mapname.substr(0,4) == "dir=") )
     {
       if ( filename.substr(0,4) == "ext=" )
-	unloadname = replace_extension( get()->get_filename(), filename.substr(4) );
+        unloadname = replace_extension( get()->get_filename(), filename.substr(4) );
       else if ( mapname.substr(0,4) == "ext=" )
-	unloadname = replace_extension( get()->get_filename(), mapname.substr(4) );
+        unloadname = replace_extension( get()->get_filename(), mapname.substr(4) );
       if ( filename.substr(0,4) == "dir=" )
-	unloadname = filename.substr(4) + "/" + basename(unloadname);
+        unloadname = filename.substr(4) + "/" + basename(unloadname);
       else if ( mapname.substr(0,4) == "dir=" )
-	unloadname = mapname.substr(4) + "/" + basename(unloadname);
+        unloadname = mapname.substr(4) + "/" + basename(unloadname);
 
       get()->unload( unloadname );
       return response (Good, "data written to " + unloadname );
@@ -832,9 +843,7 @@ string Pulsar::Interpreter::test (const string& args) try
   if (evaluate (args))
     return response (Good);
   else
-    throw Error (InvalidState, "Pulsar::Interpreter::test",
-		 "assertion '"+args+"'\n\t"
-		 "        = '"+evaluate_expression+"' failed");
+    return response (TestFailed, "assertion '"+args+"' = '"+evaluate_expression+"' failed");
 }
 catch (Error& error)
 {
