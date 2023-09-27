@@ -9,6 +9,9 @@
 #include "Pulsar/Integration.h"
 #include "Pulsar/ProjectionCorrection.h"
 
+#include <iostream>
+
+using namespace std;
 using namespace Pulsar;
 
 Jones<double> VariableProjectionCorrection::get_transformation ()
@@ -37,6 +40,8 @@ std::string VariableProjectionCorrection::get_description() const
 
 void VariableProjectionCorrection::build () const try
 {
+  // cerr << "VariableProjectionCorrection::build subint=" << subint << " built=" << built << endl;
+
   if (built)
     return;
 

@@ -36,7 +36,7 @@ namespace Pulsar {
 
       Transformation ()
       {
-	argument.signal.connect (&transformation, &KnownTransformation::set_value);
+        argument.signal.connect (&transformation, &KnownTransformation::set_value);
       }
       
       //! The transformation
