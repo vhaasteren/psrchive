@@ -175,7 +175,7 @@ void ArchiveComparisons::build () try
 }
 catch (Error& error)
 {
-  cerr << error << endl;
+  throw error += "ArchiveComparisons::build";
 }
 
 class ArchiveComparisons::Interface
@@ -204,7 +204,7 @@ class ArchiveComparisons::Interface
 
     add( &ArchiveComparisons::get_way,
 	 &ArchiveComparisons::set_way,
-	 "way", "'time' or 'freq'" );
+	 "way", "'time' or 'freq' or 'all'" );
   }
 };
 

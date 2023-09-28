@@ -193,6 +193,9 @@ Pulsar::FluxCalibrator::get_CalibratorStokes () const try
   if (calibrator_stokes)
     return calibrator_stokes;
   
+  // Set up the information if needed.
+  const_cast<FluxCalibrator*>(this)->setup();
+
   // Check that we have both polns
   if (get_nreceptor() != 2) 
     throw Error (InvalidState, "Pulsar::FluxCalibrator::get_CalibratorStokes",
@@ -745,7 +748,10 @@ void Pulsar::FluxCalibrator::calibrate (Integration* subint)
 //! Get the number of frequency channels in the calibrator
 unsigned Pulsar::FluxCalibrator::get_nchan () const
 {
-  return data.size();
+  if (!data.size() && flux_extension) 
+    return flux_extension->get_nchan();
+  else
+    return data.size();
 }
 
 //! Get the number of receptors

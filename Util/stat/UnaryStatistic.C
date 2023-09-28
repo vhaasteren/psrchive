@@ -257,12 +257,12 @@ namespace UnaryStatistics {
   {     
   public:
     DeviationCoefficient ()
-      : UnaryStatistic ("dev", "coefficient of deviation of values") 
+      : UnaryStatistic ("rsd", "relative standard deviation") 
       {
 	add_alias ("modulation");
 	add_alias ("beta");
 	add_alias ("cv");    // coefficient of variation
-	add_alias ("rsd");   // relative standard deviation
+	add_alias ("dev");   // deviation coefficient
       }
 
     double get (const vector<double>& data)
