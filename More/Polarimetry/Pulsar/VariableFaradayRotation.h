@@ -29,7 +29,7 @@ namespace Pulsar {
     // interstellar Faraday rotation measure
     double interstellar_rotation_measure;
 
-    mutable Jones<double> transformation;
+    mutable LabelledJones<double> transformation;
     mutable bool is_required;
     mutable std::string description;
     void build () const;
@@ -39,7 +39,7 @@ namespace Pulsar {
     VariableFaradayRotation ();
  
     //! Get the transformation
-    Jones<double> get_transformation ();
+    LabelledJones<double> get_transformation () override;
 
     //! Set the ionospheric Faraday rotation measure
     void set_ionospheric_rotation_measure (double);

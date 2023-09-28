@@ -44,3 +44,18 @@ void CoherencyMeasurementSet::set_coordinates () const
     coordinates[ic]->apply();
 }
 
+std::string CoherencyMeasurementSet::get_coordinates_string () const
+{
+  string result;
+  
+  for (unsigned ic=0; ic<coordinates.size(); ic++)
+  {
+    if (ic > 0)
+      result += " ";
+
+    result += coordinates[ic]->get_string();
+  }
+
+  return result;
+}
+

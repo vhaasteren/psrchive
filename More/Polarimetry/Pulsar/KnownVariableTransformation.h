@@ -14,13 +14,31 @@
 #include "MEAL/Value.h"
 
 namespace Pulsar {
-  
+
+  //! A Jones matrix with a label
+  template<typename T>
+  class LabelledJones : public Jones<T>
+  {
+    public:
+      std::string label;
+
+      LabelledJones() {}
+
+      template<typename U>
+      LabelledJones(const Jones<U>& jones) : Jones<T>(jones) {}
+  };
+
+  //! Specialize the template defined in MEAL/Axis.h
+  template<typename T>
+  std::string axis_value_to_string(const LabelledJones<T>& jones) { return jones.label; }
+
   //! Manager of variable transformations
   class KnownVariableTransformation : public VariableTransformationManager
   {
   public:
 
-    typedef MEAL::Axis< Jones<double> >   KnownArgument;
+
+    typedef MEAL::Axis< LabelledJones<double> >   KnownArgument;
     typedef MEAL::Value< MEAL::Complex2 > KnownTransformation;
 
     class Transformation : public VariableTransformationManager::Transformation
@@ -53,7 +71,7 @@ namespace Pulsar {
     MEAL::Argument::Value* new_value (VariableTransformationManager::Transformation*);
 
     //! Derived classes define the known transformation
-    virtual Jones<double> get_transformation () = 0;
+    virtual LabelledJones<double> get_transformation () = 0;
     
   };
 }

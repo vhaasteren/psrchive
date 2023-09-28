@@ -238,15 +238,17 @@ Jones<double> Pulsar::ProjectionCorrection::get_rotation () const
 
   if (pointing)
   {
-    summary += " using Pointing::feed_angle="
-      + tostring( pointing->get_feed_angle().getDegrees() ) + " deg\n";
+    string degrees = tostring(pointing->get_feed_angle().getDegrees());
+    summary += " using Pointing::feed_angle=" + degrees + " deg\n";
+    short_summary += " fa=" + degrees;
 
     feed_rotation = pointing->get_feed_angle();
   }
   else if (receiver)
   {
-    summary += " using Receiver::tracking_angle="
-      + tostring( receiver->get_tracking_angle().getDegrees() ) + " deg\n";
+    string degrees = tostring(receiver->get_tracking_angle().getDegrees());
+    summary += " using Receiver::tracking_angle=" + degrees + " deg\n";
+    short_summary += " ta=" + degrees;
 
     feed_rotation = receiver->get_tracking_angle();
   }
@@ -308,20 +310,22 @@ Jones<double> Pulsar::ProjectionCorrection::get_rotation () const
         const_kast(pointing)->set_position_angle (para_pa + feed_angle);
     }
 
-    summary += " using " + origin + "::parallactic angle=" 
-      + tostring( para_pa.getDegrees() ) + " deg\n";
-    
+    string degrees = tostring(para_pa.getDegrees());
+
+    summary += " using " + origin + "::parallactic angle=" + degrees + " deg\n";
+    short_summary += " pa=" + degrees;
+
     if (Archive::verbose > 2)
       cerr << "Pulsar::ProjectionCorrection::get_rotation"
-	" adding vertical transformation\n  " << para.evaluate() << endl;
+              " adding vertical transformation\n  " << para.evaluate() << endl;
     
     feed_rotation += para_pa;
   }
 
   if (Archive::verbose > 2)
     cerr << "Pulsar::ProjectionCorrection::get_rotation"
-	 << summary + " total="
-	 << feed_rotation.getDegrees() << " deg" << endl;
+         << summary + " total="
+         << feed_rotation.getDegrees() << " deg" << endl;
 
   if (feed_rotation == 0.0)
     return Jones<double> (1.0);
@@ -376,6 +380,11 @@ std::string Pulsar::ProjectionCorrection::get_summary () const
   return summary;
 }
 
+std::string Pulsar::ProjectionCorrection::get_short_summary () const
+{
+  return short_summary;
+}
+
 //! Return the transformation matrix for the given epoch
 Jones<double> 
 Pulsar::ProjectionCorrection::operator () (unsigned isub) const
@@ -384,7 +393,8 @@ Pulsar::ProjectionCorrection::operator () (unsigned isub) const
     cerr << "Pulsar::ProjectionCorrection::operator" << endl;
 
   summary = "";
-
+  short_summary = "";
+  
   if (!required (isub))
     return 1.0;
 

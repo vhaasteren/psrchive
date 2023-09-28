@@ -53,8 +53,11 @@ namespace Pulsar
     //! Return the projection correction calculator
     Mount* get_mount ();
     
-    //! Return a summary of parameters relevant to get_rotation
+    //! Return a long summary of parameters relevant to computing the projection correction
     std::string get_summary () const;
+
+    //! Return a short summary of parameters relevant to computing the projection correction
+    std::string get_short_summary () const;
 
   protected:
 
@@ -106,6 +109,8 @@ namespace Pulsar
     //! Summary of relevant parameters
     mutable std::string summary;
 
+    //! Short summary of relevant parameters
+    mutable std::string short_summary;
     //@}
 
   };

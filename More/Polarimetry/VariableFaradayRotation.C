@@ -21,7 +21,7 @@ VariableFaradayRotation::VariableFaradayRotation ()
   built = false;
 }
 
-Jones<double> VariableFaradayRotation::get_transformation ()
+LabelledJones<double> VariableFaradayRotation::get_transformation ()
 {
   if (!built)
     build ();
@@ -85,6 +85,7 @@ void VariableFaradayRotation::build () const try
   if (iono_rm != 0.0)
   {
     description += " correcting ionospheric Faraday rotation - RM=" + tostring(ionospheric_rotation_measure) + "\n";
+    transformation.label += " RM_iono=" + tostring(ionospheric_rotation_measure);
     is_required = true;
   }
   else if (! integration->get_auxiliary_birefringence_corrected ())
@@ -98,6 +99,7 @@ void VariableFaradayRotation::build () const try
       if (iono_rm != 0)
       {
         description += " correcting auxiliary Faraday rotation - RM=" + tostring(iono_rm) + "\n";
+        transformation.label += " RM_aux=" + tostring(iono_rm);
         is_required = true;
       }
     }
@@ -115,6 +117,7 @@ void VariableFaradayRotation::build () const try
   if (ism_rm != 0.0)
   {
     description += " correcting interstellar Faraday rotation - RM=" + tostring(ism_rm) + "\n";
+    transformation.label += " RM_ism=" + tostring(ism_rm);
     is_required = true;
   }
   else if (! archive->get_faraday_corrected ())
@@ -124,6 +127,7 @@ void VariableFaradayRotation::build () const try
     if (ism_rm != 0)
     {
       description += " correcting interstellar Faraday rotation - (header) RM=" + tostring(ism_rm) + "\n";
+      transformation.label += " RM_ism=" + tostring(ism_rm);
       is_required = true;
     }
   }

@@ -24,7 +24,7 @@ namespace Pulsar {
     VariableTransformationFile (ManualPolnCalibrator*);
 
     //! Get the transformation
-    virtual Jones<double> get_transformation ();
+    LabelledJones<double> get_transformation () override;
   };
 }
 

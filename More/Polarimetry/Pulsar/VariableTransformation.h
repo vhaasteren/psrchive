@@ -98,6 +98,10 @@ namespace Calibration {
     void init ();
 
   };
+
+  //! Specialize the template defined in MEAL/Axis.h
+  std::string axis_value_to_string(const VariableTransformation::Argument&);
+
 }
 
 #endif

@@ -14,7 +14,7 @@
 using namespace std;
 using namespace Pulsar;
 
-Jones<double> VariableProjectionCorrection::get_transformation ()
+LabelledJones<double> VariableProjectionCorrection::get_transformation ()
 {
   if (!built)
     build ();
@@ -48,8 +48,10 @@ void VariableProjectionCorrection::build () const try
   // use the ProjectionCorrection class to calculate the transformation
   correction.set_archive (archive);
   transformation = correction (subint);
+  
   description = correction.get_summary();
-
+  transformation.label = correction.get_short_summary();
+  
   built = true;
 }
 catch (Error& error)

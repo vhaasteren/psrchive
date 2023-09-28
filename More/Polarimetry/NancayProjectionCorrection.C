@@ -101,3 +101,8 @@ NancayProjectionCorrection::new_value (VariableTransformationManager::Transforma
 
   return nancay->new_Value( arg );
 }
+
+std::string Pulsar::axis_value_to_string(const NancayProjectionCorrection::Argument& arg)
+{
+  return "dec=" + tostring(arg.declination) + " ha=" + tostring(arg.hour_angle);
+}

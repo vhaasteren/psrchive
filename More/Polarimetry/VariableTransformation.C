@@ -133,3 +133,18 @@ void VariableTransformation::set_argument (const Argument& argset)
   correction.set_value (argset.correction);
 }
 
+std::string Calibration::axis_value_to_string(const VariableTransformation::Argument& vtarg)
+{
+  string result;
+  for (auto& arg: vtarg.arguments)
+  {
+    result += tostring(arg.first) + ":";
+    for (unsigned i=0; i < arg.second.size(); i++)
+    {
+      if (i > 0)
+        result += ",";
+      result += tostring(arg.second[i]);
+    }
+  }
+  return result;
+}

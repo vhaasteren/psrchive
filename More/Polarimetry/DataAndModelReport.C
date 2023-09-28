@@ -113,6 +113,8 @@ void Calibration::DataAndModelReport::report (ostream& outfile)
 		outfile << " " << resQ << " " << valQ << " " << stdQ;
 		outfile << " " << resU << " " << valU << " " << stdU;
 		outfile << " " << resV << " " << valV << " " << stdV;
+
+		outfile << " " << the_data.get_coordinates_string();
 		outfile << endl;
 	}
   }

@@ -16,7 +16,7 @@ VariableTransformationFile::VariableTransformationFile (ManualPolnCalibrator* _c
   calibrator = _calibrator;
 }
 
-Jones<double> VariableTransformationFile::get_transformation ()
+LabelledJones<double> VariableTransformationFile::get_transformation ()
 {
   const Integration* the_subint = archive->get_Integration(subint);
   MJD epoch = the_subint->get_epoch();
@@ -24,8 +24,9 @@ Jones<double> VariableTransformationFile::get_transformation ()
 
   ManualPolnCalibrator::Entry best_match = calibrator->match(epoch, freq);
 
-  Jones<double> retval = best_match.get_response();
-
+  LabelledJones<double> retval = best_match.get_response();
+  retval.label = "from file";
+  
 #if 0
   cerr << "VariableTransformationFile::get_transformation"
        << " subint=" << subint << " data epoch=" << epoch.printdays(13) 

@@ -34,7 +34,6 @@ void usage()
 
 int main(int argc, char ** argv) try
 {
-  bool verbose = false;
   bool quiet = false;
 
   // these default parameters correspond to a delta PA = 0.129536 deg
@@ -70,12 +69,10 @@ int main(int argc, char ** argv) try
 
     case 'q':
       quiet = true;
-      verbose = false;
       break;
 
     case 'v':
       Calibration::Faraday::verbose = true;
-      verbose = true;
       quiet = false;
       break;
 

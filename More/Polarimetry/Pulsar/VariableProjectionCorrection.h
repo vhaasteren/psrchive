@@ -18,7 +18,7 @@ namespace Pulsar {
   class VariableProjectionCorrection : public KnownVariableTransformation
   {
     mutable ProjectionCorrection correction;
-    mutable Jones<double> transformation;
+    mutable LabelledJones<double> transformation;
 
     void build () const;
 
@@ -28,7 +28,7 @@ namespace Pulsar {
     ProjectionCorrection* get_correction () { return &correction; }
     
     //! Get the transformation
-    Jones<double> get_transformation ();
+    LabelledJones<double> get_transformation () override;
 
     //! Return true if the transformation is required
     bool required () const;
