@@ -477,7 +477,7 @@ namespace CommandLine {
       Argument* argument = new Value<T> (value);
       (argument->*set) (name);
       if (type)
-	argument->set_type (type);
+        argument->set_type (type);
       item.push_back (argument);
       return argument;
     }
@@ -489,7 +489,7 @@ namespace CommandLine {
       Argument* argument = new Attribute<C,M,P> (ptr, method, parse);
       (argument->*set) (name);
       if (type)
-	argument->set_type (type);
+        argument->set_type (type);
       item.push_back (argument);
       return argument;
     }
@@ -503,7 +503,7 @@ namespace CommandLine {
       Argument* argument = new Parser (action);
       (argument->*set) (name);
       if (type)
-	argument->set_type (type);
+        argument->set_type (type);
       item.push_back (argument);
       return argument;
     }
