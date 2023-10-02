@@ -7,6 +7,8 @@
 #include "MEAL/ScalarMath.h"
 #include "MEAL/ScalarParameter.h"
 
+#include <config.h>
+
 using namespace std;
 
 #include "complex_public.h"
@@ -29,6 +31,7 @@ const ScalarMath& copysign(const ScalarMath& x, const ScalarMath& y)
 
 int main (int argc, char** argv) try {
 
+#ifdef HAVE_COMPLEX_TEMPLATE
   std::complex<MEAL::ScalarMath> w (1.2, 3.4);
   std::complex<MEAL::ScalarMath> z (-5.6, 7.8);
 
@@ -45,6 +48,7 @@ int main (int argc, char** argv) try {
     cerr << "imag nparam = " << nparam_imag << " != 0" << endl;
     return -1;
   }
+#endif
 
   Estimate<double> x (4.6, 0.09);
   Estimate<double> y (-0.5, 0.01);
