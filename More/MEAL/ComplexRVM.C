@@ -164,7 +164,7 @@ void MEAL::ComplexRVM::add_state (double phase, std::complex< Estimate<double> >
   if (!gains_maximum_likelihood)
   {
     auto gain = new Gain<Complex> ();
-    double L = ::sqrt( ::norm(linear).val );
+    double L = ::sqrt( norm(linear).val );
     gain->set_gain(L);
     s.gain = gain;
   }
