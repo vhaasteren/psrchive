@@ -10,6 +10,7 @@
 #include "Pulsar/PolnStatistics.h"
 #include "substitute.h"
 #include "evaluate.h"
+#include "execute.h"
 
 #if _DEBUG
 #include <iostream>
@@ -47,14 +48,15 @@ TextInterface::Parser* standard_interface (Archive* archive)
 std::string process (TextInterface::Parser* interface, const std::string& text)
 try
 {
-  if ( text.find('$') == std::string::npos )
+  if ( text.find('$') == std::string::npos && text.find('`') == std::string::npos)
     return interface->process ( text );
   else
     return interface->get_indentation() + 
-      evaluate( substitute( text, interface ) );
+      execute( evaluate( substitute( text, interface ) ) );
 }
 catch (Error& error)
 {
   throw error += "process (text=\"" + text + "\",parser="
     + interface->get_interface_name() + ")";
 }
+

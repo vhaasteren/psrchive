@@ -2,67 +2,68 @@
 noinst_LTLIBRARIES = libgenutil.la
 
 include_HEADERS = \
-        Angle.h \
+	Angle.h \
 	Barycentre.h \
 	BatchQueue.h \
-        Brent.h \
-        Cartesian.h \
+	Brent.h \
+	Cartesian.h \
 	CommandLine.h \
-        CommandParser.h \
-        compressed_io.h \
+	CommandParser.h \
+	compressed_io.h \
 	coord.h \
-        coord_parse.h \
+	coord_parse.h \
 	Directional.h \
 	DirectoryLock.h \
-        dirutil.h \
+	dirutil.h \
 	ExponentialDistribution.h \
 	extutil.h \
+	execute.h \
 	f77util.h \
 	Fixed.h \
 	format_it.h \
-        fsleep.h \
+	fsleep.h \
 	Horizon.h \
-        ieee.h \
-        ierf.h \
-        JenetAnderson98A5.h \
-        JenetAnderson98.h \
+	ieee.h \
+	ierf.h \
+	JenetAnderson98A5.h \
+	JenetAnderson98.h \
 	KrausType.h \
 	load_factory.h \
 	LogFile.h \
-        machine_endian.h \
+	machine_endian.h \
 	malloc16.h \
 	Meridian.h \
-        MJD.h \
+	MJD.h \
 	Mount.h \
 	MountProjection.h \
 	FITSUTC.h \
 	NormalDistribution.h \
-        orbital.h \
+	orbital.h \
 	pairutil.h \
 	PhaseRange.h \
-        Physical.h \
+	Physical.h \
 	Probability.h \
-        Plugin.h \
+	Plugin.h \
 	Ranges.h \
-        RealTimer.h \
-        RegularExpression.h \
+	RealTimer.h \
+	RegularExpression.h \
 	RobustEstimateZapper.h \
 	RobustStats.h \
 	RunningMedian.h \
-        sky_coord.h \
+	sky_coord.h \
 	SmoothingSpline.h \
 	StraightLine.h \
-        strutil.h \
+	strutil.h \
 	SystemCall.h \
-        templates.h \
+	templates.h \
 	TemporaryDirectory.h \
 	TemporaryFile.h \
 	ThreadContext.h \
 	ThreadMemory.h \
 	ThreadStream.h \
-        Types.h \
-        typeutil.h \
-        utc.h \
+	Types.h \
+	typeutil.h \
+	utc.h \
 	VanVleck.h \
 	VirtualMemory.h \
 	table_stream.h \
@@ -70,67 +71,68 @@ include_HEADERS = \
 
 
 libgenutil_la_SOURCES = \
-        Angle.C \
-        angleconv.c \
+	Angle.C \
+	angleconv.c \
 	Barycentre.C \
 	BatchQueue.C \
 	BootstrapUncertainty.C \
 	BoxMuller.C \
-        Cartesian.C \
+	Cartesian.C \
 	CommandLine.C \
-        CommandParser.C \
-        companion_mass.c \
-        completion.C \
-        compressed_io.C \
-        coord_parse.c \
-	copy.C \
+	CommandParser.C \
+	companion_mass.c \
+	completion.C \
+	compressed_io.C \
+	coord_parse.c \
+	copy.C \ 
 	CrossValidatedSmoothing.C \
 	Directional.C \
 	DirectoryLock.C \
-        dirglob.C \
+	dirglob.C \
 	dirglobtree.C \
-        dirutil.c \
-        eccentric_anomaly.c \
-        endian.c \
-        errscale.c \
+	dirutil.c \
+	eccentric_anomaly.c \
+	endian.c \
+	errscale.c \
 	expand.C \
+	execute.C \
 	ExponentialDistribution.C \
 	f77util.c \
 	filesize.c \
 	Fixed.C \
 	format_it.C \
-        fsleep.c \
+	fsleep.c \
 	Horizon.C \
-        ieee.c \
-        ierf.c \
-        JenetAnderson98A5.C \
-        JenetAnderson98.C \
+	ieee.c \
+	ierf.c \
+	JenetAnderson98A5.C \
+	JenetAnderson98.C \
 	KrausType.C \
 	LogFile.C \
 	malloc16.c \
 	Meridian.C \
-        MJD.C \
+	MJD.C \
 	Mount.C \
 	FITSUTC.C \
 	NormalDistribution.C \
 	PhaseRange.C \
-        Physical.C \
+	Physical.C \
 	printable.C \
 	Probability.C \
-        Plugin.C \
+	Plugin.C \
 	Ranges.C \
-        RealTimer.C \
-        RegularExpression.C \
+	RealTimer.C \
+	RegularExpression.C \
 	RobustEstimateZapper.C \
 	replace_extension.C \
-        sky_coord.C \
-        sla_MJD.C \
-        sla_sky_coord.C \
+	sky_coord.C \
+	sla_MJD.C \
+	sla_sky_coord.C \
 	smooth.f \
 	SmoothingSpline.C \
-        stringload.C \
-        stringprintf.C \
-        strutil.C \
+	stringload.C \
+	stringprintf.C \
+	strutil.C \
 	SystemCall.C \
 	TemporaryDirectory.C \
 	TemporaryFile.C \
@@ -138,8 +140,8 @@ libgenutil_la_SOURCES = \
 	ThreadMemory.C \
 	ThreadStream.C \
 	time_string.C \
-        Types.C \
-        utc.c \
+	Types.C \
+	utc.c \
 	VanVleck.C \
 	VirtualMemory.C \
 	table_stream.C \
