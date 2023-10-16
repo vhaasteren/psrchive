@@ -99,7 +99,7 @@ namespace UnaryStatistics {
     Maximum ()
       : UnaryStatistic ("max", "maximum value")
       {
-	add_alias ("maximum");
+        add_alias ("maximum");
       }
     
     double get (const vector<double>& data)
@@ -117,7 +117,7 @@ namespace UnaryStatistics {
     Minimum ()
       : UnaryStatistic ("min", "minimum value")
       {
-	add_alias ("minimum");
+        add_alias ("minimum");
       }
     
     double get (const vector<double>& data)
@@ -138,11 +138,9 @@ namespace UnaryStatistics {
     Range ()
       : UnaryStatistic ("range", "range of values")
       {
-	// cerr << "Range ctor this=" << this << endl;
-	add_alias ("peak-to-peak");
+        // cerr << "Range ctor this=" << this << endl;
+        add_alias ("peak-to-peak");
       }
-    
-    // ~Range () { cerr << "Range dtor this=" << this << endl; }
     
     double get (const vector<double>& data)
     {
@@ -159,7 +157,7 @@ namespace UnaryStatistics {
   public:
     Sum () : UnaryStatistic ("sum", "sum of values")
       {
-	add_alias ("total");
+        add_alias ("total");
       }
     
     double get (const vector<double>& data)
@@ -175,8 +173,8 @@ namespace UnaryStatistics {
   public:
     Mean () : UnaryStatistic ("avg", "average of values")
       {
-	add_alias ("average");
-	add_alias ("mean");
+        add_alias ("average");
+        add_alias ("mean");
       }
     
     double get (const vector<double>& data)
@@ -186,15 +184,55 @@ namespace UnaryStatistics {
     
     Mean* clone () const { return new Mean(*this); }
   };
-  
+
+  /*! Returns the maximum count of identical values, which is equivalent to 
+      the peak value in a histogram, or the number of values equal to the mode)*/
+  class NMode : public UnaryStatistic
+  {
+  public:
+    NMode () : UnaryStatistic ("nmode", "maximum count of identical values")
+      {
+        add_alias ("maxhist");
+        add_alias ("histmax");
+      }
+    
+    double get (const vector<double>& input)
+    {
+      vector<double> data(input);
+      std::sort(data.begin(),data.end());
+
+      unsigned nmode = 1;
+      unsigned count = 1;
+      double candidate = data[0];
+      unsigned nbin = data.size();
+      for (unsigned ibin=1; ibin < nbin; ibin++)
+      {
+        if (data[ibin] == candidate)
+        {
+          // cerr << "data["<<ibin<<"]=" << data[ibin] << " data["<<ibin-1<<"]=" << data[ibin-1] << endl;
+          count ++;
+        }
+        else
+        {
+          nmode = std::max(nmode, count);
+          candidate = data[ibin];
+          count = 1;
+        }
+      }
+      return nmode;
+    }
+    
+    NMode* clone () const { return new NMode(*this); }
+  };
+
   class StandardDeviation : public UnaryStatistic
   {
   public:
     StandardDeviation () 
       : UnaryStatistic ("rms", "standard deviation of values")
       {
-	add_alias ("stddev");
-	add_alias ("sigma");
+        add_alias ("stddev");
+        add_alias ("sigma");
       }
     
     double get (const vector<double>& data)
@@ -215,8 +253,8 @@ namespace UnaryStatistics {
     Skewness ()
       : UnaryStatistic ("mu3", "skewness of values")
       {
-	add_alias ("skewness");
-	add_alias ("skew");
+        add_alias ("skewness");
+        add_alias ("skew");
       }
     
     double get (const vector<double>& data)
@@ -238,8 +276,8 @@ namespace UnaryStatistics {
     Kurtosis ()
       : UnaryStatistic ("mu4", "kurtosis of values")
       {
-	add_alias ("kurtosis");
-	add_alias ("kurt");
+        add_alias ("kurtosis");
+        add_alias ("kurt");
       }
     
     double get (const vector<double>& data)
@@ -259,10 +297,10 @@ namespace UnaryStatistics {
     DeviationCoefficient ()
       : UnaryStatistic ("rsd", "relative standard deviation") 
       {
-	add_alias ("modulation");
-	add_alias ("beta");
-	add_alias ("cv");    // coefficient of variation
-	add_alias ("dev");   // deviation coefficient
+        add_alias ("modulation");
+        add_alias ("beta");
+        add_alias ("cv");    // coefficient of variation
+        add_alias ("dev");   // deviation coefficient
       }
 
     double get (const vector<double>& data)
@@ -282,7 +320,7 @@ namespace UnaryStatistics {
     Median ()
       : UnaryStatistic ("med", "median of values")
       {
-	add_alias ("median");
+        add_alias ("median");
       }
     
     double get (const vector<double>& data)
@@ -682,7 +720,7 @@ public:
     for (unsigned i=0; i < data.size(); i++)
     {
       if ( detrended[i]*detrended[i] > outlier)
-	outlier_sum += detrended[i]*detrended[i];
+        outlier_sum += detrended[i]*detrended[i];
     }
 
     return outlier_sum / var;
@@ -735,11 +773,11 @@ public:
     double entropy = 0;
     for (unsigned i=istart; i < fps.size(); i++)
       {
-	if (fps[i] < med)
-	  continue;
-	
-	double p = fps[i] / sum;
-	entropy -= p * log(p);
+        if (fps[i] < med)
+          continue;
+        
+        double p = fps[i] / sum;
+        entropy -= p * log(p);
       }
     
     return entropy;
@@ -816,6 +854,7 @@ void UnaryStatistic::build ()
   instances->push_back( new Range );
   instances->push_back( new Sum );
   instances->push_back( new Mean );
+  instances->push_back( new NMode );
   instances->push_back( new StandardDeviation );
   instances->push_back( new Skewness );
   instances->push_back( new Kurtosis );
@@ -845,7 +884,6 @@ void UnaryStatistic::build ()
 
 }
 
-
 const std::vector< UnaryStatistic* >& UnaryStatistic::children ()
 {
   if (instances == NULL)
@@ -856,8 +894,7 @@ const std::vector< UnaryStatistic* >& UnaryStatistic::children ()
   return *instances;
 }
 
-UnaryStatistic*
-UnaryStatistic::factory (const std::string& name)
+UnaryStatistic* UnaryStatistic::factory (const std::string& name)
 {
   return identifiable_factory<UnaryStatistic> (children(), name);
 }

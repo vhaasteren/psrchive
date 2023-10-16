@@ -870,7 +870,7 @@ string Pulsar::Interpreter::system (const string& args) try
   if (system.get_return_value() == 0)
     return response (Good);
   else
-    return response (CommandFailed, "system("+args+") = ("+command+") returned non-zero");
+    return response (CommandFailed, "system "+command+" returned non-zero");
 }
 catch (Error& error)
 {
