@@ -139,6 +139,8 @@ bool full_freq = false;
 bool fscrunch = false;
 bool tscrunch = false;
 bool preprocess = true;
+bool positive_shifts = false;
+
 unsigned ntest_uncertainty = 0;
 Pulsar::SmoothSinc* sinc = 0;
 Reference::To<ArrivalTime> arrival;
@@ -169,6 +171,7 @@ void usage ()
     "  -E cfg           Estimator configuration options in 'cfg' text file \n"
     "  -g datafile      Gaussian model fitting \n"
     "  -s stdfile       Location of standard profile \n"
+    "  -d               Output only positively delayed arrival times \n"
     "  -S period        Zap harmonics due to periodic spikes in profile \n"
     "                   (use of this option implies SIS) \n"
     "\n"
@@ -318,6 +321,10 @@ int main (int argc, char** argv) try
     case 'D':
       sinc = new Pulsar::SmoothSinc;
       sinc -> set_bins (8);
+      break;
+
+    case 'd':
+      positive_shifts = true;
       break;
 
     case 'e':
@@ -486,6 +493,8 @@ int main (int argc, char** argv) try
   if (!outFormat.empty()) arrival->set_format (outFormat);
   arrival->set_format_flags (outFormatFlags);
   arrival->set_attributes (commands);
+
+  arrival->set_positive_shifts (positive_shifts);
 
   if (full_poln)
   {

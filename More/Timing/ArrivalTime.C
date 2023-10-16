@@ -217,7 +217,12 @@ void Pulsar::ArrivalTime::get_toas (unsigned isub,
     try
     {
       setup (subint, ichan);
+
+      // Shift estimators return shift in fractional turns
       Estimate<double> shift = shift_estimator->get_shift ();
+
+      if (positive_shifts && shift.val < 0.0)
+        shift.val += 1.0;
 
       Tempo::toa arrival_time = get_toa (shift, subint, ichan);
       arrival_time.set_reduced_chisq( shift_estimator->get_reduced_chisq () );

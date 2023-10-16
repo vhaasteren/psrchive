@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *   Copyright (C) 2006 by Willem van Straten
+ *   Copyright (C) 2006 - 2023 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -176,8 +176,7 @@ void Pulsar::ProfilePlot::draw_transitions (const Profile* profile)
  Plots in the currently open pgplot device using the current viewport and window.  */
 void Pulsar::ProfilePlot::draw_time ()
 {
-  cerr << "Pulsar::ProfilePlot::draw_time reference_epoch=" << reference_epoch
-    << " folding_period=" << folding_period << endl;
+  // cerr << "Pulsar::ProfilePlot::draw_time reference_epoch=" << reference_epoch << " folding_period=" << folding_period << endl;
 
   if (folding_period == 0.0)
     return;
@@ -194,7 +193,7 @@ void Pulsar::ProfilePlot::draw_time ()
   cpgsls (2); // dashed
 
   float phase = (plot_time - reference_epoch).in_seconds() / folding_period;
-  cerr << "Pulsar::ProfilePlot::draw_time phase=" << phase << endl;
+  // cerr << "Pulsar::ProfilePlot::draw_time phase=" << phase << endl;
 
   float sy, ey;
   get_frame()->get_y_scale()->get_range( sy, ey );
