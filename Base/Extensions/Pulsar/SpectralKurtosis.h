@@ -125,16 +125,16 @@ namespace Pulsar {
     Reference::To<SpectralKurtosis::Loader> loader;
 
     //! number of polarizations 
-    unsigned npol;
+    unsigned npol = 0;
 
     //! number of channels 
-    unsigned nchan;
+    unsigned nchan = 0;
 
     //! Number of samples integrated into each atomic SK statistic
-    unsigned M;
+    unsigned M = 0;
     
     //! Threshold used to excise RFI in SK Detection
-    unsigned nsigma;
+    unsigned nsigma = 0;
 
     //! Average SK statistic for each channel, post f/t scrunch zapping
     std::vector<float> filtered_sum;
@@ -146,7 +146,7 @@ namespace Pulsar {
     std::vector<float> unfiltered_sum;
 
     //! Hits on unfiltered SK statistic, same for each channel/pol
-    uint64_t unfiltered_hits;
+    uint64_t unfiltered_hits = 0;
 
     //! Load the integration data from file
     void get_data () const;
@@ -155,7 +155,7 @@ namespace Pulsar {
     //! Ensure that ichan < nchan and ipol < npol
     void range_check (unsigned ichan, unsigned ipol, const char* method) const;
 
-    unsigned ipol_mean;
+    unsigned ipol_mean = 0;
   };
   
 }
