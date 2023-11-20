@@ -7,21 +7,29 @@
 
 #include "Pulsar/SpectralKurtosis.h"
 
+// #define _DEBUG 1
+#include "debug.h"
+#include <assert.h>
+
 using namespace std;
 
 Pulsar::SpectralKurtosis::SpectralKurtosis () : Extension ("SpectralKurtosis")
 {
+  DEBUG("Pulsar::SpectralKurtosis ctor this=" << this);
 }
 
 Pulsar::SpectralKurtosis::SpectralKurtosis (const SpectralKurtosis& extension)
   : Extension ("SpectralKurtosis")
 {
+  DEBUG("Pulsar::SpectralKurtosis copy ctor this=" << this);
   operator = (extension);
 }
 
 const Pulsar::SpectralKurtosis&
 Pulsar::SpectralKurtosis::operator= (const SpectralKurtosis& sk)
 {
+  DEBUG("Pulsar::SpectralKurtosis assignment operator this=" << this << " that=" << &sk);
+
   // this first call to get_M will result in sk.load if needed
   M = sk.get_M(); 
   nsigma = sk.nsigma;
@@ -38,6 +46,8 @@ Pulsar::SpectralKurtosis::operator= (const SpectralKurtosis& sk)
 const Pulsar::SpectralKurtosis&
 Pulsar::SpectralKurtosis::operator += (const SpectralKurtosis& sk)
 {
+  DEBUG("Pulsar::SpectralKurtosis += this=" << this << " that=" << &sk);
+
   if (M != sk.M || nsigma != sk.nsigma || nchan != sk.nchan || npol != sk.npol)
   {
     M = 0;
@@ -50,21 +60,41 @@ Pulsar::SpectralKurtosis::operator += (const SpectralKurtosis& sk)
   }
   else
   {
-    // sum the sums and hits for each channel and polarization
-    for (unsigned i=0; i<npol*nchan; i++)
+    assert(sk.filtered_sum.size() == filtered_sum.size());
+    assert(sk.filtered_hits.size() == filtered_hits.size());
+    assert(sk.unfiltered_sum.size() == unfiltered_sum.size());
+
+    assert(unfiltered_sum.size() == filtered_sum.size());
+
+    unsigned to_copy = filtered_sum.size();
+    assert(to_copy == npol*nchan);
+
+    // add the sums for each channel and polarization
+    for (unsigned i=0; i<to_copy; i++)
     {
       filtered_sum[i]   += sk.filtered_sum[i];
-      filtered_hits[i]  += sk.filtered_hits[i];
       unfiltered_sum[i] += sk.unfiltered_sum[i];
     }
+
+    to_copy = filtered_hits.size();
+    assert(to_copy == nchan);
+
+    // add the hits for each channel 
+    for (unsigned i=0; i<to_copy; i++)
+    {
+      filtered_hits[i]  += sk.filtered_hits[i];
+    }
+
     unfiltered_hits += unfiltered_hits;
   }
 
+  DEBUG("Pulsar::SpectralKurtosis += return");
   return *this;
 }
 
 Pulsar::SpectralKurtosis::~SpectralKurtosis ()
 {
+  DEBUG("Pulsar::SpectralKurtosis dtor this=" << this);
 }
 
 void Pulsar::SpectralKurtosis::set_M (unsigned _M)
@@ -201,8 +231,8 @@ void Pulsar::SpectralKurtosis::resize(unsigned _npol, unsigned _nchan)
   npol = _npol;
   nchan = _nchan;
   filtered_sum.resize(npol*nchan);
-  filtered_hits.resize(npol*nchan);
   unfiltered_sum.resize(npol*nchan);
+  filtered_hits.resize(nchan);
 }
 
 /*! Combine SK statistics from another integration. */
