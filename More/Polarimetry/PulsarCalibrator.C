@@ -373,7 +373,9 @@ void Pulsar::PulsarCalibrator::add_pulsar
 
   setup (integration, ichan);
 
-  assert (ichan < PolnCalibrator::get_nchan(false));
+  if (ichan >= PolnCalibrator::get_nchan(false))
+    throw Error (InvalidState, "PulsarCalibrator::add_pulsar",
+		 "ichan=%u >= nchan=%u", ichan, PolnCalibrator::get_nchan(false));
 
   if (!get_transformation_valid(ichan))
   {
@@ -549,7 +551,10 @@ MEAL::Complex2* Pulsar::PulsarCalibrator::new_transformation (unsigned ichan)
 
 void Pulsar::PulsarCalibrator::setup (const Integration* data, unsigned ichan)
 {
-  assert (ichan < PolnCalibrator::get_nchan(false) );
+  if (ichan >= PolnCalibrator::get_nchan(false))
+    throw Error (InvalidState, "PulsarCalibrator::setup",
+                 "ichan=%u >= nchan=%u", ichan, PolnCalibrator::get_nchan(false));
+
   assert (ichan < mtm.size());
 
   if (!mtm[ichan])
@@ -597,7 +602,9 @@ void Pulsar::PulsarCalibrator::solve1 (const CoherencyMeasurementSet& data)
 
   Reference::To<MEAL::Function> backup;
 
-  assert (ichan < PolnCalibrator::get_nchan(false));
+  if (ichan >= PolnCalibrator::get_nchan(false))
+    throw Error (InvalidState, "PulsarCalibrator::solve1",
+                 "ichan=%u >= nchan=%u", ichan, PolnCalibrator::get_nchan(false));
 
   CoherencyMeasurementSet measurements (data);
   submit_pulsar_data (measurements);
