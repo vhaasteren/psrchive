@@ -81,6 +81,8 @@ double truncateDecimals(double d, int decimalPlaces);
 
 double get_cal_freq(Archive* archive);
 
+void test_arrival_time_uncertainty (unsigned ntest, const Archive* std, ArrivalTime* estimator);
+
 #if HAVE_PGPLOT
 void plotDifferences(Pulsar::Archive* arch, Pulsar::Archive* stdarch,
     vector<Tempo::toa>& toas, const double min_phase, const double max_phase,
@@ -128,9 +130,8 @@ void profile_plot(Reference::To<Plot> plot,
 void diff_profiles(Pulsar::Archive* diff, Pulsar::Archive* stdarch,
     Pulsar::Profile* profile);
 
-void test_arrival_time_uncertainty (unsigned ntest, const Archive* std, ArrivalTime* estimator);
-
 string get_xrange(const double min, const double max);
+
 #endif // HAVE_PGPLOT
 
 // someday, these global variables could be attributes
