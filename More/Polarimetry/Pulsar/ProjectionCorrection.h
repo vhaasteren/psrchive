@@ -31,7 +31,7 @@ namespace Pulsar
   public:
 
     //! Trust Pointing parallactic angle more than computed value
-    static bool pointing_over_computed;
+    static bool trust_pointing_para_angle;
 
     //! Always trust the feed angle stored in the Pointing extension
     static bool trust_pointing_feed_angle;

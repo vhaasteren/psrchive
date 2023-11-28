@@ -23,7 +23,7 @@
 
 using namespace std;
 
-bool Pulsar::ProjectionCorrection::pointing_over_computed = false;
+bool Pulsar::ProjectionCorrection::trust_pointing_para_angle = false;
 bool Pulsar::ProjectionCorrection::trust_pointing_feed_angle = false;
 
 Pulsar::ProjectionCorrection::ProjectionCorrection ()
@@ -131,7 +131,7 @@ bool Pulsar::ProjectionCorrection::required (unsigned isub) const try
     cerr << "Pulsar::ProjectionCorrection::required has Pointing" << endl;
 
   if (pointing && !equal_pi (pointing->get_position_angle(),
-			     pointing->get_feed_angle() 
+                              pointing->get_feed_angle() 
                              + pointing->get_parallactic_angle()) )
   {
     // verify self-consistency of attributes
@@ -280,7 +280,7 @@ Jones<double> Pulsar::ProjectionCorrection::get_rotation () const
             "  lat=" << lat << " deg, lon=" << lon << " deg, MJD=" << mjd;
         }
         
-        if (pointing_over_computed)
+        if (trust_pointing_para_angle)
         {
           origin = "Pointing::";
           para_pa = pointing->get_parallactic_angle();
