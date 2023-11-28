@@ -23,9 +23,6 @@ libpsrmore_la_LIBADD += General/libGeneral.la
 
 if !MAKE_LEAN
 
-SUBDIRS += MEAL
-libpsrmore_la_LIBADD += MEAL/libMEAL.la
-
 SUBDIRS += Polarimetry
 libpsrmore_la_LIBADD += Polarimetry/libPolarimetry.la
 
