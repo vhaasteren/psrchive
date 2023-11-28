@@ -7,29 +7,31 @@
 
 #include "Pulsar/SpectralKurtosis.h"
 
+// #define _DEBUG 1
+#include "debug.h"
+#include <assert.h>
+
 using namespace std;
 
 Pulsar::SpectralKurtosis::SpectralKurtosis () : Extension ("SpectralKurtosis")
 {
-  M = 0;
-  nsigma = 0;
-  nchan = 0;
-  npol = 0;
-  loader = 0;
-  ipol_mean = 0;
-
+  DEBUG("Pulsar::SpectralKurtosis ctor this=" << this);
 }
 
 Pulsar::SpectralKurtosis::SpectralKurtosis (const SpectralKurtosis& extension)
   : Extension ("SpectralKurtosis")
 {
+  DEBUG("Pulsar::SpectralKurtosis copy ctor this=" << this);
   operator = (extension);
 }
 
 const Pulsar::SpectralKurtosis&
 Pulsar::SpectralKurtosis::operator= (const SpectralKurtosis& sk)
 {
-  M = sk.M;
+  DEBUG("Pulsar::SpectralKurtosis assignment operator this=" << this << " that=" << &sk);
+
+  // this first call to get_M will result in sk.load if needed
+  M = sk.get_M(); 
   nsigma = sk.nsigma;
   nchan = sk.nchan;
   npol = sk.npol;
@@ -44,6 +46,8 @@ Pulsar::SpectralKurtosis::operator= (const SpectralKurtosis& sk)
 const Pulsar::SpectralKurtosis&
 Pulsar::SpectralKurtosis::operator += (const SpectralKurtosis& sk)
 {
+  DEBUG("Pulsar::SpectralKurtosis += this=" << this << " that=" << &sk);
+
   if (M != sk.M || nsigma != sk.nsigma || nchan != sk.nchan || npol != sk.npol)
   {
     M = 0;
@@ -52,26 +56,45 @@ Pulsar::SpectralKurtosis::operator += (const SpectralKurtosis& sk)
     npol = 0;
     resize(0, 0);
     if (Integration::verbose)
-      cerr << "Pulsar::SpectralKurtosis::+= param mismatch, discarding SpectralKurtosis "
-           << "statistics" << endl;
+      cerr << "Pulsar::SpectralKurtosis::+= param mismatch, discarding SpectralKurtosis statistics" << endl;
   }
   else
   {
-    // sum the sums and hits for each channel and polarization
-    for (unsigned i=0; i<npol*nchan; i++)
+    assert(sk.filtered_sum.size() == filtered_sum.size());
+    assert(sk.filtered_hits.size() == filtered_hits.size());
+    assert(sk.unfiltered_sum.size() == unfiltered_sum.size());
+
+    assert(unfiltered_sum.size() == filtered_sum.size());
+
+    unsigned to_copy = filtered_sum.size();
+    assert(to_copy == npol*nchan);
+
+    // add the sums for each channel and polarization
+    for (unsigned i=0; i<to_copy; i++)
     {
       filtered_sum[i]   += sk.filtered_sum[i];
-      filtered_hits[i]  += sk.filtered_hits[i];
       unfiltered_sum[i] += sk.unfiltered_sum[i];
     }
+
+    to_copy = filtered_hits.size();
+    assert(to_copy == nchan);
+
+    // add the hits for each channel 
+    for (unsigned i=0; i<to_copy; i++)
+    {
+      filtered_hits[i]  += sk.filtered_hits[i];
+    }
+
     unfiltered_hits += unfiltered_hits;
   }
 
+  DEBUG("Pulsar::SpectralKurtosis += return");
   return *this;
 }
 
 Pulsar::SpectralKurtosis::~SpectralKurtosis ()
 {
+  DEBUG("Pulsar::SpectralKurtosis dtor this=" << this);
 }
 
 void Pulsar::SpectralKurtosis::set_M (unsigned _M)
@@ -79,10 +102,14 @@ void Pulsar::SpectralKurtosis::set_M (unsigned _M)
   M = _M;
 }
 
-unsigned Pulsar::SpectralKurtosis::get_M () const
+unsigned Pulsar::SpectralKurtosis::get_M () const try
 {
   get_data();
   return M;
+}
+catch (Error& error)
+{
+  throw error += "Pulsar::SpectralKurtosis::get_M";
 }
 
 void Pulsar::SpectralKurtosis::set_excision_threshold (unsigned _nsigma)
@@ -90,17 +117,25 @@ void Pulsar::SpectralKurtosis::set_excision_threshold (unsigned _nsigma)
   nsigma = _nsigma;
 }
 
-unsigned Pulsar::SpectralKurtosis::get_excision_threshold () const
+unsigned Pulsar::SpectralKurtosis::get_excision_threshold () const try
 {
   get_data();
   return nsigma;
 }
+catch (Error& error)
+{
+  throw error += "Pulsar::SpectralKurtosis::get_excision_threshold";
+}
 
-float Pulsar::SpectralKurtosis::get_filtered_sum (unsigned ichan, unsigned ipol) const
+float Pulsar::SpectralKurtosis::get_filtered_sum (unsigned ichan, unsigned ipol) const try
 {
   get_data();
   range_check (ichan, ipol, "SpectralKurtosis::get_filtered_sum");
   return filtered_sum [nchan*ipol + ichan];
+}
+catch (Error& error)
+{
+  throw error += "Pulsar::SpectralKurtosis::get_filtered_sum";
 }
 
 void Pulsar::SpectralKurtosis::set_filtered_sum (unsigned ichan, unsigned ipol, float sum)
@@ -111,11 +146,15 @@ void Pulsar::SpectralKurtosis::set_filtered_sum (unsigned ichan, unsigned ipol, 
   filtered_sum [nchan*ipol + ichan] = sum;
 }
 
-uint64_t Pulsar::SpectralKurtosis::get_filtered_hits (unsigned ichan) const
+uint64_t Pulsar::SpectralKurtosis::get_filtered_hits (unsigned ichan) const try
 {
   get_data();
   range_check (ichan, 0, "SpectralKurtosis::get_filtered_hits");
   return filtered_hits [ichan];
+}
+catch (Error& error)
+{
+  throw error += "Pulsar::SpectralKurtosis::get_filtered_hits";
 }
 
 void Pulsar::SpectralKurtosis::set_filtered_hits (unsigned ichan, uint64_t hits)
@@ -125,11 +164,15 @@ void Pulsar::SpectralKurtosis::set_filtered_hits (unsigned ichan, uint64_t hits)
   filtered_hits [ichan] = hits;
 }
 
-float Pulsar::SpectralKurtosis::get_unfiltered_sum (unsigned ichan, unsigned ipol) const
+float Pulsar::SpectralKurtosis::get_unfiltered_sum (unsigned ichan, unsigned ipol) const try
 {
   get_data();
   range_check (ichan, ipol, "SpectralKurtosis::get_unfiltered_sum");
   return unfiltered_sum [nchan*ipol + ichan];
+}
+catch (Error& error)
+{
+  throw error += "Pulsar::SpectralKurtosis::get_unfiltered_sum";
 }
 
 void Pulsar::SpectralKurtosis::set_unfiltered_sum (unsigned ichan, unsigned ipol, float sum)
@@ -139,10 +182,14 @@ void Pulsar::SpectralKurtosis::set_unfiltered_sum (unsigned ichan, unsigned ipol
   unfiltered_sum [nchan*ipol + ichan] = sum;
 }
 
-uint64_t Pulsar::SpectralKurtosis::get_unfiltered_hits () const
+uint64_t Pulsar::SpectralKurtosis::get_unfiltered_hits () const try
 {
   get_data();
   return unfiltered_hits;
+}
+catch (Error& error)
+{
+  throw error += "Pulsar::SpectralKurtosis::get_unfiltered_hits";
 }
 
 void Pulsar::SpectralKurtosis::set_unfiltered_hits (uint64_t hits)
@@ -184,8 +231,8 @@ void Pulsar::SpectralKurtosis::resize(unsigned _npol, unsigned _nchan)
   npol = _npol;
   nchan = _nchan;
   filtered_sum.resize(npol*nchan);
-  filtered_hits.resize(npol*nchan);
   unfiltered_sum.resize(npol*nchan);
+  filtered_hits.resize(nchan);
 }
 
 /*! Combine SK statistics from another integration. */
@@ -228,6 +275,9 @@ void Pulsar::SpectralKurtosis::update (const Integration* subint)
 /*! Load the SK data from file via the loader, but only do this once */
 void Pulsar::SpectralKurtosis::get_data () const
 {
+  if (Integration::verbose)
+    cerr << "Pulsar::SpectralKurtosis::get_data loader=" << (void*)loader.ptr() << endl;
+
   if (loader)
     const_cast<SpectralKurtosis *>(this)->load();
 }
@@ -235,8 +285,9 @@ void Pulsar::SpectralKurtosis::get_data () const
 void Pulsar::SpectralKurtosis::load ()
 {
   if (Integration::verbose)
-    cerr << "Pulsar::SpectralKurtosis::load" << endl;
-  loader->load (this);
+    cerr << "Pulsar::SpectralKurtosis::load loader=" << (void*)loader << endl;
+  if (loader)
+    loader->load (this);
   loader = 0;
 }
 

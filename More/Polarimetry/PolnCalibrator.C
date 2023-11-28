@@ -126,6 +126,9 @@ std::string Pulsar::PolnCalibrator::get_receiver_basis_filename () const
 
 void Pulsar::PolnCalibrator::set_calibrator (const Archive* archive)
 {
+  if (verbose)
+    cerr << "PolnCalibrator::set_calibrator" << endl;
+
   // store the Receiver Extension, if any
   if (!has_Receiver())
     set_Receiver (archive);
@@ -242,8 +245,7 @@ unsigned Pulsar::PolnCalibrator::get_nchan (bool build_if_needed) const try
     setup_transformation();
 
   if (verbose > 2)
-    cerr << "Pulsar::PolnCalibrator::get_nchan nchan="
-         << transformation.size() << endl;
+    cerr << "Pulsar::PolnCalibrator::get_nchan nchan=" << transformation.size() << endl;
 
   return transformation.size();
 }
@@ -427,9 +429,6 @@ catch (Error& error) {
 //! Derived classes can create and fill the transformation array
 void Pulsar::PolnCalibrator::calculate_transformation () try
 {
-  if (verbose > 2)
-    cerr << "Pulsar::PolnCalibrator::calculate_transformation" << endl;
-
   if (!poln_extension)
   {
     cerr << "Pulsar::PolnCalibrator::calculate_transformation no poln_extension" << endl;
@@ -441,7 +440,8 @@ void Pulsar::PolnCalibrator::calculate_transformation () try
 
   unsigned nchan = poln_extension->get_nchan();
 
-  DEBUG("PolnCalibrator::calculate_transformation this=" << (void*)this << " nchan=" << nchan);
+  if (verbose > 2)
+    cerr << "Pulsar::PolnCalibrator::calculate_transformation nchan=" << nchan << endl;
 
   transformation_resize (nchan);
 
@@ -461,6 +461,9 @@ catch (Error& error) {
 
 void Pulsar::PolnCalibrator::transformation_resize (unsigned nchan)
 {
+  if (verbose)
+    cerr << "PolnCalibrator::transformation_resize nchan=" << nchan << endl;
+
   transformation.resize (nchan);
   invalid_reason.resize (nchan);
 }

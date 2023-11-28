@@ -34,6 +34,7 @@
 #include "Pulsar/FrequencyAppend.h"
 #include "Pulsar/ScrunchFactor.h"
 
+#include "SystemCall.h"
 #include "strutil.h"
 #include "substitute.h"
 #include "tostring.h"
@@ -164,6 +165,18 @@ void Pulsar::Interpreter::init()
       "edit", "edit archive parameters",
       "usage: edit <command> ...\n"
       "  string command    any edit command as understood by psredit \n" );
+
+  add_command
+    ( &Interpreter::system,
+      "system", "execute a shell command",
+      "usage: system <command> \n"
+      "  string command    the command to system in the shell \n"
+      "The command may contain any of the recognized variable \n"
+      "names preceded by a $ sign; e.g. \n"
+      "\n"
+      "  system grep $freq freqs.txt \n"
+      "\n"
+      "For a full list of variable names, type \"system help\" \n" );
 
   add_command
     ( &Interpreter::test,
@@ -832,6 +845,36 @@ bool Pulsar::Interpreter::evaluate (const std::string& expression)
 		 "non-boolean result=" + tostring(value));
 
   return false;
+}
+
+string Pulsar::Interpreter::system (const string& args) try
+{ 
+  // replace variable names with values
+  if (args == "help")
+    return get_interface()->help (true);
+
+  string command = substitute (args, get_interface());
+
+  SystemCall system;
+  system.set_throw(false);  // do not throw if exit value is non-zero
+
+  try
+  {
+    system.run(command);
+  }
+  catch (Error& error)
+  {
+    return response (Fail, error.get_message());
+  }
+
+  if (system.get_return_value() == 0)
+    return response (Good);
+  else
+    return response (CommandFailed, "system "+command+" returned non-zero");
+}
+catch (Error& error)
+{
+  throw error += "Pulsar::Interpreter::system";
 }
 
 string Pulsar::Interpreter::test (const string& args) try

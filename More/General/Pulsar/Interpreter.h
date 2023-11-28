@@ -53,7 +53,7 @@ namespace Pulsar {
     
   public:
 
-    enum Status { Good, Warn, Fail, TestFailed, Undefined };
+    enum Status { Good, Warn, Fail, TestFailed, CommandFailed, Undefined };
 
     //! default constructor
     Interpreter ();
@@ -123,6 +123,10 @@ namespace Pulsar {
 
     //! edit the current archive
     std::string edit (const std::string& args);
+
+    //! execute a shell command
+    /*! If the command fails, then status is set to CommandFailed */
+    std::string system (const std::string& args);
 
     //! test a boolean expression
     /*! If the test evaluates to false, then status is set to TestFailed */

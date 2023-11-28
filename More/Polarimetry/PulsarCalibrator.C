@@ -355,10 +355,16 @@ bool Pulsar::PulsarCalibrator::match (const Archive* data, bool throw_exception)
   if (!has_Receiver())
     set_Receiver (data);
 
-  bool one_channel = standard->get_nchan() == 1 && data->get_nchan() > 1;
+  bool set_one_channel = standard->get_nchan() == 1 && data->get_nchan() != model.size(); 
 
-  if (one_channel)
+  if (set_one_channel)
+  {
+    if (verbose)
+      cerr << "PulsarCalibrator::match std.nchan=" << standard->get_nchan()
+	   << " and obs.nchan=" << data->get_nchan() 
+	   << "; therefore, calling set_calibrator" << endl;
     PolnCalibrator::set_calibrator (data);
+  }
 
   if (mtm.size() == 0)
   {
@@ -388,7 +394,9 @@ void Pulsar::PulsarCalibrator::add_pulsar
 
   setup (integration, ichan);
 
-  assert (ichan < PolnCalibrator::get_nchan(false));
+  if (ichan >= PolnCalibrator::get_nchan(false))
+    throw Error (InvalidState, "PulsarCalibrator::add_pulsar",
+		 "ichan=%u >= nchan=%u", ichan, PolnCalibrator::get_nchan(false));
 
   if (!get_transformation_valid(ichan))
   {
@@ -569,7 +577,10 @@ MEAL::Complex2* Pulsar::PulsarCalibrator::new_transformation (unsigned ichan)
 
 void Pulsar::PulsarCalibrator::setup (const Integration* data, unsigned ichan) try
 {
-  assert (ichan < PolnCalibrator::get_nchan(false) );
+  if (ichan >= PolnCalibrator::get_nchan(false))
+    throw Error (InvalidState, "PulsarCalibrator::setup",
+                 "ichan=%u >= nchan=%u", ichan, PolnCalibrator::get_nchan(false));
+
   assert (ichan < mtm.size());
 
   if (!mtm[ichan])
@@ -621,7 +632,9 @@ void Pulsar::PulsarCalibrator::solve1 (const CoherencyMeasurementSet& data) try
 
   Reference::To<MEAL::Function> backup;
 
-  assert (ichan < PolnCalibrator::get_nchan(false));
+  if (ichan >= PolnCalibrator::get_nchan(false))
+    throw Error (InvalidState, "PulsarCalibrator::solve1",
+                 "ichan=%u >= nchan=%u", ichan, PolnCalibrator::get_nchan(false));
 
   CoherencyMeasurementSet measurements (data);
   submit_pulsar_data (measurements);

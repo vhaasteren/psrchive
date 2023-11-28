@@ -35,7 +35,7 @@ namespace TextInterface
     {
       instance = c; 
       for (unsigned i=0; i<values.size(); i++)
-	setup (values[i]);
+        setup (values[i]);
     }
 
     //! Set the instance of the Attribute<C>
@@ -43,23 +43,23 @@ namespace TextInterface
     {
 #if _DEBUG
       std::cerr << "TextInterface::To<C>::setup"
-	" name=" << value->get_name() <<
-	" instance=" << (void*) instance.ptr() << std::endl;
+                   " name=" << value->get_name() <<
+                   " instance=" << (void*) instance.ptr() << std::endl;
 #endif
       const Attribute<C>* attribute = dynamic_cast<const Attribute<C>*>(value);
       if (attribute) 
-	attribute->instance = instance.ptr();
+        attribute->instance = instance.ptr();
 #if _DEBUG
       else
-	std::cerr << "TextInterface::To<C>::setup " << value->get_name() <<
-	  " is not an Attribute<C>" << std::endl;
+        std::cerr << "TextInterface::To<C>::setup " << value->get_name() <<
+                     " is not an Attribute<C>" << std::endl;
 #endif
     }
 
     void add_value( Attribute<C>* value )
     {
       if (instance)
-	value->instance = instance;
+        value->instance = instance;
 
       Parser::add_value( value );
     }
@@ -68,9 +68,9 @@ namespace TextInterface
     template<class P> 
       void import (const To<P>* parent)
       {
-	for (unsigned i=0; i < parent->size(); i++)
-	  if (!import_filter || !found(parent->get(i)->get_name()))
-	    add_value( new IsAProxy<C,P>(parent->get(i)) );
+        for (unsigned i=0; i < parent->size(); i++)
+          if (!import_filter || !found(parent->get(i)->get_name()))
+            add_value( new IsAProxy<C,P>(parent->get(i)) );
       }
 
     //! Import the attribute interfaces from a member text interface
@@ -79,9 +79,9 @@ namespace TextInterface
     template<class M, class G> 
       void import (const std::string& name, const To<M>* member, G get)
       {
-	for (unsigned i=0; i < member->size(); i++)
-	  if (!import_filter || !found(name, member->get(i)->get_name()))
-	    add_value( new HasAProxy<C,M,G>(name, member->get(i), get) );
+        for (unsigned i=0; i < member->size(); i++)
+          if (!import_filter || !found(name, member->get(i)->get_name()))
+            add_value( new HasAProxy<C,M,G>(name, member->get(i), get) );
       }
 
     //! Import the attribute interfaces from a vector element text interface
@@ -92,20 +92,20 @@ namespace TextInterface
     template<class E, class G, class S>
       void import (const std::string& name, const To<E>* member, G g, S s)
       {
-	for (unsigned i=0; i < member->size(); i++)
-	{
-	  const Attribute<E>* value = member->get(i);
-	  if (!value)
-	    continue;
+        for (unsigned i=0; i < member->size(); i++)
+        {
+          const Attribute<E>* value = member->get(i);
+          if (!value)
+            continue;
 
 #ifdef _DEBUG
-	  std::cerr << "TextInterface::import name="
-		    << value->get_name() << std::endl;
+          std::cerr << "TextInterface::import name="
+              << value->get_name() << std::endl;
 #endif
 
-	  if (!import_filter || !found(name, value->get_name()))
-	    add_value(new VectorOfProxy<C,E,G,S>(name, value, g, s));
-	}
+          if (!import_filter || !found(name, value->get_name()))
+            add_value(new VectorOfProxy<C,E,G,S>(name, value, g, s));
+        }
       }
 
     //! Import the attribute interfaces from a map data text interface
@@ -115,9 +115,9 @@ namespace TextInterface
     template<class K, class E, class G>
       void import (const std::string& name, K, const To<E>* member, G g)
       {
-	for (unsigned i=0; i < member->size(); i++)
-	  if (!import_filter || !found(name, member->get(i)->get_name()))
-	    add_value( new MapOfProxy<C,K,E,G>(name, member->get(i), g) );
+        for (unsigned i=0; i < member->size(); i++)
+          if (!import_filter || !found(name, member->get(i)->get_name()))
+            add_value( new MapOfProxy<C,K,E,G>(name, member->get(i), g) );
       }
 
     //! Import the attribute interfaces from a parent text interface
@@ -157,11 +157,11 @@ namespace TextInterface
       void add (T(P::*get)()const,
 		const char* name, const char* description = 0)
       {
-	Generator<T> gen;
-	Attribute<C>* getset = gen (name, get);
-	if (description)
-	  getset->set_description (description);
-	add_value (getset);
+        Generator<T> gen;
+        Attribute<C>* getset = gen (name, get);
+        if (description)
+          getset->set_description (description);
+        add_value (getset);
       }
 
     //! Factory generates a new AttributeGetSet instance with description
@@ -169,11 +169,11 @@ namespace TextInterface
       void add (T(P::*get)()const, void(P::*set)(const U&),
 		const char* name, const char* description = 0)
       {
-	Generator<U> gen;
-	Attribute<C>* getset = gen (name, get, set);
-	if (description)
-	  getset->set_description (description);
-	add_value (getset);
+        Generator<U> gen;
+        Attribute<C>* getset = gen (name, get, set);
+        if (description)
+          getset->set_description (description);
+        add_value (getset);
       }
 
     //! Factory generates a new AttributeGetSet instance with description
@@ -181,11 +181,11 @@ namespace TextInterface
       void add (T(P::*get)()const, void(P::*set)(U),
 		const char* name, const char* description = 0)
       {
-	Generator<U> gen;
-	Attribute<C>* getset = gen (name, get, set);
-	if (description)
-	  getset->set_description (description);
-	add_value (getset);
+        Generator<U> gen;
+        Attribute<C>* getset = gen (name, get, set);
+        if (description)
+          getset->set_description (description);
+        add_value (getset);
       }
     
     //! Factory generates a new DirectInterface instance with description
@@ -197,7 +197,7 @@ namespace TextInterface
       EmbedAllocator<C,U> gen;
       Attribute<C>* getset = gen.direct (name, get, set, get_parser);
       if (description)
-	getset->set_description (description);
+        getset->set_description (description);
       add_value (getset);
     }
 
@@ -210,7 +210,7 @@ namespace TextInterface
       EmbedAllocator<C,U> gen;
       Attribute<C>* getset = gen.direct (name, get, set, get_parser);
       if (description)
-	getset->set_description (description);
+        getset->set_description (description);
       add_value (getset);
     }
 
@@ -223,7 +223,7 @@ namespace TextInterface
       EmbedAllocator<C,U*> gen;
       Attribute<C>* getset = gen.indirect (name, get, set, get_parser);
       if (description)
-	getset->set_description (description);
+        getset->set_description (description);
       add_value (getset);
     }
 
@@ -243,10 +243,10 @@ namespace TextInterface
     template<class Get>
       void add (Get get, const char* name, const char* description = 0)
       {
-	Attribute<C>* fget = new GetFunction<C,Get> (name, get);
-	if (description)
-	  fget->set_description (description);
-	add_value (fget);
+        Attribute<C>* fget = new GetFunction<C,Get> (name, get);
+        if (description)
+          fget->set_description (description);
+        add_value (fget);
       }
 
     //! Add adaptable unary function object template

@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *   Copyright (C) 2006 by Willem van Straten
+ *   Copyright (C) 2006 - 2023 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -8,6 +8,7 @@
 #include "Pulsar/ProfilePlot.h"
 
 #include "Pulsar/Archive.h"
+#include "Pulsar/Integration.h"
 #include "Pulsar/Profile.h"
 #include "Pulsar/PhaseWeight.h"
 #include "Pulsar/SquareWave.h"
@@ -32,6 +33,13 @@ TextInterface::Parser* Pulsar::ProfilePlot::get_interface ()
 void Pulsar::ProfilePlot::get_profiles (const Archive* data)
 {
   plotter.profiles.push_back( get_Profile (data, isubint, ipol, ichan) );
+
+  if (!isubint.get_integrate())
+  {
+    const Integration* subint = data->get_Integration(isubint.get_value());
+    reference_epoch = subint->get_epoch();
+    folding_period = subint->get_folding_period();
+  }
 }
 
 //! Derived classes must draw in the current viewport
@@ -41,6 +49,9 @@ void Pulsar::ProfilePlot::draw (const Archive* data)
 
   if (plot_cal_transitions && data->get_type() != Signal::Pulsar)
     draw_transitions (plotter.profiles[0]);
+
+  if (plot_time != 0.0 && reference_epoch != 0.0 && folding_period != 0.0)
+    draw_time ();
 }
 
 /*!  Plots the calibrator hi/lo levels using the transitions
@@ -161,3 +172,36 @@ void Pulsar::ProfilePlot::draw_transitions (const Profile* profile)
 }
 
 
+/*!  Plot a vertical dashed green line at the time specified by plot_time
+ Plots in the currently open pgplot device using the current viewport and window.  */
+void Pulsar::ProfilePlot::draw_time ()
+{
+  // cerr << "Pulsar::ProfilePlot::draw_time reference_epoch=" << reference_epoch << " folding_period=" << folding_period << endl;
+
+  if (folding_period == 0.0)
+    return;
+
+  if (reference_epoch == 0.0)
+    return;
+
+  // back up the colour and line attributes
+  int colour=0, line=0;
+  cpgqci(&colour);
+  cpgqls(&line);
+
+  cpgsci (3); // green
+  cpgsls (2); // dashed
+
+  float phase = (plot_time - reference_epoch).in_seconds() / folding_period;
+  // cerr << "Pulsar::ProfilePlot::draw_time phase=" << phase << endl;
+
+  float sy, ey;
+  get_frame()->get_y_scale()->get_range( sy, ey );
+
+  cpgmove (phase,sy);
+  cpgdraw (phase,ey);
+
+  // restore the colour and line attributes
+  cpgsls(line);
+  cpgsci(colour);
+}

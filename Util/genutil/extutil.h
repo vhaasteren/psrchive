@@ -13,6 +13,7 @@
 #define __Pulsar_get_extension_h
 
 #include "Functor.h"
+#include <algorithm>
 
 //! implementation of Archive, Integration, and Profile::get<T> methods
 template<class T, class Container>
@@ -45,11 +46,9 @@ T* get_ext (Container* container, const char* method, bool verbose)
 template<class T> 
 void clean_dangling (std::vector<T>& data)
 {
-  for (unsigned i=0; i<data.size(); i++)
-    if (!data[i])
-      data.erase( data.begin() + i );
+  auto iterator = std::remove(data.begin(), data.end(), false);
+  data.erase(iterator, data.end());
 }
-
 
 //! For each extension of type E in container C, call method B::method
 template<typename E, typename C, typename B>

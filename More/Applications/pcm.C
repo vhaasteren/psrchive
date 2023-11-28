@@ -1017,8 +1017,12 @@ void pcm::add_options (CommandLine::Menu& menu)
   arg = menu.add (must_have_cals, 'w');
   arg->set_help ("continue if no calibrators are found");
 
-  arg = menu.add (ProjectionCorrection::trust_pointing_feed_angle, 'y');
-  arg->set_help ("always trust the Pointing::feed_angle attribute");
+  arg = menu.add (ProjectionCorrection::trust_pointing_feed_angle, "fa");
+  arg->set_help ("always trust the pointing:fa (feed angle) attribute");
+  menu.add( new CommandLine::Alias( arg, 'y' ) );
+
+  arg = menu.add (ProjectionCorrection::trust_pointing_para_angle, "va");
+  arg->set_help ("always trust the pointing:va (vertical/parallactic angle) attribute");
 
   arg = menu.add (check_coordinates, 'Z');
   arg->set_help ("ignore the sky coordinates of PolnCal observations");

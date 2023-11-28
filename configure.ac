@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([PSRCHIVE],[2023-07-28+],[psrchive-developers@lists.sourceforge.net])
+AC_INIT([PSRCHIVE],[2023-10-02+],[psrchive-developers@lists.sourceforge.net])
 
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([config])
@@ -72,6 +72,8 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXXCPP
 AM_PROG_CC_C_O
+
+AC_SUBST(CC)
 
 AC_PROG_INSTALL
 

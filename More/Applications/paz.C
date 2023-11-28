@@ -226,7 +226,7 @@ void paz::add_options (CommandLine::Menu& menu)
   arg = menu.add (eightBinZap, '8');
   arg->set_help ("Fix ATNF WBCORR 8 bin problem (see also -p)");
 
- //Update to remove variable baseline MJK2013, adapted from Patrick Weltevrede
+  //Update to remove variable baseline MJK2013, adapted from Patrick Weltevrede
   arg = menu.add (removeVariableBaseline, 'b');
   arg->set_help ("Remove variable baseline");
 
@@ -376,8 +376,8 @@ void paz::setup ()
       // parse tokens until a comment is started
       while (key && key[0] != '#')
       {
-	chans_to_zero.push_back (fromstring<unsigned>(key));
-	key = strtok (NULL, whitespace);
+        chans_to_zero.push_back (fromstring<unsigned>(key));
+        key = strtok (NULL, whitespace);
       }
     }
   }
@@ -448,10 +448,10 @@ void paz::process (Pulsar::Archive* arch)
 
     for (unsigned pol = 0; pol < arch->get_npol (); pol++)
       for (unsigned chan = 0; chan < arch->get_nchan (); chan++)
-	for (unsigned subint = 0; subint < arch->get_nsubint (); subint++)
-	  zap_periodic_spikes (arch->get_Profile (subint, pol, chan),
-			       periodic_zap_period, periodic_zap_phase,
-                               periodic_zap_width);
+        for (unsigned subint = 0; subint < arch->get_nsubint (); subint++)
+          zap_periodic_spikes (arch->get_Profile (subint, pol, chan),
+                  periodic_zap_period, periodic_zap_phase,
+                                    periodic_zap_width);
   }
 
   if (pol_to_delete != -1)
@@ -491,8 +491,8 @@ void paz::process (Pulsar::Archive* arch)
       if (pol_to_delete == 0)
       {
         // Swap pol 0 and pol 1 in each sub-integration and frequency channel
-	for (unsigned ichan = 0; ichan < nchan; ichan++)
-	  subint->expert()->swap_profiles (0, ichan, 1, ichan);
+        for (unsigned ichan = 0; ichan < nchan; ichan++)
+          subint->expert()->swap_profiles (0, ichan, 1, ichan);
       }
     }
 
@@ -506,21 +506,21 @@ void paz::process (Pulsar::Archive* arch)
   {
     for (unsigned pol = 0; pol < arch->get_npol (); pol++) {
       for (unsigned chan = 0; chan < arch->get_nchan (); chan++) {
-	for (unsigned subint = 0; subint < arch->get_nsubint (); subint++) {
-	  Pulsar::Profile * prof = arch->get_Profile (subint, pol, chan);
-	  float *amps = prof->get_amps ();
-	  for (unsigned i = 5; i < arch->get_nbin (); i += 8) {
-	    // Interpolate between previous and later point if possible
-	    if (i == arch->get_nbin () - 1)
-	      amps[i] = amps[i - 1];
-	    else {
-	      float amp1 = amps[i - 1];
-	      float amp2 = amps[i + 1];
-	      amps[i] = 0.5 * (amp1 + amp2);
-	    }
-	  }
-	  prof->set_amps (amps);
-	}
+        for (unsigned subint = 0; subint < arch->get_nsubint (); subint++) {
+          Pulsar::Profile * prof = arch->get_Profile (subint, pol, chan);
+          float *amps = prof->get_amps ();
+          for (unsigned i = 5; i < arch->get_nbin (); i += 8) {
+            // Interpolate between previous and later point if possible
+            if (i == arch->get_nbin () - 1)
+              amps[i] = amps[i - 1];
+            else {
+              float amp1 = amps[i - 1];
+              float amp2 = amps[i + 1];
+              amps[i] = 0.5 * (amp1 + amp2);
+            }
+          }
+          prof->set_amps (amps);
+        }
       }
     }
   }
@@ -535,15 +535,15 @@ void paz::process (Pulsar::Archive* arch)
 
     for (unsigned i = 0; i < orig_nsubint; i++)
       for (unsigned j = 0; j < subs_to_delete.size (); j++)
-	if (subs_to_delete[j] == i)
-	{
-	  if (verbose)
-	    cout << "Deleting subint " << i << endl;
+        if (subs_to_delete[j] == i)
+        {
+          if (verbose)
+            cout << "Deleting subint " << i << endl;
 
-	  // after each subint is zapped, it is necessary to offset the index
-	  arch->erase (i - zapped);
-	  zapped ++;
-	}
+          // after each subint is zapped, it is necessary to offset the index
+          arch->erase (i - zapped);
+          zapped ++;
+        }
 
     if (verbose)
       cerr << "paz: deletion completed" << endl;
@@ -558,17 +558,17 @@ void paz::process (Pulsar::Archive* arch)
     {
       bool keep = false;
       for (unsigned j = 0; j < subs_no_delete.size (); j++)
-	if (subs_no_delete[j] == i)
-	  keep = true;
+        if (subs_no_delete[j] == i)
+          keep = true;
 
       if (!keep)
       {
-	if (verbose)
-	  cout << "Deleting subint " << i << endl;
+        if (verbose)
+          cout << "Deleting subint " << i << endl;
 
-	// after each subint is zapped, it is necessary to offset the index
-	arch->erase (i - zapped);
-	zapped ++;
+        // after each subint is zapped, it is necessary to offset the index
+        arch->erase (i - zapped);
+        zapped ++;
       }
     }
 
@@ -617,10 +617,10 @@ void paz::process (Pulsar::Archive* arch)
     {
       for (unsigned ic=0; ic<nchan; ic++)
       {
-	double chan_freq=arch->get_Integration(0)->get_centre_frequency(ic);
-	if ( freqs_to_zero[i] > chan_freq - chan_bw/2.0 
-	     && freqs_to_zero[i] < chan_freq + chan_bw/2.0 )
-	  mask[ic] = 0.0;
+        double chan_freq=arch->get_Integration(0)->get_centre_frequency(ic);
+        if ( freqs_to_zero[i] > chan_freq - chan_bw/2.0 
+            && freqs_to_zero[i] < chan_freq + chan_bw/2.0 )
+          mask[ic] = 0.0;
       }
     }
 
@@ -628,20 +628,20 @@ void paz::process (Pulsar::Archive* arch)
     {
       for (unsigned ic=0; ic<nchan; ic++)
       {
-	FreqRange chan;
-	chan.lo=arch->get_Integration(0)->get_centre_frequency(ic) 
-	  - chan_bw/2.0;
-	chan.hi=arch->get_Integration(0)->get_centre_frequency(ic) 
-	  + chan_bw/2.0;
+        FreqRange chan;
+        chan.lo=arch->get_Integration(0)->get_centre_frequency(ic) 
+          - chan_bw/2.0;
+        chan.hi=arch->get_Integration(0)->get_centre_frequency(ic) 
+          + chan_bw/2.0;
 
-	/*
-	  much simpler overlap logic fixes bug #422: 
-	  "paz -F fails when frequency range exactly matches single channel" 
-	*/
+        /*
+          much simpler overlap logic fixes bug #422: 
+          "paz -F fails when frequency range exactly matches single channel" 
+        */
 
-	if (freq_ranges_to_zero[i].hi > chan.lo &&
-	    freq_ranges_to_zero[i].lo < chan.hi)
-	  mask[ic] = 0.0;
+        if (freq_ranges_to_zero[i].hi > chan.lo &&
+            freq_ranges_to_zero[i].lo < chan.hi)
+          mask[ic] = 0.0;
       }
     }
     
@@ -671,10 +671,10 @@ void paz::process (Pulsar::Archive* arch)
     cloned->pscrunch ();
     for (unsigned isub = 0; isub < arch->get_nsubint (); isub++) {
       for (unsigned ichan = 0; ichan < arch->get_nchan (); ichan++) {
-	theston = cloned->get_Profile (isub, 0, ichan)->snr ();
-	if (theston < ston_cutoff) {
-	  arch->get_Integration (isub)->set_weight (ichan, 0.0);
-	}
+        theston = cloned->get_Profile (isub, 0, ichan)->snr ();
+        if (theston < ston_cutoff) {
+          arch->get_Integration (isub)->set_weight (ichan, 0.0);
+        }
       }
     }
   }
@@ -703,8 +703,8 @@ void paz::process (Pulsar::Archive* arch)
 
     for (unsigned isub = 0; isub < arch->get_nsubint (); isub++) {
       if (mins[isub] > dropout_sigma * sqrt (vari)) {
-	cerr << "Zapping integration " << isub << endl;
-	arch->get_Integration (isub)->uniform_weight (0.0);
+        cerr << "Zapping integration " << isub << endl;
+        arch->get_Integration (isub)->uniform_weight (0.0);
       }
     }
   }
@@ -715,7 +715,7 @@ void paz::process (Pulsar::Archive* arch)
     {
       subints_to_mow.resize (arch->get_nsubint ());
       for (unsigned isub = 0; isub < arch->get_nsubint (); isub++)
-	subints_to_mow[isub] = isub;
+        subints_to_mow[isub] = isub;
     }
 
     for (unsigned isub = 0; isub < subints_to_mow.size (); isub++)

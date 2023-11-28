@@ -20,7 +20,11 @@ Pulsar::ProfilePlot::Interface::Interface (ProfilePlot* instance)
        &ProfilePlot::set_plot_cal_transitions,
        "cal", "Plot cal transitions (when applicable)" );
 
+  add( &ProfilePlot::get_plot_time,
+       &ProfilePlot::set_plot_time,
+       "time", "Plot time (if specified)" );
+
   add( &ProfilePlot::get_outlier_threshold,
        &ProfilePlot::set_outlier_threshold,
-       "cut", "Threshold used to reject cal level outliers" );
+       "cut", "Cal level outlier threshold" );
 }

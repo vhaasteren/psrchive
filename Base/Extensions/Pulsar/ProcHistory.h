@@ -33,7 +33,7 @@ namespace Pulsar {
     class Interface : public TextInterface::To<ProcHistory>
     {
       public:
-	Interface( ProcHistory *s_instance = NULL );
+        Interface( ProcHistory *s_instance = NULL );
     };
 
     //! Return an abbreviated name that can be typed relatively quickly
@@ -42,7 +42,7 @@ namespace Pulsar {
     ///////////////////////////////////////////////////////////////
     // The information container
     
-    class row {
+    class row : public Reference::Able {
       
     public:
       
@@ -53,18 +53,42 @@ namespace Pulsar {
       class Interface : public TextInterface::To<row>
       {
       public:
-	Interface( row *s_instance = NULL );
+        Interface( row *s_instance = NULL );
       };
 
-      int get_nbin() const { return nbin; }
-      int get_npol() const { return npol; }
-      int get_nsub() const { return nsub; }
-      int get_nchan() const { return nchan; }
-      int get_nbin_prd() const { return nbin_prd; }
-      
       // Row label
       int index;
-      
+
+      std::string get_date_pro () const { return date_pro; }
+      std::string get_proc_cmd () const { return proc_cmd; }
+      std::string get_pol_type () const { return pol_type; }
+      int get_nsub () const { return nsub; }
+      int get_npol () const { return npol; }
+      int get_nbin () const { return nbin; }
+      int get_nbin_prd () const { return nbin_prd; }
+      double get_tbin () const { return tbin; }
+      double get_ctr_freq () const { return ctr_freq; }
+      int get_nchan () const { return nchan; }
+      double get_chan_bw () const { return chan_bw; }
+      double get_ref_freq () const { return ref_freq; }
+      double get_dispersion_measure () const { return dispersion_measure; }
+      double get_rotation_measure () const { return rotation_measure; }
+      int get_pr_corr () const { return pr_corr; }
+      int get_fd_corr () const { return fd_corr; }
+      int get_be_corr () const { return be_corr; }
+      int get_rm_corr () const { return rm_corr; }
+      int get_dedisp () const { return dedisp; }
+      int get_aux_rm_corr () const { return aux_rm_corr; }
+      int get_aux_dm_corr () const { return aux_dm_corr; }
+      std::string get_dds_mthd () const { return dds_mthd; }
+      std::string get_sc_mthd () const { return sc_mthd; }
+      std::string get_cal_mthd () const { return cal_mthd; }
+      std::string get_cal_file () const { return cal_file; }
+      std::string get_rfi_mthd () const { return rfi_mthd; }
+      std::string get_aux_rm_model () const { return aux_rm_model; }
+      std::string get_aux_dm_model () const { return aux_dm_model; }
+      std::string get_scale () const { return scale; }
+
       // Information in the row
       std::string date_pro;
       std::string proc_cmd;

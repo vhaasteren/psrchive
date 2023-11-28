@@ -13,6 +13,7 @@
 
 #include "Pulsar/FluxPlot.h"
 #include "Pulsar/HasPen.h"
+#include "MJD.h"
 
 namespace Pulsar {
 
@@ -48,14 +49,24 @@ namespace Pulsar {
     void set_outlier_threshold (float f) { outlier_threshold = f; }
     float get_outlier_threshold () const { return outlier_threshold; }
 
+    //! Set the time to be plotted
+    void set_plot_time (const MJD& epoch) { plot_time = epoch; }
+    MJD get_plot_time () const { return plot_time; }
+
     //! Draw the profile transitions in the current viewport and window
     void draw_transitions (const Profile* profile);
 
+    //! Mark the plot_time with a vertical dashed line
+    void draw_time ();
+    
   protected:
 
     bool plot_cal_transitions;
     double outlier_threshold;
- 
+
+    MJD plot_time;
+    MJD reference_epoch;
+    double folding_period{0};
   };
 
 }
