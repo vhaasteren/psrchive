@@ -16,7 +16,7 @@ std::string KrausType::get_name () const
   return "Kraus-type";
 }
 
-#if I_CANT_REPRODUCE_SPHERICAL_TRIGONOMETRIC_RESULT
+#if KRAUS_TYPE_USE_SPHERICAL_TRIGONOMETRY
 
 /*! sin(PA) = sin(dec) * sin(-HA) */
 double KrausType::get_vertical () const

@@ -21,7 +21,7 @@
   while the focal carriage moves East-West along railroad ties to
   track objects near transit. - https://en.wikipedia.org/wiki/Kraus-type */
 
-#define I_CANT_REPRODUCE_SPHERICAL_TRIGONOMETRIC_RESULT 1
+#define KRAUS_TYPE_USE_SPHERICAL_TRIGONOMETRY 0
 
 class KrausType : public Directional
 {
@@ -30,7 +30,7 @@ public:
   //! Get the name of the mount
   std::string get_name () const;
 
-#if I_CANT_REPRODUCE_SPHERICAL_TRIGONOMETRIC_RESULT
+#if KRAUS_TYPE_USE_SPHERICAL_TRIGONOMETRY
   //! Get the vertical angle (rotation about the line of sight)
   double get_vertical () const;
 #endif
@@ -40,7 +40,7 @@ protected:
   //! Get the receptor basis in the reference frame of the observatory
   Matrix<3,3,double> get_basis (const Vector<3,double>& from_source) const;
 
-#if I_CANT_REPRODUCE_SPHERICAL_TRIGONOMETRIC_RESULT
+#if KRAUS_TYPE_USE_SPHERICAL_TRIGONOMETRY
   //! Disable Directional::build
   void build () const;
 #endif
