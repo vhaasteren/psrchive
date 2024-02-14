@@ -27,6 +27,10 @@ void Pulsar::FITSArchive::unload_sk_integrations (fitsfile* ffptr) const
   // ensure npol, nchan, m and nsigma match for all integrations
   const SpectralKurtosis* ske = get_Integration (0)->get<SpectralKurtosis>();
 
+  if (!ske)
+    throw Error (InvalidParam, "FITSArchive::unload_sk_integrations",
+                 "sub-integration 0 does not have a SpectralKurtosis extension");
+
   unsigned sk_npol  = ske->get_npol();
   unsigned sk_nchan = ske->get_nchan();
   unsigned sk_m = ske->get_M();
@@ -35,6 +39,11 @@ void Pulsar::FITSArchive::unload_sk_integrations (fitsfile* ffptr) const
   for (unsigned i = 1; i < nsubint; i++) 
   {
     ske = get_Integration (i)->get<SpectralKurtosis>();
+
+    if (!ske)
+      throw Error (InvalidParam, "FITSArchive::unload_sk_integrations",
+                   "sub-integration %u does not have a SpectralKurtosis extension", i);
+
     if (sk_npol != ske->get_npol())
       throw FITSError (status, "FITSArchive::unload_sk_integrations",
                         "sk_npol mismatch for SPECKURT");

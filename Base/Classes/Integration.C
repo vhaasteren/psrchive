@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *   Copyright (C) 2002-2010 by Willem van Straten
+ *   Copyright (C) 2002 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -513,14 +513,14 @@ double Pulsar::Integration::get_effective_dispersion_measure () const try
   if (! get_auxiliary_dispersion_corrected())
   {
     if (verbose)
-      cerr << "Integration::get_effective_dispersion_measure"
-              " aux dm not corrected" << endl;
+      cerr << "Integration::get_effective_dispersion_measure aux dm not corrected" << endl;
 
     const AuxColdPlasmaMeasures* aux = get<AuxColdPlasmaMeasures>();
     if (aux)
     {
-      cerr << "Integration::get_effective_dispersion_measure"
-              " aux dm = " << aux->get_dispersion_measure() << endl;
+      if (verbose)
+        cerr << "Integration::get_effective_dispersion_measure"
+                " aux dm = " << aux->get_dispersion_measure() << endl;
 
       dm += aux->get_dispersion_measure();
     }

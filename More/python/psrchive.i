@@ -394,6 +394,20 @@ double get_tobs(const char* filename) {
         PyArray_INCREF(arr);
         return (PyObject *)arr;
     }
+
+    // Return a copy of the profile amplitudes, multiplied by the profile weight, as a numpy array
+    PyObject *get_weighted_data()
+    {
+        npy_intp ndims = self->get_nbin();
+        float *ptr = self->get_amps();
+        float weight = self->get_weight();
+        
+        PyArrayObject *arr = (PyArrayObject *)PyArray_SimpleNew(1, &ndims, PyArray_FLOAT);
+        float* data = reinterpret_cast<float*>(arr->data);
+        for (int ii = 0 ; ii < ndims; ii++)
+            data[ii] = ptr[ii] * weight;
+        return (PyObject *)arr;
+    }
 }
 
 %extend Pulsar::Integration
@@ -606,22 +620,22 @@ def rotate_phase(self,phase): return self._rotate_phase_swig(phase)
     // If ITRF coordinates are not present in the data then the position
     // will be returned as "undefined".
     PyObject *get_ant_xyz() {
-    double itrf_x, itrf_y, itrf_z;
-    Pulsar::ITRFExtension *p = self->get<Pulsar::ITRFExtension>();
-    if (p==NULL) {
-        PyObject *result = (PyObject *)PyString_FromString("undefined");
-        return (PyObject *)result;
-    } else {
-        itrf_x = p->get_ant_x();
-        itrf_y = p->get_ant_y();
-        itrf_z = p->get_ant_z();
-        PyTupleObject *result = (PyTupleObject *)PyTuple_New(3);
-        PyTuple_SetItem((PyObject *)result, 0, (PyObject *)PyFloat_FromDouble(itrf_x));
-        PyTuple_SetItem((PyObject *)result, 1, (PyObject *)PyFloat_FromDouble(itrf_y));
-        PyTuple_SetItem((PyObject *)result, 2, (PyObject *)PyFloat_FromDouble(itrf_z));
-        return (PyObject *)result;
+        double itrf_x, itrf_y, itrf_z;
+        Pulsar::ITRFExtension *p = self->get<Pulsar::ITRFExtension>();
+        if (p==NULL) {
+            PyObject *result = (PyObject *)PyString_FromString("undefined");
+            return (PyObject *)result;
+        } else {
+            itrf_x = p->get_ant_x();
+            itrf_y = p->get_ant_y();
+            itrf_z = p->get_ant_z();
+            PyTupleObject *result = (PyTupleObject *)PyTuple_New(3);
+            PyTuple_SetItem((PyObject *)result, 0, (PyObject *)PyFloat_FromDouble(itrf_x));
+            PyTuple_SetItem((PyObject *)result, 1, (PyObject *)PyFloat_FromDouble(itrf_y));
+            PyTuple_SetItem((PyObject *)result, 2, (PyObject *)PyFloat_FromDouble(itrf_z));
+            return (PyObject *)result;
+        }
     }
-}
 
     // Allow timing model to be updated via eph filename
     void set_ephemeris(std::string eph_file)
@@ -715,6 +729,38 @@ def rotate_phase(self,phase): return self._rotate_phase_swig(phase)
                            (ndims[3] * (kk + ndims[2] * (jj + ndims[1] * ii))), 
                            self->get_Profile(ii, jj, kk)->get_amps(),
                            ndims[3]*sizeof(float));
+        return (PyObject *)arr;
+    }
+
+    // Return a copy of the profile amplitudes, multiplied by the profile weights, as a numpy array
+    PyObject *get_weighted_data()
+    {
+        npy_intp ndims[4];  // nsubint, npol, nchan, nbin
+
+        ndims[0] = self->get_nsubint();
+        ndims[1] = self->get_npol();
+        ndims[2] = self->get_nchan();
+        ndims[3] = self->get_nbin();
+
+        PyArrayObject* arr = (PyArrayObject *)PyArray_SimpleNew(4, ndims, PyArray_FLOAT);
+        float* base = reinterpret_cast<float*>(arr->data);
+
+        for (int ii = 0 ; ii < ndims[0] ; ii++)
+        {
+            for (int jj = 0 ; jj < ndims[1] ; jj++)
+            {
+                for (int kk = 0 ; kk < ndims[2] ; kk++)
+                {
+                    float* data = base + ndims[3] * (kk + ndims[2] * (jj + ndims[1] * ii));
+                    float* amps = self->get_Profile(ii, jj, kk)->get_amps();
+                    float weight = self->get_Integration(ii)->get_weight(kk);
+
+                    for (int lbin = 0 ; lbin < ndims[3] ; lbin++)
+                        data[lbin] = amps[lbin] * weight;
+                }
+            }
+        }
+
         return (PyObject *)arr;
     }
 

@@ -56,10 +56,10 @@ namespace Pulsar {
     std::string get_standard_candle_info () const;
 
     //! Return the system temperature in Kelvin
-    double meanTsys ();
+    double meanTsys () const;
     
     //! Return the system temperature of a specific channel
-    double Tsys (unsigned ichan);
+    double Tsys (unsigned ichan) const;
 
     //! Return an estimate of the artificial cal Stokes parameters
     const CalibratorStokes* get_CalibratorStokes () const;
@@ -95,7 +95,7 @@ namespace Pulsar {
     void set_invalid (unsigned ch);
 
     //! Print all the fluxcal info
-    void print(std::ostream& os=std::cout);
+    void print(std::ostream& os=std::cout) const;
 
     //! Check whether both on and off are present
     bool complete () const { return (have_on && have_off); }
@@ -145,22 +145,22 @@ namespace Pulsar {
     mutable Reference::To<CalibratorStokes> calibrator_stokes;
     
     //! Set true after call to calculate
-    bool calculated;
+    bool calculated = false;
 
     //! FluxCal-On data available
-    bool have_on;
+    bool have_on = false;
 
     //! FluxCal-Off data available
-    bool have_off;
+    bool have_off = false;
 
     //! Information stored about the standard candle
     std::string standard_candle_info;
 
     //! Threshold used to reject outliers when computing levels
-    double outlier_threshold;
+    double outlier_threshold = 0.0;
 
     //! Assume that pulsar and standard candle were observed on same scale
-    bool constant_scale;
+    bool constant_scale = false;
 
     //! Initialize attributes
     void init ();

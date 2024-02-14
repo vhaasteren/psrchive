@@ -99,14 +99,12 @@ Pulsar::ProfileWeightFunction::factory (const std::string& name_parse)
 
 namespace Pulsar
 {
-  std::ostream& operator<< (std::ostream& ostr,
-			    ProfileWeightFunction* e)
+  std::ostream& operator<< (std::ostream& ostr, ProfileWeightFunction* e)
   {
     return interface_insertion (ostr, e);
   }
 
-  std::istream& operator>> (std::istream& istr,
-			    ProfileWeightFunction* &e)
+  std::istream& operator>> (std::istream& istr, ProfileWeightFunction* &e)
   {
     return interface_extraction (istr, e);
   }

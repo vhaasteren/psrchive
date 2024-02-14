@@ -69,8 +69,7 @@ Pulsar::ProfileStats* Pulsar::ProfileStats::clone () const
 void Pulsar::ProfileStats::set_include_estimator (ProfileWeightFunction* est)
 {
   if (Profile::verbose)
-    cerr << "Pulsar::ProfileStats::set_include this=" << this
-	 << " est=" << est << endl;
+    cerr << "Pulsar::ProfileStats::set_include this=" << this << " est=" << est << endl;
 
   include_estimator = est;
   built = false;
@@ -87,8 +86,7 @@ Pulsar::ProfileStats::get_include_estimator () const
 void Pulsar::ProfileStats::set_exclude_estimator (ProfileWeightFunction* est)
 {
   if (Profile::verbose)
-    cerr << "Pulsar::ProfileStats::set_exclude this=" << this
-	 << " est=" << est << endl;
+    cerr << "Pulsar::ProfileStats::set_exclude this=" << this << " est=" << est << endl;
 
   exclude_estimator = est;
   built = false;
@@ -106,7 +104,7 @@ void Pulsar::ProfileStats::set_profile (const Profile* _profile)
 {
   if (Profile::verbose)
     cerr << "Pulsar::ProfileStats::set_profile this=" << this
-	 << " profile=" << _profile << " regions_set=" << regions_set << endl;
+         << " profile=" << _profile << " regions_set=" << regions_set << endl;
 
   profile = _profile;
   built = false;
@@ -118,8 +116,7 @@ void Pulsar::ProfileStats::set_profile (const Profile* _profile)
 void Pulsar::ProfileStats::select_profile (const Profile* set_profile) try
 { 
   if (Profile::verbose)
-    cerr << "Pulsar::ProfileStats::select_profile this=" << this 
-	 << " Profile=" << set_profile << endl;
+    cerr << "Pulsar::ProfileStats::select_profile this=" << this << " Profile=" << set_profile << endl;
 
   regions_set = false;
 
@@ -150,8 +147,7 @@ void Pulsar::ProfileStats::deselect_onpulse (const Profile* prof, float thresh)
                  prof->get_nbin(), onpulse.get_nbin());
 
   if (Profile::verbose)
-    cerr << "Pulsar::ProfileStats::deselect_onpulse nbin=" << prof->get_nbin() 
-         << endl;
+    cerr << "Pulsar::ProfileStats::deselect_onpulse nbin=" << prof->get_nbin() << endl;
 
   for (unsigned i=0; i<prof->get_nbin(); i++)
     if (prof->get_amps()[i] < thresh)
@@ -162,8 +158,7 @@ void Pulsar::ProfileStats::deselect_onpulse (const Profile* prof, float thresh)
 void Pulsar::ProfileStats::set_onpulse_estimator (ProfileWeightFunction* est)
 {
   if (Profile::verbose)
-    cerr << "Pulsar::ProfileStats::set_onpulse_estimator this=" << this
-	 << " est=" << est << endl;
+    cerr << "Pulsar::ProfileStats::set_onpulse_estimator this=" << this << " est=" << est << endl;
 
   onpulse_estimator = est;
   built = false;
@@ -180,8 +175,7 @@ Pulsar::ProfileStats::get_onpulse_estimator () const
 void Pulsar::ProfileStats::set_baseline_estimator (ProfileWeightFunction* est)
 {
   if (Profile::verbose)
-    cerr << "Pulsar::ProfileStats::set_baseline_estimator this=" << this
-	 << " est=" << est << endl;
+    cerr << "Pulsar::ProfileStats::set_baseline_estimator this=" << this << " est=" << est << endl;
 
   HasBaselineEstimator::set_baseline_estimator (est);
   built = false;
@@ -191,8 +185,7 @@ void Pulsar::ProfileStats::set_baseline_estimator (ProfileWeightFunction* est)
 void Pulsar::ProfileStats::set_width_estimator (WidthEstimator* est)
 {
   if (Profile::verbose)
-    cerr << "Pulsar::ProfileStats::set_width_estimator this=" << this
-         << " est=" << est << endl;
+    cerr << "Pulsar::ProfileStats::set_width_estimator this=" << this << " est=" << est << endl;
 
   width_estimator = est;
   built = false;
@@ -207,8 +200,7 @@ Pulsar::ProfileStats::get_width_estimator () const
 void Pulsar::ProfileStats::set_snratio_estimator (SNRatioEstimator* est)
 {
   if (Profile::verbose)
-    cerr << "Pulsar::ProfileStats::set_snratio_estimator this=" << this
-         << " est=" << est << endl;
+    cerr << "Pulsar::ProfileStats::set_snratio_estimator this=" << this << " est=" << est << endl;
 
   snratio_estimator = est;
   built = false;
@@ -222,8 +214,7 @@ Pulsar::ProfileStats::get_snratio_estimator () const
 
  
 //! Set the on-pulse and baseline regions
-void Pulsar::ProfileStats::set_regions (const PhaseWeight& on,
-					const PhaseWeight& off)
+void Pulsar::ProfileStats::set_regions (const PhaseWeight& on, const PhaseWeight& off)
 {
   onpulse = on;
   baseline = off;
@@ -278,10 +269,10 @@ Pulsar::ProfileStats::get_total (bool subtract_baseline) const try
 
   return Estimate<double> (total - offmean * navg, variance * navg);
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::ProfileStats::get_total";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::ProfileStats::get_total";
+}
 
 unsigned Pulsar::ProfileStats::get_onpulse_nbin () const
 {
@@ -305,10 +296,10 @@ bool Pulsar::ProfileStats::get_onpulse (unsigned ibin) const try
 
   return onpulse[ibin];
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::ProfileStats::get_onpulse (ibin)";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::ProfileStats::get_onpulse (ibin)";
+}
 
 void Pulsar::ProfileStats::set_onpulse (unsigned ibin, bool val) try
 {
@@ -316,10 +307,10 @@ void Pulsar::ProfileStats::set_onpulse (unsigned ibin, bool val) try
     build ();
   onpulse[ibin] = val;
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::ProfileStats::set_onpulse (ibin, val)";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::ProfileStats::set_onpulse (ibin, val)";
+}
 
 //! Return true if the specified phase bin is in the baseline window
 bool Pulsar::ProfileStats::get_baseline (unsigned ibin) const try
@@ -328,10 +319,10 @@ bool Pulsar::ProfileStats::get_baseline (unsigned ibin) const try
     build ();
   return baseline[ibin];
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::ProfileStats::get_baseline (ibin)";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::ProfileStats::get_baseline (ibin)";
+}
 
 Estimate<double> Pulsar::ProfileStats::get_baseline_variance () const try
 {
@@ -364,10 +355,10 @@ Estimate<double> Pulsar::ProfileStats::get_baseline_variance () const try
 
   return baseline_variance;
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::ProfileStats::get_baseline_variance";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::ProfileStats::get_baseline_variance";
+}
 
 //! Return the on-pulse phase bin mask
 Pulsar::PhaseWeight* Pulsar::ProfileStats::get_onpulse () try
@@ -377,10 +368,10 @@ Pulsar::PhaseWeight* Pulsar::ProfileStats::get_onpulse () try
 
   return &onpulse;
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::ProfileStats::get_onpulse";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::ProfileStats::get_onpulse";
+}
 
 //! Return the off-pulse baseline mask
 Pulsar::PhaseWeight* Pulsar::ProfileStats::get_baseline () try
@@ -389,10 +380,10 @@ Pulsar::PhaseWeight* Pulsar::ProfileStats::get_baseline () try
     build ();
   return &baseline;
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::ProfileStats::get_baseline";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::ProfileStats::get_baseline";
+}
 
 //! Return the off-pulse baseline mask
 Pulsar::PhaseWeight* Pulsar::ProfileStats::get_all ()

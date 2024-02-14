@@ -140,7 +140,7 @@ void CommandLine::Menu::parse (int argc, char* const * argv)
       arg->val = arg->short_name[0];
       shortopts += arg->short_name;
       if (arg->has_arg == required_argument)
-	shortopts += ":";
+        shortopts += ":";
     }
 
     if (arg->long_name.empty())
@@ -178,14 +178,14 @@ void CommandLine::Menu::parse (int argc, char* const * argv)
     {
       if (item[i]->matches (code))
       {
-	string arg;
-	if (optarg)
-	  arg = optarg;
+        string arg;
+        if (optarg)
+          arg = optarg;
 
-	item[i]->handle (arg);
-	item[i]->set_handled (true);
+        item[i]->handle (arg);
+        item[i]->set_handled (true);
 
-	break;
+        break;
       }
     }
   }

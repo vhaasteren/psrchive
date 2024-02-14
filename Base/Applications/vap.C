@@ -78,6 +78,8 @@ bool polycmode = false;
 bool verbose = false;
 bool show_extensions = false;
 bool hide_headers = false;
+bool print_history_csv = false;
+
 vector< string > commands;
 string meta_filename = "";
 
@@ -358,7 +360,7 @@ string get_intmjd( Reference::To< Archive > archive )
     MJD t = archive->start_time();
     intmjd = tostring<int>( t.intday() );
   }
-  catch( Error e ) {}
+  catch( Error& e ) {}
 
   return intmjd;
 }
@@ -373,7 +375,7 @@ string get_fracmjd( Reference::To< Archive > archive )
     MJD t = archive->start_time();
     fracmjd = tostring( t.fracday(), 14 );
   }
-  catch( Error e ) {}
+  catch( Error& e ) {}
 
   return fracmjd;
 }
@@ -390,14 +392,14 @@ string get_mjd( Reference::To< Archive > archive )
     {
       CalibratorExtension* extension = archive->get<CalibratorExtension>();
       if (extension)
-	epoch = extension->get_epoch();
+        epoch = extension->get_epoch();
     }
     else
       epoch = archive->start_time();
 
     mjd = tostring( epoch, 11 );
   } 
-  catch( Error e ) {}
+  catch( Error& e ) {}
 
   return mjd;
 }
@@ -1624,6 +1626,8 @@ void PrintBasicHlp( void )
   "\n"
   "-p  is used to print the set of polynomial coefficients\n"
   "\n"
+  "-P  print the processing history as comma-separated values"
+  "\n"
   "-M  extract list of files from metafile\n"
   "\n"
   "-R  show relative path names\n"
@@ -1818,7 +1822,7 @@ void PrintExtdHlp( void )
 void ProcArgs( int argc, char *argv[] )
 {
   int gotc;
-  while ((gotc = getopt (argc, argv, "fnc:sEphHvVtTXM:Rq")) != -1)
+  while ((gotc = getopt (argc, argv, "fnc:sEpPhHvVtTXM:Rq")) != -1)
     switch (gotc)
     {
 
@@ -1828,6 +1832,10 @@ void ProcArgs( int argc, char *argv[] )
 
     case 'p':
       polycmode = true;
+      break;
+
+    case 'P':
+      print_history_csv = true;
       break;
 
     case 'c':
@@ -2014,7 +2022,7 @@ string FetchValue( Reference::To< Archive > archive, string command )
 
     else return "INVALID";
   }
-  catch( Error e )
+  catch( Error& e )
   {
     return "*error*";
   }
@@ -2133,6 +2141,51 @@ void ExtractEphemeris( string filename )
 
 
 /**
+* PrintHistoryCSV - Print the HISTORY table as comma-separated values
+**/
+
+void PrintHistoryCSV( string filename )
+{
+  current_filename = filename;
+  Reference::To< Archive > archive = Archive::load( filename );
+
+  if( !archive )
+    return;
+
+  Reference::To<ProcHistory> ext = archive->get<ProcHistory>();
+
+  if( !ext )
+  {
+    cout << "vap: " << filename << " has no processing history table" << endl;
+    return;
+  }
+
+  ProcHistory::row::Interface interface;
+  string comma = ""; // no comma in front of first value
+  for (unsigned i=0; i < interface.get_nvalue(); i++)
+  {
+    cout << comma << interface.get_name (i);
+    comma = ","; // comma in front of all subsequent values
+  }
+  cout << endl;
+
+  for (auto& row: ext->rows)
+  {
+    interface.set_instance(&row);
+
+    comma = "";
+    for (unsigned i=0; i < interface.get_nvalue(); i++)
+    {
+      cout << comma << interface.get_value (i);
+      comma = ",";
+    }
+
+    cout << endl;
+  }
+
+}
+
+/**
 * ShowExtensions - a simple debugging routine for showing the extensions available on an archive.
 **/
 
@@ -2234,6 +2287,8 @@ int main( int argc, char *argv[] ) try
       for_each( filenames.begin(), filenames.end(), ExtractEphemeris );
     else if( show_extensions )
       for_each( filenames.begin(), filenames.end(), ShowExtensions );
+    else if( print_history_csv )
+      for_each( filenames.begin(), filenames.end(), PrintHistoryCSV );
     else
     {
       for_each( filenames.begin(), filenames.end(), ProcessArchive );

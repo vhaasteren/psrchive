@@ -108,8 +108,7 @@ void Pulsar::Application::parse (int argc, char** argv)
   arg = menu.add (metafile, 'M', "metafile");
   arg->set_help ("metafile contains list of archive filenames");
 
-  arg = menu.add (Config::get_configuration(), &Config::set_filename,
-		  "config", "file");
+  arg = menu.add (Config::get_configuration(), &Config::set_filename, "config", "file");
   arg->set_help ("configuration file");
 
   for (unsigned i=0; i<options.size(); i++)
@@ -142,10 +141,11 @@ void Pulsar::Application::parse (int argc, char** argv)
   }
 
   string separator = " ";
-  command += name + separator;
+  command = name;
   for (int i=1; i<optind; i++)
-    command += argv[i] + separator;
-
+  {
+    command += separator + argv[i];
+  }
 }
 
 Pulsar::Archive* Pulsar::Application::load (const string& filename)

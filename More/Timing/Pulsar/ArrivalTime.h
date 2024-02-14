@@ -75,6 +75,9 @@ namespace Pulsar {
     //! Skip data with zero weight
     void set_skip_bad (bool flag) { skip_bad = flag; }
 
+    //! Output only arrival times that are greater than reference time
+    void set_positive_shifts (bool flag) { positive_shifts = flag; }
+
     //! Add to the vector of time-of-arrival estimates
     void get_toas (std::vector<Tempo::toa>&);
 
@@ -127,6 +130,9 @@ namespace Pulsar {
 
     //! when true, skip data with zero weight
     bool skip_bad;
+
+    //! when true, output arrival times that are always later than phase bin zero
+    bool positive_shifts {false};
 
     /*
       Perhaps Tempo::toa::Format should be a base class, such that
