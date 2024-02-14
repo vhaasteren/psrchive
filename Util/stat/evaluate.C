@@ -187,7 +187,7 @@ string string_comparison (const string& text)
   return tostring(result);
 }
 
-string evaluate (const string& text, char cstart, char cend) try
+string evaluate (const string& text, char cstart, char cend, char escape) try
 {
   string remain = text;
     
@@ -203,8 +203,7 @@ string evaluate (const string& text, char cstart, char cend) try
   while ( (end = remain.find(cend)) != string::npos &&
 	  (start = remain.rfind(cstart, end)) != string::npos )
   {
-
-    // find the end of the variable name
+    // extract the text enclosed by brackets
     string eval = remain.substr (start+1, end-start-1);
 
     DEBUG("eval='" << eval << "'");
@@ -240,6 +239,10 @@ string evaluate (const string& text, char cstart, char cend) try
     string after = (end != string::npos) ? remain.substr (end) : "";
 
     DEBUG("after='" << after << "'");
+
+    // disable this evaluation, but check to see if any nested evaluation is required
+    if (start > 0 && remain[start-1] == escape)
+      return before + escape + cstart + evaluate (eval, cstart, cend, escape) + cend + after;
 
     string subst;
 

@@ -12,8 +12,8 @@
 
 #include <string>
 
-//! Replaces strings enclosed in { } with the mathematical expression
-std::string evaluate (const std::string& text, char cstart='{', char cend='}');
+//! Replaces strings enclosed in { } with the mathematical expression unless preceded by :
+std::string evaluate (const std::string& text, char cstart='{', char cend='}', char escape=':');
 
 //! Evaluates a mathematical expression
 double compute (const std::string& text);
