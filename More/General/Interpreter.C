@@ -817,6 +817,8 @@ string Pulsar::Interpreter::edit (const string& args) try
   {
     if (icmd)
       retval += " ";
+
+    // ::process is defined in More/General/standard_interface.C
     retval += ::process (get_interface(), arguments[icmd]);
   }
 
