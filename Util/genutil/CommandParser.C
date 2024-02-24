@@ -18,14 +18,7 @@ bool CommandParser::debug = false;
 
 CommandParser::CommandParser()
 {
-  quit = false;
-  verbose = false;
-
   out = &std::cout;
-
-  fault = false;
-  abort = true;
-  interactive = true;
 
   startCommand = true;
   endCommand = false;
@@ -76,7 +69,7 @@ string CommandParser::script (const vector<string>& cmds)
     if (fault && abort)
       throw Error (InvalidState, "CommandParser::script", response);
 
-    if (out)
+    if (out && verbose >= 0)
       *out << response;
     else
       result += response;
@@ -139,9 +132,20 @@ string CommandParser::parse2 (const string& command, const string& arguments)
 
   if (command == "verbose")
   {
-    verbose = !verbose;
-    if (verbose)
-      return "verbosity enabled\n";
+    if (arguments == "--")
+    {
+      if (debug)
+        cerr << "CommandParser::parse decreasing verbosity" << endl;
+      verbose --;
+    }
+    else
+    {
+      if (debug)
+        cerr << "CommandParser::parse increasing verbosity" << endl; 
+      verbose ++;
+    }
+    if (verbose >= 0)
+      return "verbosity level = " + tostring(verbose) + "\n";
     else
       return "";
   }
@@ -442,7 +446,7 @@ string CommandParser::help (const string& command)
     if (nested.empty())
       help_str += "\n" +
 	pad(maxlen, "quit")    + "quit program\n" +
-	pad(maxlen, "verbose") + "toggle verbosity\n";
+	pad(maxlen, "verbose") + "increase verbosity\n";
 
     help_str += "\n"
       "Type \"" + nested_prefix + "help <command>\" "

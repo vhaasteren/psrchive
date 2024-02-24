@@ -82,7 +82,8 @@ void CommandParser::standard_input (const std::string& /* prompt */)
   while (!quit)
   {
     string response = parse( readline() );
-    cout << response;
+    if (verbose >= 0)
+      cout << response;
 
     if (!interactive && fault && abort)
       throw Error (InvalidState, "CommandParser::standard_input", response);
