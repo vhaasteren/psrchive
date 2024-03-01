@@ -73,13 +73,13 @@ class CommandParser : public Reference::Able {
   virtual std::string empty ();
 
   //! quit flag raised by "quit"
-  bool quit;
+  bool quit = false;
 
-  //! verbose operation enabled by "verbose"
-  bool verbose;
+  //! verbosity level set by "verbose"
+  int verbose = 0;
 
   //! abort on exception flag set by "abort" command
-  bool abort;
+  bool abort = false;
 
   //! Pure virtual base class of interface to parser methods
   class Method;
@@ -87,10 +87,10 @@ class CommandParser : public Reference::Able {
  protected:
 
   //! Flag raised when input is an interactive terminal
-  bool interactive;
+  bool interactive = true;
 
   //! Flag raised whenever a parsing error or other fault occurs
-  bool fault;
+  bool fault = false;
 
   //! Name of command parser when nested
   std::string nested;

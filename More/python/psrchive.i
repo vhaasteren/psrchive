@@ -412,6 +412,25 @@ double get_tobs(const char* filename) {
 
 %extend Pulsar::Integration
 {
+    // Return a copy of all the data as a numpy array
+    PyObject *get_data()
+    {
+        PyArrayObject *arr;
+        npy_intp ndims[3];  // npol, nchan, nbin
+
+        ndims[0] = self->get_npol();
+        ndims[1] = self->get_nchan();
+        ndims[2] = self->get_nbin();
+        arr = (PyArrayObject *)PyArray_SimpleNew(4, ndims, PyArray_FLOAT);
+        for (int jj = 0 ; jj < ndims[0] ; jj++)
+            for (int kk = 0 ; kk < ndims[1] ; kk++)
+                memcpy(arr->data + sizeof(float) * 
+                        (ndims[2] * (kk + ndims[1] * jj)), 
+                        self->get_Profile(jj, kk)->get_amps(),
+                        ndims[2]*sizeof(float));
+        return (PyObject *)arr;
+    }
+
     // Interface to Pointing
     double get_telescope_zenith() {
         Pulsar::Pointing *p = self->get<Pulsar::Pointing>();

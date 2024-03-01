@@ -12,6 +12,8 @@
 #define __fft_BandpassPlotter_h
 
 #include "templates.h"
+#include "myfinite.h"
+
 #include <cpgplot.h>
 #include <algorithm>
 
@@ -56,7 +58,12 @@ namespace fft {
 
     //! Set minimum and maximum values on frequency axis
     void set_fminmax (float min, float max)
-    { user_fmin = min; user_fmax = max; }
+    {
+      if (!myfinite(min) || !myfinite(max))
+        throw Error (InvalidParam, "BandpassPlotter::set_fminmax", "min=%f max=%f", min, max);
+      user_fmin = min; 
+      user_fmax = max;
+    }
 
     //! Ignore band edges
     float ignore_fraction;
@@ -137,11 +144,12 @@ void fft::BandpassPlotter<Data,Info>::plot (Data* data, Info* info) const
 
   if (user_fmin != user_fmax)
   {
+    std::cerr << "BandpassPlotter set min=" << user_fmin << " max=" << user_fmax << std::endl;
     wfmin = user_fmin;
     wfmax = user_fmax;
   }
 
-  float fbuf = 0.05 * ( wfmax - wfmin );
+  float fbuf = fabs(0.05 * ( wfmax - wfmin ));
 
   cpgsci(1);
   cpgswin (wfmin-fbuf, wfmax+fbuf, min, max);
