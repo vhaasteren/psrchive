@@ -95,6 +95,7 @@ libExtensions_la_SOURCES = \
         GBT.C \
         IntegrationOrder.C \
         ITRFExtension.C \
+	mount_factory.C \
         Nancay.C \
 	ObsDescription.C \
         ObsExtension.C \
