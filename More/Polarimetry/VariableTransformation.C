@@ -83,8 +83,7 @@ void VariableTransformation::set_constraint (unsigned index,
                                              MEAL::Nvariate<MEAL::Scalar>* func)
 {
 #if _DEBUG
-  cerr << "VariableTransformation::set_constrain this=" << this <<
-  " function=" << (void*) func;
+  cerr << "VariableTransformation::set_constrain this=" << this << " function=" << (void*) func;
   if (function)
     cerr << " " << func->get_name();
   cerr << endl;
