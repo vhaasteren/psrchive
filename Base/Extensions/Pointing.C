@@ -193,14 +193,16 @@ void Pulsar::Pointing::update (const Integration* subint)
   update(subint, archive);
 }
 
+namespace Pulsar {
+  // defined in More/Polarimetry/ProjectionCorrection
+  Mount* mount_factory (Telescope::Mount mount);
+}
 
 /*! Based on the epoch of the Integration, uses slalib to re-calculate
   the following Pointing attributes: local_sidereal_time, parallactic_angle, 
   telescope_azimuth, and telescope_zenith. */
-void Pulsar::Pointing::update (const Integration* subint, 
-    const Archive *archive)
+void Pulsar::Pointing::update (const Integration* subint, const Archive *archive)
 {
-
   const Telescope* telescope = archive->get<Telescope>();
 
   if (!telescope)
@@ -226,21 +228,45 @@ void Pulsar::Pointing::update (const Integration* subint,
       " dec.=" << archive->get_coordinates().dec().getDegrees() << " deg"
 	 << endl;
 
+  Mount* mount = mount_factory (telescope->get_mount());
+  if (!mount)
+  {
+    if (Integration::verbose)
+      cerr << "Pulsar::Pointing::update no Mount for Telescope - update aborted" << endl;
+    return;
+  }
 
-  Horizon horizon;
-
-  horizon.set_source_coordinates( coord );
-  horizon.set_observatory_latitude( telescope->get_latitude().getRadians() );
-  horizon.set_observatory_longitude( telescope->get_longitude().getRadians() );
-  horizon.set_epoch( subint->get_epoch() );
+  mount->set_source_coordinates( coord );
+  mount->set_observatory_latitude( telescope->get_latitude().getRadians() );
+  mount->set_observatory_longitude( telescope->get_longitude().getRadians() );
+  mount->set_epoch( subint->get_epoch() );
 
   double rad2sec = 3600.0*12.0/M_PI;
-  set_local_sidereal_time( horizon.get_local_sidereal_time()*rad2sec );
-  set_telescope_azimuth( horizon.get_azimuth() );
-  set_telescope_zenith( horizon.get_zenith() );
-  set_parallactic_angle( horizon.get_parallactic_angle() );
+  set_local_sidereal_time( mount->get_local_sidereal_time()*rad2sec );
 
-  set_position_angle( get_feed_angle() + get_parallactic_angle() );
+  Directional* directional = dynamic_cast<Directional*> (mount);
+  if (!directional)
+  {
+    if (Integration::verbose)
+      cerr << "Pulsar::Pointing::update Mount for Telescope is not Directional - parallactic angle not updated" << endl;
+  }
+  else
+  {
+    set_parallactic_angle( directional->get_parallactic_angle() );
+    set_position_angle( get_feed_angle() + get_parallactic_angle() );
+  }
+
+  Horizon* horizon = dynamic_cast<Horizon*> (mount);
+  if (!horizon)
+  {
+    if (Integration::verbose)
+      cerr << "Pulsar::Pointing::update Mount for Telescope is not Horizon - az and zen not updated" << endl;
+  }
+  else
+  {
+    set_telescope_azimuth( horizon->get_azimuth() );
+    set_telescope_zenith( horizon->get_zenith() );
+  }
 
   if (Integration::verbose)
     cerr << "Pulsar::Pointing::update after:\n"  

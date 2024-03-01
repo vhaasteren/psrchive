@@ -14,11 +14,7 @@
 #include "Pulsar/Receiver.h"
 #include "Pulsar/Pointing.h"
 
-#include "Horizon.h"    // like Parkes
-#include "Meridian.h"   // like Hobart
-#include "KrausType.h"  // like Nancay
-#include "Fixed.h"      // like LOFAR
-
+#include "MountProjection.h"
 #include "Pauli.h"
 
 using namespace std;
@@ -32,37 +28,6 @@ Pulsar::ProjectionCorrection::ProjectionCorrection ()
 
 Pulsar::ProjectionCorrection::~ProjectionCorrection ()
 {
-}
-
-namespace Pulsar {
-  Mount* mount_factory (Telescope::Mount mount)
-  {
-    switch (mount)
-    {
-    case Telescope::Horizon:
-      return new Horizon;
-    case Telescope::Meridian:
-      return new Meridian;
-    case Telescope::KrausType:
-      return new KrausType;
-    case Telescope::Fixed:
-      return new Fixed;
-  
-    case Telescope::Equatorial:
-    case Telescope::Mobile:
-      return 0;  // no Directional-derived class for this type
-      
-    default:
-      throw Error (InvalidState, "Pulsar::ProjectionCorrection::set_archive",
-		   "unknown Telescope::Mount type");
-    }
-  }
-  
-  // return true if the mount naturally tracks celestial coordinates
-  bool naturally_celestial (Telescope::Mount mount)
-  {
-    return mount == Telescope::Equatorial;
-  }
 }
 
 //! Return true if the archive needs to be corrected
