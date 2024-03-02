@@ -37,6 +37,9 @@ namespace MEAL {
     //! Resize
     void resize (unsigned ncoef);
 
+    unsigned get_ncoef () const { return get_nparam(); }
+    void set_ncoef (unsigned nc) { resize (nc); }
+
     //! Construct from array of polynomial coefficients
     template<class T>
     Polynomial (const std::vector<T>& coefs) : parameters (this, coefs.size())
@@ -64,6 +67,12 @@ namespace MEAL {
 
     //! Parses the values of model parameters and fit flags from a string
     void parse (const std::string& text);
+
+    //! Textual interface to Function attributes
+    class Interface;
+
+    //! Return a text interface that can be used to access this instance
+    TextInterface::Parser* get_interface ();
 
   protected:
 

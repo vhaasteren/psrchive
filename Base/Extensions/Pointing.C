@@ -190,13 +190,10 @@ void Pulsar::Pointing::update (const Integration* subint)
   if (!archive)
     throw Error (InvalidState, "Pulsar::Pointing::update",
 	         "Integration has no parent Archive");
+
   update(subint, archive);
 }
 
-namespace Pulsar {
-  // defined in More/Polarimetry/ProjectionCorrection
-  Mount* mount_factory (Telescope::Mount mount);
-}
 
 /*! Based on the epoch of the Integration, uses slalib to re-calculate
   the following Pointing attributes: local_sidereal_time, parallactic_angle, 

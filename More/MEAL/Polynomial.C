@@ -149,3 +149,26 @@ void MEAL::Polynomial::calculate (double& result, std::vector<double>* grad)
   }
 
 }
+
+#include "MEAL/FunctionInterface.h"
+
+class MEAL::Polynomial::Interface : public Function::Interface<MEAL::Polynomial>
+{
+  public:
+    //! Default constructor that takes an optional instance
+    Interface ( Polynomial* = 0 );
+};
+
+MEAL::Polynomial::Interface::Interface ( Polynomial* s_instance )
+: Function::Interface<MEAL::Polynomial> ( s_instance )
+{
+  add( &Polynomial::get_ncoef,
+       &Polynomial::set_ncoef,
+       "ncoef", "Number of coefficients" );
+}
+
+//! Return a text interface that can be used to access this instance
+TextInterface::Parser* MEAL::Polynomial::get_interface ()
+{
+  return new Interface (this);
+}
