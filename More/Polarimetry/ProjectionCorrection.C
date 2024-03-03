@@ -58,9 +58,9 @@ void Pulsar::ProjectionCorrection::set_archive (const Archive* _archive)
   if (Archive::verbose > 2)
     cerr << "Pulsar::ProjectionCorrection::set_archive "
          << mount->get_name() << " mount \n"
-	" antenna latitude=" << lat*180/M_PI << "deg"
-	" longitude=" << lon*180/M_PI << "deg \n"
-	" source coordinates=" << archive->get_coordinates() << endl;
+            " antenna latitude=" << lat*180/M_PI << "deg"
+            " longitude=" << lon*180/M_PI << "deg \n"
+            " source coordinates=" << archive->get_coordinates() << endl;
 
   mount->set_observatory_latitude (lat);
   mount->set_observatory_longitude (lon);
@@ -113,7 +113,7 @@ bool Pulsar::ProjectionCorrection::required (unsigned isub) const try
 
     if (Archive::verbose > 1)
       cerr << "Pulsar::ProjectionCorrection::get_transformation WARNING\n"
-	"  Pointing position_angle=" << pointing->get_position_angle() 
+              "  Pointing position_angle=" << pointing->get_position_angle() 
            << " != feed_angle+parallactic_angle="
 	   << pointing->get_feed_angle() + pointing->get_parallactic_angle()
 	   << endl;
@@ -121,19 +121,19 @@ bool Pulsar::ProjectionCorrection::required (unsigned isub) const try
     if (trust_pointing_feed_angle)
     {
       if (Archive::verbose > 2)
-	cerr << "Pulsar::ProjectionCorrection::required"
-	  "\n  temporarily set Pointing::position_angle = feed_angle" << endl;
+        cerr << "Pulsar::ProjectionCorrection::required"
+          "\n  temporarily set Pointing::position_angle = feed_angle" << endl;
 
       /*
-	Normally, if the numbers don't add up, then it is assumed that they
-	were never set to proper values and the Pointing data is ignored.
+        Normally, if the numbers don't add up, then it is assumed that they
+        were never set to proper values and the Pointing data is ignored.
 
-	If trust_pointing_feed_angle is set, then the feed angle was
-	likely set to a non-zero value that should be applied.
+        If trust_pointing_feed_angle is set, then the feed angle was
+        likely set to a non-zero value that should be applied.
 
-	Temporarily set the pointing position angle to this value;
-	it will be corrected to equal feed angle + parallactic angle
-	following the comment "correct position angle"
+        Temporarily set the pointing position angle to this value;
+        it will be corrected to equal feed angle + parallactic angle
+        following the comment "correct position angle"
       */
       const_kast(pointing)->set_position_angle( pointing->get_feed_angle() );
     }
@@ -141,7 +141,7 @@ bool Pulsar::ProjectionCorrection::required (unsigned isub) const try
       pointing = 0;
   }
 
-  // determine if if is necessary to correct for known platform projections
+  // determine if it is necessary to correct for known platform projections
 
   // a non-celestial mount that did not track celestial position angle ...
   should_correct_vertical = 
@@ -152,17 +152,21 @@ bool Pulsar::ProjectionCorrection::required (unsigned isub) const try
   if (pointing) 
   {
     if (Archive::verbose > 2)
+    {
       cerr << "Pulsar::ProjectionCorrection::required"
-	"\n  Pointing::position_angle=" 
+              "\n  Pointing::position_angle=" 
            << pointing->get_position_angle().getDegrees() << " deg" << endl;
+    }
     should_correct_vertical |= pointing->get_position_angle() != 0.0;
   }
   else
   {
     if (Archive::verbose > 2)
+    {
       cerr << "Pulsar::ProjectionCorrection::required"
-	"\n  Receiver::tracking_angle=" 
+              "\n  Receiver::tracking_angle=" 
            << receiver->get_tracking_angle () << " deg" << endl;
+    }
     should_correct_vertical |= receiver->get_tracking_angle () != 0.0;
   }
 
@@ -177,10 +181,10 @@ bool Pulsar::ProjectionCorrection::required (unsigned isub) const try
 
   if (Archive::verbose > 2)
     cerr << "  Receiver::projection_corrected=" 
-	 << receiver->get_projection_corrected() 
-	 << "\n  should_correct_vertical=" << should_correct_vertical
-	 << "\n  should_correct_projection=" << should_correct_projection
-	 << "\n  -> must_correct_platform=" << must_correct_platform << endl;
+        << receiver->get_projection_corrected() 
+        << "\n  should_correct_vertical=" << should_correct_vertical
+        << "\n  should_correct_projection=" << should_correct_projection
+        << "\n  -> must_correct_platform=" << must_correct_platform << endl;
 
   // return true if feed or platform needs correction
   return must_correct_platform;
@@ -190,14 +194,30 @@ catch (Error& error)
   throw error += "Pulsar::ProjectionCorrection::required";
 }
 
-/*!
-  \pre both set_archive and required methods must be called before
-       calling this method
-*/
-Jones<double> Pulsar::ProjectionCorrection::get_rotation () const
+Jones<double> get_los_rotation (const Angle& angle)
+{
+  if (angle == 0.0)
+    return Jones<double> (1.0);
+
+  /* The evaluate methods of the MEAL::Rotation and MEAL::Rotation1 classes
+     return a passive / alias transformation that represents a change of basis.
+
+     This is desired because the feed rotation angle is measured
+     counter-clockwise from the axis that points toward celestial north
+     to the receptor basis axis that points toward zenith.
+   */
+
+  // rotate the basis about the Stokes V axis
+
+  MEAL::Rotation1 rotation ( Pauli::basis().get_basis_vector(2) );
+  rotation.set_phi ( angle.getRadians() );
+  return rotation.evaluate();
+}
+
+Jones<double> Pulsar::ProjectionCorrection::get_feed_rotation () const
 {
   if (Archive::verbose > 2)
-    cerr << "Pulsar::ProjectionCorrection::get_rotation" << endl;
+    cerr << "Pulsar::ProjectionCorrection::get_feed_rotation" << endl;
 
   Angle feed_rotation = 0.0;
 
@@ -217,6 +237,16 @@ Jones<double> Pulsar::ProjectionCorrection::get_rotation () const
 
     feed_rotation = receiver->get_tracking_angle();
   }
+
+  return get_los_rotation(feed_rotation);
+}
+
+Jones<double> Pulsar::ProjectionCorrection::get_antenna_rotation () const
+{
+  if (Archive::verbose > 2)
+    cerr << "Pulsar::ProjectionCorrection::get_antenna_rotation" << endl;
+
+  Angle antenna_rotation = 0.0;
 
   if (must_correct_platform && 
       should_correct_vertical && !should_correct_projection)
@@ -240,7 +270,7 @@ Jones<double> Pulsar::ProjectionCorrection::get_rotation () const
         if (Archive::verbose)
         {
           cerr <<
-            "Pulsar::ProjectionCorrection::get_rotation WARNING\n"
+            "Pulsar::ProjectionCorrection::get_antenna_rotation WARNING\n"
             "  Pointing parallactic angle="
                << pointing_pa.getDegrees() << " deg != \n"
             "  " << origin << " parallactic angle="
@@ -281,39 +311,20 @@ Jones<double> Pulsar::ProjectionCorrection::get_rotation () const
     short_summary += " pa=" + degrees;
 
     if (Archive::verbose > 2)
-      cerr << "Pulsar::ProjectionCorrection::get_rotation"
+      cerr << "Pulsar::ProjectionCorrection::get_antenna_rotation"
               " adding vertical transformation\n  " << para.evaluate() << endl;
     
-    feed_rotation += para_pa;
+    antenna_rotation = para_pa;
   }
 
-  if (Archive::verbose > 2)
-    cerr << "Pulsar::ProjectionCorrection::get_rotation"
-         << summary + " total="
-         << feed_rotation.getDegrees() << " deg" << endl;
-
-  if (feed_rotation == 0.0)
-    return Jones<double> (1.0);
-
-  /* The evaluate methods of the MEAL::Rotation and MEAL::Rotation1 classes
-     return a passive / alias transformation that represents a change of basis.
-
-     This is desired because the feed rotation angle is measured
-     counter-clockwise from the axis that points toward celestial north
-     to the receptor basis axis that points toward zenith.
-   */
-
-  // rotate the basis about the Stokes V axis
-
-  MEAL::Rotation1 rotation ( Pauli::basis().get_basis_vector(2) );
-  rotation.set_phi ( feed_rotation.getRadians() );
-  return rotation.evaluate();
+  return get_los_rotation(antenna_rotation);
 }
 
-/*!
-  \pre both set_archive and required methods must be called before
-       calling this method
-*/
+Jones<double> Pulsar::ProjectionCorrection::get_antenna_optics () const
+{
+  return Jones<double>::identity();
+}
+
 Jones<double> Pulsar::ProjectionCorrection::get_projection () const
 {
   if (Archive::verbose > 2)
@@ -334,10 +345,7 @@ Jones<double> Pulsar::ProjectionCorrection::get_projection () const
           "\n\t herm=" + tostring( herm.get_vector() ) +
           "\n\t unit=" + tostring( unit.get_vector() ) + "\n";
 
-  // note that the rotation about the line of sight _precedes_ 
-  // the projection tranformation because it is an azimuthal rotation
-  Jones<double> rot = get_rotation();
-  return rot * J;
+  return J;
 }
 
 std::string Pulsar::ProjectionCorrection::get_summary () const
@@ -366,9 +374,9 @@ Pulsar::ProjectionCorrection::operator () (unsigned isub) const
   Jones<double> retval = 1.0;
 
   if (must_correct_platform && should_correct_projection)
-    retval = get_projection ();
+    retval = get_feed_rotation() * get_projection ();
   else
-    retval = get_rotation ();
+    retval = get_feed_rotation() * get_antenna_optics() * get_antenna_rotation ();
 
   return retval;
 }

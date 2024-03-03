@@ -25,7 +25,22 @@ namespace Pulsar
   class Integration;
   class Pointing;
 
-  //! Correct the backend convention
+  //! Computes the projection of the receptors onto the sky
+  /*
+    The projection consists of three parts:
+
+    - R_antenna - rotation of the antenna under the sky (e.g. Earth + mechanical rotation)
+    - J_antenna - any transformation by the antenna optics (e.g. beam squint)
+    - R_feed    - rotation of the feed horn
+
+    By default, J_antenna is assumed to be the identity matrix.
+
+    If the Mount is of type MountProjection that computes its own projection transformation,
+    then both J_antenna and R_antenna are replace by the transformation returned by this object.
+
+    Otherwise, R_antenna is a rotation about the line of sight by the parallactic angle
+    and R_feed is a rotation about the line of sight by the feed angle.
+  */
   class ProjectionCorrection : public Reference::Able
   {
   public:
@@ -45,10 +60,27 @@ namespace Pulsar
     void set_archive (const Archive*);
 
     //! Return the projection correction for the given sub-integration
+    /*! The Jones matrix should be inverted to calibrate observations. */
     Jones<double> operator () (unsigned isub) const;
 
     //! Return true if the given sub-integration requires correction
     bool required (unsigned isub) const;
+
+    //! Return the antenna rotation
+    /* \pre The required method must be called before calling this method*/
+    Jones<double> get_antenna_rotation () const;
+
+    //! Return the antenna optics
+    /* \pre The required method must be called before calling this method*/
+    Jones<double> get_antenna_optics () const;
+
+    //! Return the feed rotation
+    /* \pre The required method must be called before calling this method*/
+    Jones<double> get_feed_rotation () const;
+
+    //! Return the projection transformation supplied by the Mount
+    /* \pre The required method must be called before calling this method*/
+    Jones<double> get_projection () const;
 
     //! Return the projection correction calculator
     Mount* get_mount ();
@@ -61,11 +93,6 @@ namespace Pulsar
 
   protected:
 
-    //! Return the basis rotation correction
-    Jones<double> get_rotation () const;
-
-    //! Return the basis projection correction
-    Jones<double> get_projection () const;
 
     /** @name Correction Information
      *  These attributes are set during the call to required and

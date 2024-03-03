@@ -22,7 +22,6 @@
 
 #include "Pulsar/VariableTransformationFile.h"
 #include "Pulsar/ManualPolnCalibrator.h"
-#include "Pulsar/NancayProjectionCorrection.h"
 #include "Pulsar/ConfigurableProjection.h"
 
 #include "Pulsar/SystemCalibratorManager.h"
@@ -406,7 +405,7 @@ Reference::To<Pulsar::Calibrator::Type> model_type =
 Pulsar::SystemCalibrator::Unloader unloader;
 
 // verbosity flags
-bool verbose = false;
+// bool verbose = false;
 
 // The maximum number of bins to use
 unsigned maxbins = 16;
@@ -808,13 +807,6 @@ void pcm::set_impurity (const string& filename)
 
 void pcm::set_projection (const string& filename)
 {
-  if (filename == "Nancay")
-  {
-    cerr << "pcm: using Nancay projection correction" << endl;
-    projection = new NancayProjectionCorrection;
-    return;
-  }
-
   try {
     projection = new ConfigurableProjection (filename);
     cerr << "pcm: projection configuration loaded from " << filename << endl;
