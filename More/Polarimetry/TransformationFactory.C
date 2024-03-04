@@ -7,6 +7,7 @@
 
 #include "Pulsar/TransformationFactory.h"
 
+#include "Pulsar/Britton2000.h"
 #include "Pulsar/SingleAxis.h"
 #include "MEAL/Rotation1.h"
 #include "MEAL/Boost1.h"
@@ -30,7 +31,7 @@ static void instances_build ()
   instances->push_back( new MEAL::Boost1( Vector<3,double>::basis(0) ) );
   instances->push_back( new MEAL::Gain<Complex2>() );
   instances->push_back( new Calibration::SingleAxis );
-  
+  instances->push_back( new Calibration::Britton2000 );
 }
 
 //! Construct a new model instance from a string
