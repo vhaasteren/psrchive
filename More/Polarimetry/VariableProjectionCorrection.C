@@ -14,10 +14,29 @@
 using namespace std;
 using namespace Pulsar;
 
-LabelledJones<double> VariableProjectionCorrection::get_transformation ()
+//! Get the feed projection
+LabelledJones<double> VariableProjectionCorrection::get_feed_projection ()
 {
   if (!built)
     build ();
+
+  return feed_projection;
+}
+
+//! Get the antenna projection
+LabelledJones<double> VariableProjectionCorrection::get_antenna_projection ()
+{
+  if (!built)
+    build();
+
+  return antenna_projection;
+}
+
+//! Get the transformation = feed_projection * antenna_projection
+LabelledJones<double> VariableProjectionCorrection::get_transformation ()
+{
+  if (!built)
+    build();
 
   return transformation;
 }
@@ -47,8 +66,18 @@ void VariableProjectionCorrection::build () const try
 
   // use the ProjectionCorrection class to calculate the transformation
   correction.set_archive (archive);
-  transformation = correction (subint);
+
+  correction.required(subint);
   
+  feed_projection = correction.get_feed_projection();
+  feed_projection.label = correction.get_short_summary();
+
+  correction.reset_summary();
+  antenna_projection = correction.get_antenna_projection();
+  antenna_projection.label = correction.get_short_summary();
+
+  correction.reset_summary();
+  transformation = correction (subint);
   description = correction.get_summary();
   transformation.label = correction.get_short_summary();
   

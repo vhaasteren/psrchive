@@ -17,8 +17,9 @@ using namespace Calibration;
 
 void VariableTransformation::init()
 {
+  add_model (&post_correction);
   add_model (&chain);
-  add_model (&correction);
+  add_model (&pre_correction);
 }
 
 VariableTransformation::VariableTransformation ()
@@ -129,7 +130,8 @@ void VariableTransformation::set_argument (const Argument& argset)
       f->set_abscissa_value (iarg, arg.second[iarg]);
   }
 
-  correction.set_value (argset.correction);
+  pre_correction.set_value (argset.pre_correction);
+  post_correction.set_value (argset.post_correction);
 }
 
 std::string Calibration::axis_value_to_string(const VariableTransformation::Argument& vtarg)

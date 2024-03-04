@@ -30,14 +30,13 @@ Mount* Pulsar::mount_factory (Pulsar::Telescope::Mount mount)
     return 0;  // no Directional-derived class for this type
 
   default:
-    throw Error (InvalidState, "Pulsar::ProjectionCorrection::set_archive",
-                   "unknown Telescope::Mount type");
+    throw Error (InvalidState, "Pulsar::mount_factory", "unknown Telescope::Mount type");
   }
 }
 
 // return true if the mount naturally tracks celestial coordinates
 bool Pulsar::naturally_celestial (Telescope::Mount mount)
 {
-    return mount == Telescope::Equatorial;
+  return mount == Telescope::Equatorial;
 }
 

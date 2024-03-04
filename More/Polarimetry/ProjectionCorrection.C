@@ -214,10 +214,10 @@ Jones<double> get_los_rotation (const Angle& angle)
   return rotation.evaluate();
 }
 
-Jones<double> Pulsar::ProjectionCorrection::get_feed_rotation () const
+Jones<double> Pulsar::ProjectionCorrection::get_feed_projection () const
 {
   if (Archive::verbose > 2)
-    cerr << "Pulsar::ProjectionCorrection::get_feed_rotation" << endl;
+    cerr << "Pulsar::ProjectionCorrection::get_feed_projection" << endl;
 
   Angle feed_rotation = 0.0;
 
@@ -239,6 +239,15 @@ Jones<double> Pulsar::ProjectionCorrection::get_feed_rotation () const
   }
 
   return get_los_rotation(feed_rotation);
+}
+
+
+Jones<double> Pulsar::ProjectionCorrection::get_antenna_projection () const
+{
+  if (must_correct_platform && should_correct_projection)
+    return get_mount_projection ();
+  else
+    return get_antenna_rotation ();
 }
 
 Jones<double> Pulsar::ProjectionCorrection::get_antenna_rotation () const
@@ -320,15 +329,10 @@ Jones<double> Pulsar::ProjectionCorrection::get_antenna_rotation () const
   return get_los_rotation(antenna_rotation);
 }
 
-Jones<double> Pulsar::ProjectionCorrection::get_antenna_optics () const
-{
-  return Jones<double>::identity();
-}
-
-Jones<double> Pulsar::ProjectionCorrection::get_projection () const
+Jones<double> Pulsar::ProjectionCorrection::get_mount_projection () const
 {
   if (Archive::verbose > 2)
-    cerr << "Pulsar::ProjectionCorrection::get_projection" << endl;
+    cerr << "Pulsar::ProjectionCorrection::get__mount_projection" << endl;
 
   projection->set_epoch( integration->get_epoch() );
 
@@ -345,6 +349,8 @@ Jones<double> Pulsar::ProjectionCorrection::get_projection () const
           "\n\t herm=" + tostring( herm.get_vector() ) +
           "\n\t unit=" + tostring( unit.get_vector() ) + "\n";
 
+  short_summary += " " + projection->get_name() + " projection";
+  
   return J;
 }
 
@@ -359,8 +365,7 @@ std::string Pulsar::ProjectionCorrection::get_short_summary () const
 }
 
 //! Return the transformation matrix for the given epoch
-Jones<double> 
-Pulsar::ProjectionCorrection::operator () (unsigned isub) const
+Jones<double> Pulsar::ProjectionCorrection::operator () (unsigned isub) const
 {
   if (Archive::verbose > 2)
     cerr << "Pulsar::ProjectionCorrection::operator" << endl;
@@ -371,14 +376,5 @@ Pulsar::ProjectionCorrection::operator () (unsigned isub) const
   if (!required (isub))
     return 1.0;
 
-  Jones<double> retval = 1.0;
-
-  if (must_correct_platform && should_correct_projection)
-    retval = get_feed_rotation() * get_projection ();
-  else
-    retval = get_feed_rotation() * get_antenna_optics() * get_antenna_rotation ();
-
-  return retval;
+  return get_feed_projection() * get_antenna_projection();
 }
-
-

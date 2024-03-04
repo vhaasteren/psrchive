@@ -18,6 +18,8 @@ namespace Pulsar {
   class VariableProjectionCorrection : public KnownVariableTransformation
   {
     mutable ProjectionCorrection correction;
+    mutable LabelledJones<double> feed_projection;
+    mutable LabelledJones<double> antenna_projection;
     mutable LabelledJones<double> transformation;
 
     void build () const;
@@ -27,6 +29,12 @@ namespace Pulsar {
     //! Get the projection correction
     ProjectionCorrection* get_correction () { return &correction; }
     
+    //! Get the feed rotation
+    LabelledJones<double> get_feed_projection ();
+
+    //! Get the antenna projection
+    LabelledJones<double> get_antenna_projection ();
+
     //! Get the transformation
     LabelledJones<double> get_transformation () override;
 

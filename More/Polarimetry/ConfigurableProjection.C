@@ -307,7 +307,8 @@ ConfigurableProjection::new_value (VariableTransformationManager::Transformation
 
   Calibration::VariableTransformation::Argument arg;
 
-  arg.correction = projection.get_transformation ();
+  arg.pre_correction = projection.get_antenna_projection ();
+  arg.post_correction = projection.get_feed_projection ();
 
   for (auto param : parameters)
   {

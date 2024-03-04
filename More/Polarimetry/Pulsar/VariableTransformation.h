@@ -24,18 +24,21 @@
 
 namespace Calibration {
 
-  //! Product of multi-variate model and known correction
-
+  //! Product of multi-variate model of antenna and known corrections
+  /*! result = post_correction * model * pre_correction */
   class VariableTransformation : public MEAL::ProductRule<MEAL::Complex2>
   {
     //! Chain rule used to constrain model parameters with functions
     MEAL::ChainRule<MEAL::Complex2> chain;
 
-    //! Any known correction
-    MEAL::Value<MEAL::Complex2> correction;
+    //! Any known pre-model correction
+    MEAL::Value<MEAL::Complex2> pre_correction;
 
     //! The model to be constrained
     Reference::To<MEAL::Complex2> model;
+
+    //! Any known post-model correction
+    MEAL::Value<MEAL::Complex2> post_correction;
 
     //! Map of model index to constraining multivariate function
     std::map< unsigned, Reference::To< MEAL::Nvariate<MEAL::Scalar> > > function;
@@ -83,8 +86,11 @@ namespace Calibration {
     {
     public:
 
-      //! the known projection correction
-      Jones<double> correction;
+      //! the known pre-model correction
+      Jones<double> pre_correction;
+
+      //! the known post-model correction
+      Jones<double> post_correction;
 
       //! the arguments for each abscissa
       std::map< unsigned, std::vector<double> > arguments;
