@@ -11,7 +11,7 @@
 #ifndef __CalibratorExtension_h
 #define __CalibratorExtension_h
 
-#include "Pulsar/ArchiveExtension.h"
+#include "Pulsar/HasChannels.h"
 #include "Pulsar/CalibratorType.h"
 
 namespace Pulsar {
@@ -19,7 +19,7 @@ namespace Pulsar {
   //! Stores Calibrator parameters in an Archive
   /*! This Archive::Extension class implements the storage of Calibrator
     data, enabling a calibrator to be constructed from file. */
-  class CalibratorExtension : public Archive::Extension
+  class CalibratorExtension : public HasChannels
   {   
   public:
     

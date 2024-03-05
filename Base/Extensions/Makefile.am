@@ -30,6 +30,7 @@ nobase_include_HEADERS = \
 	Pulsar/FITSSUBHdrExtension.h \
         Pulsar/FluxCalibratorExtension.h \
         Pulsar/GBT.h \
+        Pulsar/HasChannels.h \
         Pulsar/IntegrationOrder.h \
         Pulsar/ITRFExtension.h \
         Pulsar/Nancay.h \

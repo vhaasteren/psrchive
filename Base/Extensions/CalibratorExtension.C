@@ -14,13 +14,13 @@ using namespace Pulsar;
 
 //! Default constructor
 CalibratorExtension::CalibratorExtension (const char* name)
-  : Extension (name)
+  : HasChannels (name)
 {
 }
 
 //! Copy constructor
 CalibratorExtension::CalibratorExtension (const CalibratorExtension& copy)
-  : Extension (copy.get_extension_name().c_str())
+  : HasChannels (copy.get_extension_name().c_str())
 {
   operator = (copy);
 }

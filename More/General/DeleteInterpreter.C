@@ -90,27 +90,31 @@ extern void parse_indeces (vector<unsigned>& indeces,
 
 void Pulsar::DeleteInterpreter::delete_channels (vector<unsigned>& channels)
 {
-  std::sort (channels.begin(), channels.end(), std::greater<unsigned>());
-
   Archive* data = get();
+
+  double original_bw = data->get_bandwidth();
+  unsigned original_nchan = data->get_nchan();
+  double chan_bw = original_bw / (double)original_nchan;
+
+  std::sort (channels.begin(), channels.end(), std::greater<unsigned>());
+  auto last = std::unique(channels.begin(), channels.end());
+  channels.erase(last, channels.end());
+
+  bool new_nchan_set = false;
+  unsigned new_nchan = 0;
 
   // delete selected channels in all sub-integrations
   unsigned nsubint = data->get_nsubint();
-
-  if (nsubint == 0)
-    return;
-
-  unsigned new_nchan = 0;
-
   for (unsigned isub=0; isub<nsubint; isub++)
   {
     Integration* subint = data->get_Integration(isub);
     for (unsigned i=0; i<channels.size(); i++)
       subint->expert()->remove( channels[i] );
 
-    if (isub == 0)
+    if (!new_nchan_set)
     {
       new_nchan = subint->get_nchan();
+      new_nchan_set = true;
     }
     else
     {
@@ -118,30 +122,51 @@ void Pulsar::DeleteInterpreter::delete_channels (vector<unsigned>& channels)
     }
   }
 
-  data->expert()->set_nchan( new_nchan );
+  unsigned next = data->get_nextension();
+  for (unsigned iext=0; iext < next; iext++)
+  {
+    Archive::Extension* candidate = data->get_extension(iext);
+
+    auto ext = dynamic_cast<HasChannels*>(candidate);
+    if (!ext)
+      continue;
+
+    // delete selected channels in extension
+    for (unsigned i=0; i<channels.size(); i++)
+      ext->remove_chan( channels[i], channels[i] );
+
+    if (!new_nchan_set)
+    {
+      new_nchan = ext->get_nchan();
+      new_nchan_set = true;
+    }
+    else
+    {
+      assert (new_nchan == ext->get_nchan());
+    }
+  }
+
+  if (new_nchan_set)
+    data->expert()->set_nchan( new_nchan );
+
+  if (adjust_metadata_while_deleting_channels)
+  {
+    data->set_bandwidth(original_bw - (double)channels.size() * chan_bw);
+    // Do we always want to reset center freq?
+    if (new_nchan>0) {
+      data->update_centre_frequency();
+    }
+  }
 }
 
 string Pulsar::DeleteInterpreter::chan (const string& args) try 
 {
-  double org_bw = get()->get_bandwidth();
-  unsigned org_nchan = get()->get_nchan();
-  double chan_bw = org_bw / (double)org_nchan;
   vector<string> arguments = setup (args);
 
   vector<unsigned> channels;
-  parse_indeces (channels, arguments, org_nchan);
+  parse_indeces (channels, arguments, get()->get_nchan());
 
   delete_channels (channels);
-
-  if (adjust_metadata_while_deleting_channels)
-  {
-    get()->set_bandwidth(org_bw - (double)channels.size() * chan_bw);
-    // Do we always want to reset center freq?
-    if (get()->get_nchan()>0) {
-      get()->update_centre_frequency();
-    }
-  }
-
   return response (Good);
 }
 catch (Error& error) {
@@ -191,7 +216,6 @@ try {
 
   delete_channels (channels);
   return response (Good);
-
 }
 catch (Error& error)
 {
@@ -200,52 +224,45 @@ catch (Error& error)
 
 #include "Ranges.h"
 
+template<class Container>
+void get_channels (const Range& range, const Container* container, vector<unsigned>& channels)
+{
+  unsigned nchan = container->get_nchan();
+  for (unsigned ichan=0; ichan < nchan; ichan++)
+  {
+    if (range.within( container->get_centre_frequency(ichan) ))
+      channels.push_back (ichan);
+  }
+}
+
 // //////////////////////////////////////////////////////////////////////
 //
 string Pulsar::DeleteInterpreter::freq (const string& args) try
 {
-  double org_bw = get()->get_bandwidth();
-  unsigned org_nchan = get()->get_nchan();
-  double chan_bw = org_bw / (double)org_nchan;
-  unsigned removed_channels_count = 0;
   vector<string> arguments = setup (args);
+  vector<unsigned> channels;
+
+  Archive* archive = get();
+  unsigned nsub = archive->get_nsubint();
+
+  auto ext = get()->get<CalibratorExtension>();
 
   for (unsigned iarg=0; iarg < arguments.size(); iarg++)
   {
-    Range r = fromstring<Range> (arguments[iarg]);
+    Range range = fromstring<Range> (arguments[iarg]);
 
-    Archive* archive = get();
-
-    unsigned nsub = archive->get_nsubint();
-
-    for (unsigned isub=0; isub < nsub; isub++)
+    if (nsub > 0)
     {
-      Integration* subint = archive->get_Integration (isub);
-      for (unsigned ichan=0; ichan < subint->get_nchan(); )
-        if (r.within( subint->get_centre_frequency(ichan) )) {
-          subint->expert()->remove (ichan);
-          if (isub == 0)
-            // only count the removed channels once
-            removed_channels_count++;
-        }
-        else
-          ichan ++;
+      Integration* subint = archive->get_Integration (0);
+      get_channels(range, subint, channels);
+    }
+    else if (ext)
+    {
+      get_channels(range, ext, channels);
     }
   }
 
-  unsigned new_nchan = get()->get_Integration(0)->get_nchan();
-  if (get()->get_nsubint() > 0)
-    get()->expert()->set_nchan( new_nchan );
-
-  if (adjust_metadata_while_deleting_channels)
-  {
-    get()->set_bandwidth(org_bw - (double)removed_channels_count * chan_bw);
-    // Do we always want to reset center freq?
-    if (new_nchan>0) {
-      get()->update_centre_frequency();
-    }
-  }
-
+  delete_channels (channels);
   return response (Good);
 }
 catch (Error& error)
@@ -256,11 +273,13 @@ catch (Error& error)
 
 string Pulsar::DeleteInterpreter::cal (const string& args) try 
 {
-  // cerr << "Pulsar::DeleteInterpreter::cal args='" << args << "'" << endl;
+  //cerr << "Pulsar::DeleteInterpreter::cal args='" << args << "'" << endl;
 
   Reference::To<CalibratorExtension> ext = get()->get<CalibratorExtension>();
   if (!ext)
     return response (Fail, "archive does not contain CalibratorExtension");
+
+  //cerr << "Pulsar::DeleteInterpreter::cal extension name=" << ext->get_short_name() << endl;
 
   vector<string> arguments = setup (args);
 
@@ -272,7 +291,7 @@ string Pulsar::DeleteInterpreter::cal (const string& args) try
   // delete selected channels in CalibratorExtension
   for (unsigned i=0; i<channels.size(); i++)
   {
-    // cerr << "delete cal " << channels[i] << endl;
+    //cerr << "delete cal " << channels[i] << endl;
     ext->remove_chan( channels[i], channels[i] );
   }
  
