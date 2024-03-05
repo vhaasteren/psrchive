@@ -11,7 +11,7 @@
 #ifndef __CalibratorStokes_h
 #define __CalibratorStokes_h
 
-#include "Pulsar/ArchiveExtension.h"
+#include "Pulsar/HasChannels.h"
 #include "Stokes.h"
 #include "Estimate.h"
 
@@ -20,7 +20,7 @@ namespace Pulsar {
   //! Stores the Stokes parameters of the reference source
   /*! This Archive::Extension class provides a simple container for storing
    the Stokes parameters of the artificial (reference) calibrator source. */
-  class CalibratorStokes : public Pulsar::Archive::Extension {
+  class CalibratorStokes : public HasChannels {
     
   public:
 

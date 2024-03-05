@@ -100,6 +100,7 @@ void Pulsar::DeleteInterpreter::delete_channels (vector<unsigned>& channels)
   auto last = std::unique(channels.begin(), channels.end());
   channels.erase(last, channels.end());
 
+  bool new_nchan_set = false;
   unsigned new_nchan = 0;
 
   // delete selected channels in all sub-integrations
@@ -110,9 +111,10 @@ void Pulsar::DeleteInterpreter::delete_channels (vector<unsigned>& channels)
     for (unsigned i=0; i<channels.size(); i++)
       subint->expert()->remove( channels[i] );
 
-    if (isub == 0)
+    if (!new_nchan_set)
     {
       new_nchan = subint->get_nchan();
+      new_nchan_set = true;
     }
     else
     {
@@ -120,11 +122,32 @@ void Pulsar::DeleteInterpreter::delete_channels (vector<unsigned>& channels)
     }
   }
 
-  if (data->get_nsubint() > 0)
+  unsigned next = data->get_nextension();
+  for (unsigned iext=0; iext < next; iext++)
   {
-    unsigned new_nchan = data->get_Integration(0)->get_nchan();
-    data->expert()->set_nchan( new_nchan );
+    Archive::Extension* candidate = data->get_extension(iext);
+
+    auto ext = dynamic_cast<HasChannels*>(candidate);
+    if (!ext)
+      continue;
+
+    // delete selected channels in extension
+    for (unsigned i=0; i<channels.size(); i++)
+      ext->remove_chan( channels[i], channels[i] );
+
+    if (!new_nchan_set)
+    {
+      new_nchan = ext->get_nchan();
+      new_nchan_set = true;
+    }
+    else
+    {
+      assert (new_nchan == ext->get_nchan());
+    }
   }
+
+  if (new_nchan_set)
+    data->expert()->set_nchan( new_nchan );
 
   if (adjust_metadata_while_deleting_channels)
   {
@@ -222,7 +245,7 @@ string Pulsar::DeleteInterpreter::freq (const string& args) try
   Archive* archive = get();
   unsigned nsub = archive->get_nsubint();
 
-  CalibratorExtension* ext = get()->get<CalibratorExtension>();
+  auto ext = get()->get<CalibratorExtension>();
 
   for (unsigned iarg=0; iarg < arguments.size(); iarg++)
   {

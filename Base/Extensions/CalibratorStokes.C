@@ -14,7 +14,7 @@ using namespace std;
 
 //! Default constructor
 CalibratorStokes::CalibratorStokes ()
-  : Extension ("CalibratorStokes")
+  : HasChannels ("CalibratorStokes")
 {
   // the default behaviour of pcm since 2002
   coupling_point = BeforeBasis;
@@ -24,7 +24,7 @@ CalibratorStokes::CalibratorStokes ()
 
 //! Copy constructor
 CalibratorStokes::CalibratorStokes (const CalibratorStokes& extension)
-  : Extension ("CalibratorStokes")
+  : HasChannels ("CalibratorStokes")
 {
   operator = (extension);
   current = 0;
