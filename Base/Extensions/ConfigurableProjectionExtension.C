@@ -16,7 +16,7 @@ using namespace Pulsar;
 
 //! Default constructor
 ConfigurableProjectionExtension::ConfigurableProjectionExtension ()
-  : Archive::Extension ("ConfigurableProjectionExtension")
+  : HasChannels ("ConfigurableProjectionExtension")
 {
   init ();
 }
@@ -30,7 +30,7 @@ void ConfigurableProjectionExtension::init ()
 //! Copy constructor
 ConfigurableProjectionExtension::ConfigurableProjectionExtension
 (const ConfigurableProjectionExtension& copy)
-  : Archive::Extension (copy)
+  : HasChannels (copy)
 {
   operator = (copy);
 }

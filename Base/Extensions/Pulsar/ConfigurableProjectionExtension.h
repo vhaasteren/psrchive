@@ -11,7 +11,7 @@
 #ifndef __ConfigurableProjectionExtension_h
 #define __ConfigurableProjectionExtension_h
 
-#include "Pulsar/CalibratorExtension.h"
+#include "Pulsar/HasChannels.h"
 
 namespace Pulsar {
 
@@ -20,7 +20,7 @@ namespace Pulsar {
   //! Stores ConfigurableProjection parameters in an Archive instance
   /*! This Archive::Extension implements the storage of ConfigurableProjection data. */
 
-  class ConfigurableProjectionExtension : public Pulsar::Archive::Extension
+  class ConfigurableProjectionExtension : public HasChannels
   {
     
   public:

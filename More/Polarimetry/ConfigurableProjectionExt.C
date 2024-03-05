@@ -54,14 +54,14 @@ void Pulsar::copy (ConfigurableProjectionExtension::Transformation* to,
 //! Construct from a ConfigurableProjection instance
 Pulsar::ConfigurableProjectionExtension::ConfigurableProjectionExtension
 (const ConfigurableProjection* calibrator) try
-  : Archive::Extension ("ConfigurableProjectionExtension") 
+  : HasChannels ("ConfigurableProjectionExtension") 
 {
   if (!calibrator)
     throw Error (InvalidParam, "", "null ConfigurableProjection*");
 
   init ();
 
-  if (Calibrator::verbose > 2)
+  if (Archive::verbose > 2)
     cerr << "Pulsar::ConfigurableProjectionExtension "
          "construct from ConfigurableProjection with config=\n" 
          << calibrator->get_configuration() << endl;
@@ -75,16 +75,16 @@ Pulsar::ConfigurableProjectionExtension::ConfigurableProjectionExtension
   unsigned nchan = calibrator->get_nchan ();
   set_nchan (nchan);
 
-  if (Calibrator::verbose > 2)
+  if (Archive::verbose > 2)
     cerr << "Pulsar::ConfigurableProjectionExtension nchan=" << nchan << endl;
 
   for (unsigned ichan=0; ichan < nchan; ichan++)
   {
     if ( ! calibrator->get_transformation_valid(ichan) )
     {
-      if (Calibrator::verbose > 2)
-	cerr << "Pulsar::ConfigurableProjectionExtension ichan=" << ichan 
-	     << " flagged invalid" << endl;
+      if (Archive::verbose > 2)
+        cerr << "Pulsar::ConfigurableProjectionExtension ichan=" << ichan 
+             << " flagged invalid" << endl;
       
       set_valid (ichan, false);
       continue;
@@ -101,12 +101,12 @@ Pulsar::ConfigurableProjectionExtension::ConfigurableProjectionExtension
     {
       nparam = xform->get_nparam();
 
-      if (Calibrator::verbose > 2)
+      if (Archive::verbose > 2)
       {
         const MEAL::Function* f = calibrator->get_transformation(ichan)->get_transformation();
         for (unsigned i=0; i<f->get_nparam(); i++)
-	  cerr << "Pulsar::ConfigurableProjectionExtension name[" << i << "]=" 
-	       << f->get_param_name(i) << endl;
+          cerr << "Pulsar::ConfigurableProjectionExtension name[" << i << "]=" 
+               << f->get_param_name(i) << endl;
       }
     }
     else if (get_nparam() != xform->get_nparam())
@@ -118,51 +118,10 @@ Pulsar::ConfigurableProjectionExtension::ConfigurableProjectionExtension
 
     first = false;
 
-#if 0
-    if ( has_covariance )
-    {
-      calibrator->get_covariance( ichan, covariance );
-      get_transformation(ichan)->set_covariance( covariance );
-    }
-#endif
-
   }
 }
 catch (Error& error)
 {
   throw error += "Pulsar::ConfigurableProjectionExtension (ConfigurableProjection*)";
 }
-
-#if 0
-
-//! Return a new MEAL::Complex2 instance, based on type attribute
-MEAL::Complex2*
-Pulsar::new_transformation (const ConfigurableProjectionExtension* ext, unsigned ichan)
-try
-{
-  if( !ext->get_valid(ichan) )
-    return 0;
-
-  MEAL::Complex2* xform = new_transformation( ext->get_type() );
-
-  if (Calibrator::verbose)
-    cerr << "Pulsar::new_transformation name=" << xform->get_name() << endl;
-
-  const ConfigurableProjectionExtension::Transformation* info;
-  info = ext->get_transformation(ichan);
-  
-  copy( xform, info );
-
-  for (unsigned iparam=0; iparam < xform->get_nparam(); iparam++)
-    if (info->get_variance(iparam) == 0)
-      xform->set_infit (iparam, false);
-  
-  return xform;
-}
-catch (Error& error)
-{
-  throw error += "Pulsar::new_transformation";
-}
-
-#endif
 
