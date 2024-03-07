@@ -127,14 +127,14 @@ void Pulsar::FITSArchive::load_Pointing (fitsfile* fptr, int row,
 
     if (RA_angle != coord.ra())
     {
-      warning << "FITSArchive::load_Pointing correcting RA_SUB currently=" << RA_angle
-	      << " expected=" << coord.ra() << endl;
+      warning << "FITSArchive::load_Pointing correcting RA_SUB currently=" << RA_angle.getHMS()
+	      << " expected=" << coord.ra().getHMS() << endl;
       RA_angle = coord.ra();
     }
     if (DEC_angle != coord.dec())
     {
-      warning << "FITSArchive::load_Pointing correcting DEC_SUB currently=" << DEC_angle
-	      << " expected=" << coord.dec() << endl;
+      warning << "FITSArchive::load_Pointing correcting DEC_SUB currently=" << DEC_angle.getDMS()
+	      << " expected=" << coord.dec().getDMS() << endl;
       DEC_angle = coord.dec();
     }
   }
