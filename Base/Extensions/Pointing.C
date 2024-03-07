@@ -11,6 +11,9 @@
 #include "Horizon.h"
 #include "strutil.h"
 
+// #define _DEBUG 1
+#include "debug.h"
+
 using namespace std;
 
 Pulsar::Pointing::Pointing () : Extension ("Pointing")
@@ -37,9 +40,7 @@ Pulsar::Pointing::operator= (const Pointing& that)
   telescope_azimuth   = that.telescope_azimuth;
   telescope_zenith    = that.telescope_zenith;
 
-  cerr << "Pulsar::Pointing::operator="
-	  " this.right_ascension=" << right_ascension <<
-	  " that.right_ascension=" << that.right_ascension << endl;
+  DEBUG("Pulsar::Pointing::operator= this.right_ascension=" << right_ascension << " that.right_ascension=" << that.right_ascension);
 
   return *this;
 }
@@ -47,10 +48,6 @@ Pulsar::Pointing::operator= (const Pointing& that)
 const Pulsar::Pointing&
 Pulsar::Pointing::operator += (const Pointing& that)
 {
-  cerr << "Pulsar::Pointing::operator += BEFORE"
-          " this.right_ascension=" << right_ascension <<
-          " that.right_ascension=" << that.right_ascension << endl;
-
   local_sidereal_time += that.local_sidereal_time;
   right_ascension     += that.right_ascension;
   declination         += that.declination;
@@ -61,9 +58,6 @@ Pulsar::Pointing::operator += (const Pointing& that)
   parallactic_angle   += that.parallactic_angle;
   telescope_azimuth   += that.telescope_azimuth;
   telescope_zenith    += that.telescope_zenith;
-
-  cerr << "Pulsar::Pointing::operator += AFTER"
-          " this.right_ascension=" << right_ascension << endl;
 
   return *this;
 }
@@ -99,9 +93,6 @@ static Angle getmean (const MeanRadian<double>& value)
 void Pulsar::Pointing::set_right_ascension (const Angle& angle)
 {
   setmean (right_ascension, angle);
-  cerr << "Pulsar::Pointing::set_right_ascension"
-	  " angle=" << angle <<
-          " this.right_ascension=" << right_ascension << endl;
 }
 
 Angle Pulsar::Pointing::get_right_ascension () const
@@ -223,7 +214,7 @@ void Pulsar::Pointing::update (const Integration* subint, const Archive *archive
 
   sky_coord coord( get_right_ascension(), get_declination() );
 
-  // if (Integration::verbose)
+  if (Integration::verbose)
     cerr << 
       "Pulsar::Pointing::update before:\n"
       "  lst=" << get_local_sidereal_time()/3600.0 << " hours\n"
@@ -253,8 +244,7 @@ void Pulsar::Pointing::update (const Integration* subint, const Archive *archive
   mount->set_observatory_longitude( telescope->get_longitude().getRadians() );
   mount->set_epoch( subint->get_epoch() );
 
-  double rad2sec = 3600.0*12.0/M_PI;
-  set_local_sidereal_time( mount->get_local_sidereal_time()*rad2sec );
+  set_local_sidereal_time( mount->get_local_sidereal_time()/radians_per_second );
 
   Directional* directional = dynamic_cast<Directional*> (mount);
   if (!directional)

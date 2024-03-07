@@ -111,6 +111,6 @@ Matrix<3,3,double> KrausType::get_basis (const Vector<3,double>& from) const
   // reflection matrix in rotated feed frame
   auto R2 = reflection(nprime);
 
-  cerr << "KrausType::get_basis" << endl;
+  // cerr << "KrausType::get_basis" << endl;
   return R2 * R1 * feed;
 }
