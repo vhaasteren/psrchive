@@ -120,6 +120,9 @@ namespace Pulsar
     //! Set the response to a previous solution (for the first guess)
     void set_previous_solution (const PolnCalibrator*);
 
+    //! Set the calibrator Stokes parameters to a previous solution (for the first guess)
+    void set_previous_cal (const CalibratorStokes*);
+
     //! Set the response parameters to be held fixed
     void set_response_fixed (const std::vector<unsigned>&);
 

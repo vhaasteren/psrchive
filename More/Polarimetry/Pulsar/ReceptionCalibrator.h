@@ -101,18 +101,12 @@ namespace Pulsar
 
     //! Get the on-pulse mask
     const PhaseWeight* get_onpulse () const;
-
-    //! Add the calibrator observation to the set of constraints
-    void add_calibrator (const Archive* data);
     
     //! Return true if any flux calibrator observations are available
     bool has_fluxcal () const;
 
     //! Return the flux calibration manager for the specified frequency channel
     const Calibration::FluxCalManager* get_fluxcal (unsigned ichan) const;
-
-    //! Set the first guess to a previous solution
-    void set_previous (const Archive* data);
 
     //! Normalize each Stokes vector by the mean on-pulse invariant 
     void set_normalize_by_invariant (bool set = true);

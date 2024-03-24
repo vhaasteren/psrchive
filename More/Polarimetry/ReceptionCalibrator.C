@@ -293,30 +293,7 @@ unsigned ReceptionCalibrator::get_nstate_pulsar () const
   return pulsar_estimate.size();
 }
 
-//! Add the specified pulsar observation to the set of constraints
-void ReceptionCalibrator::add_calibrator (const Archive* data)
-{
-  if (data->get_type() == Signal::Calibrator)
-    set_previous (data);
-  else
-    SystemCalibrator::add_calibrator (data);
-}
-
 bool equal_pi (const Angle& a, const Angle& b, float tolerance = 0.01);
-
-
-void ReceptionCalibrator::set_previous (const Archive* data)
-{
-  const PolnCalibratorExtension* ext = data->get<PolnCalibratorExtension>();
-  if (ext->get_type() == get_type())
-  {
-    cerr << "Pulsar::ReceptionCalibrator::set_previous solution of same type"
-	 << endl;
-    previous = new PolnCalibrator (data);
-    previous_cal = data->get<CalibratorStokes>();
-  }
-}
-
 
 bool ReceptionCalibrator::match (const Archive* data, bool throw_exception)
 {
@@ -697,13 +674,6 @@ void ReceptionCalibrator::solve_prepare () try
 
   if (get_prepared())
     return;
-
-  if (previous_cal)
-  {
-    cerr << "Pulsar::ReceptionCalibrator::solve_prepare using previous solution" << endl;
-    for (unsigned ichan=0; ichan<model.size(); ichan++)
-      calibrator_estimate[ichan]->source -> set_stokes( (Stokes< Estimate<double> >) previous_cal->get_stokes (ichan) );
-  }
   
   SystemCalibrator::solve_prepare ();
 
@@ -743,6 +713,13 @@ void ReceptionCalibrator::solve_prepare () try
   */
 
   setup_calibrators ();
+
+  if (previous_cal)
+  {
+    cerr << "Pulsar::ReceptionCalibrator::solve_prepare using previous calibrator solution" << endl;
+    for (unsigned ichan=0; ichan<model.size(); ichan++)
+      calibrator_estimate[ichan]->source -> set_stokes( (Stokes< Estimate<double> >) previous_cal->get_stokes (ichan) );
+  }
 
   /*
     Any configuration set on the command line take precedence

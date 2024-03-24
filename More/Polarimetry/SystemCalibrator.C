@@ -653,6 +653,11 @@ void SystemCalibrator::set_previous_solution (const PolnCalibrator* polcal)
   previous = polcal;
 }
 
+void SystemCalibrator::set_previous_cal (const CalibratorStokes* cal)
+{
+  previous_cal = cal;
+}
+
 void SystemCalibrator::set_response_fixed (const std::vector<unsigned>& params)
 {
   response_fixed = params;
@@ -672,7 +677,7 @@ void SystemCalibrator::load_calibrators ()
   {
     if (verbose)
       cerr << "SystemCalibrator::load_calibrators loading\n\t"
-	   << calibrator_filenames[ifile] << endl;
+           << calibrator_filenames[ifile] << endl;
 
     Reference::To<Archive> archive;
     archive = Archive::load(calibrator_filenames[ifile]);
@@ -713,36 +718,36 @@ void SystemCalibrator::load_calibrators ()
     for (unsigned ichan=0; ichan<nchan; ichan++) try
     {
       if (!model[ichan]->get_valid())
-	continue;
+        continue;
 
       if (!calibrator_estimate[ichan])
       {
-	if (verbose > 2)
-	  cerr << "SystemCalibrator::load_calibrators"
-	    " no estimate ichan=" << ichan << endl;
-	continue;
+        if (verbose > 2)
+          cerr << "SystemCalibrator::load_calibrators"
+            " no estimate ichan=" << ichan << endl;
+        continue;
       }
     
       Estimate<double> I = calibrator_estimate[ichan]->source->get_stokes()[0];
       if (I.get_value() == 0)
       {
-	cerr << "SystemCalibrator::load_calibrators"
-	  " reference flux equals zero \n"
-	  "\t attempts=" << calibrator_estimate[ichan]->add_data_attempts <<
-	  "\t failures=" << calibrator_estimate[ichan]->add_data_failures << endl;
-	
-	throw Error (InvalidState, "SystemCalibrator::load_calibrators",
-		     "reference flux equals zero");
+        cerr << "SystemCalibrator::load_calibrators"
+          " reference flux equals zero \n"
+          "\t attempts=" << calibrator_estimate[ichan]->add_data_attempts <<
+          "\t failures=" << calibrator_estimate[ichan]->add_data_failures << endl;
+        
+        throw Error (InvalidState, "SystemCalibrator::load_calibrators",
+              "reference flux equals zero");
       }
       
       if (fabs(I.get_value()-1.0) > I.get_error() && verbose)
-	cerr << "SystemCalibrator::load_calibrators warning"
-	  " ichan=" << ichan << " reference flux=" << I << " != 1" << endl;
+        cerr << "SystemCalibrator::load_calibrators warning"
+          " ichan=" << ichan << " reference flux=" << I << " != 1" << endl;
     }
     catch (Error& error)
     {
       if (model[ichan])
-	model[ichan]->set_valid( false, error.get_message().c_str() );
+        model[ichan]->set_valid( false, error.get_message().c_str() );
     }
   }
   

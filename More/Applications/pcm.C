@@ -18,6 +18,8 @@
 #include "Pulsar/ReceptionCalibrator.h"
 #include "Pulsar/PulsarCalibrator.h"
 #include "Pulsar/FluxCalibrator.h"
+#include "Pulsar/CalibratorStokes.h"
+
 #include "Pulsar/RobustStepFinder.h"
 
 #include "Pulsar/VariableTransformationFile.h"
@@ -398,8 +400,7 @@ void plot_constraints (Pulsar::SystemCalibratorPlotter& plotter,
 #endif // HAVE_PGPLOT
 
 // name of the default parametrization
-Reference::To<Pulsar::Calibrator::Type> model_type =
-                                        new Pulsar::CalibratorTypes::van04_Eq18;
+Reference::To<Pulsar::Calibrator::Type> model_type = new Pulsar::CalibratorTypes::van04_Eq18;
 
 // unloads the solution(s)
 Pulsar::SystemCalibrator::Unloader unloader;
@@ -461,7 +462,7 @@ float retry_chisq = 0.0;
 float invalid_chisq = 0.0;
 
 // filename of previous pcm solution to be used as first guess
-string previous_solution;
+string previous_solution_filename;
 
 // set of parameter indeces to be copied from previous_solution
 /* if not specified, all parameters are copied */
@@ -1019,7 +1020,7 @@ void pcm::add_options (CommandLine::Menu& menu)
   arg = menu.add (check_coordinates, 'Z');
   arg->set_help ("ignore the sky coordinates of PolnCal observations");
 
-  arg = menu.add (previous_solution, "solution", "file");
+  arg = menu.add (previous_solution_filename, "solution", "file");
   arg->set_help ("load previous solution from 'file' as first guess");
  
 #if 0 
@@ -1193,7 +1194,8 @@ void pcm::add_options (CommandLine::Menu& menu)
   arg->set_help ("share a single phase shift estimate b/w all observations");
 }
 
-Reference::To<Pulsar::PolnCalibrator> pcm_solution;
+Reference::To<Pulsar::PolnCalibrator> previous_solution;
+Reference::To<Pulsar::CalibratorStokes> previous_cal;
 
 void pcm::setup ()
 {
@@ -1213,15 +1215,16 @@ void pcm::setup ()
       " -p min,max  Choose constraints from the specified pulse phase range \n"
       " -c archive  Choose optimal constraints from the specified archive");
 
-  if (!previous_solution.empty())
+  if (!previous_solution_filename.empty())
   {
-    Reference::To<Archive> cal = Archive::load (previous_solution);
-    pcm_solution = new PolnCalibrator (cal);
+    Reference::To<Archive> cal = Archive::load (previous_solution_filename);
+    previous_solution = new PolnCalibrator (cal);
+    previous_cal = cal->get<CalibratorStokes>();
 
-    const Calibrator::Type* type = pcm_solution->get_type ();
+    const Calibrator::Type* type = previous_solution->get_type ();
 
     cerr << "pcm: previous solution has type=" << type->get_name()
-	 << " and nparam=" << type->get_nparam() << endl;
+         << " and nparam=" << type->get_nparam() << endl;
     
     if (!type->is_a (model_type) || !model_type->is_a (type))
     {
@@ -1271,9 +1274,12 @@ void configure_model (Pulsar::SystemCalibrator* model)
     model->set_faraday_rotation (rot);
   }
 
-  if (pcm_solution)
-    model->set_previous_solution (pcm_solution);
+  if (previous_solution)
+    model->set_previous_solution (previous_solution);
   
+  if (previous_cal)
+    model->set_previous_cal (previous_cal);
+
   model->set_cal_outlier_threshold (cal_outlier_threshold);
   model->set_cal_intensity_threshold (cal_intensity_threshold);
   model->set_cal_polarization_threshold (cal_polarization_threshold);

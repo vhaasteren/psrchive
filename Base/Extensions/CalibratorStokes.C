@@ -132,6 +132,20 @@ void CalibratorStokes::set_Estimate (unsigned iparam, unsigned ichan,
   stokes[ichan][iparam+1] = val;
 }
 
+void CalibratorStokes::set_value (unsigned iparam, unsigned ichan, double val)
+{
+  range_check (ichan, "CalibratorStokes::set_value");
+  assert (iparam < 3);
+  stokes[ichan][iparam+1].val = val;
+}
+
+void CalibratorStokes::set_variance (unsigned iparam, unsigned ichan, double var)
+{
+  range_check (ichan, "CalibratorStokes::set_variance");
+  assert (iparam < 3);
+  stokes[ichan][iparam+1].var = var;
+}
+
 void CalibratorStokes::range_check (unsigned ichan, 
 				    const char* method) const
 {
@@ -169,6 +183,12 @@ public:
   double get_variance (unsigned k) const
   { return parent->get_stokes(ichan)[k+1].get_variance(); }
 
+  void set_value (unsigned k, double val)
+  { return parent->set_value(k, ichan, val); }
+
+  void set_variance (unsigned k, double var)
+  { return parent->set_variance(k, ichan, var); }
+
   unsigned get_nparam () const
   { return 3; /* Q,U,V */ }
 
@@ -178,15 +198,17 @@ public:
     Interface (PolnVector* s = 0)
     {
       if (s)
-	set_instance (s);
+        set_instance (s);
 
       VGenerator<double> generator;
       add_value(generator( "val", string("Polarization vector value"),
 			   &PolnVector::get_value,
+			   &PolnVector::set_value,
 			   &PolnVector::get_nparam ));
 
       add_value(generator( "var", string("Polarization vector variance"),
 			   &PolnVector::get_variance,
+			   &PolnVector::set_variance,
 			   &PolnVector::get_nparam ));
     }
   };
