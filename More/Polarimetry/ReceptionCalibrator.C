@@ -743,6 +743,14 @@ void ReceptionCalibrator::solve_prepare () try
   */
 
   setup_calibrators ();
+
+  /*
+    Any configuration set on the command line take precedence
+  */
+  for (unsigned ichan=0; ichan<model.size(); ichan++)
+  {
+    configure (model[ichan]->get_equation());
+  }
 }
 catch (Error& error)
 {

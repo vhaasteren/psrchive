@@ -1666,7 +1666,7 @@ void SystemCalibrator::init_model (unsigned ichan)
 
   if (report_initial_state)
   {
-   filename = stringprintf("prefit_model_ichan%04d.txt",ichan);
+    filename = stringprintf("prefit_model_ichan%04d.txt",ichan);
     equation->add_prefit_report ( new Calibration::ModelParametersReport(filename) );
   }
 
@@ -1705,6 +1705,16 @@ SystemCalibrator::set_equation_configuration (const vector<string>& c)
   equation_configuration = c;
 }
 
+template<class Equation>
+void print (const Equation* equation, const char* function)
+{
+  unsigned nparam = equation->get_nparam();
+  cerr << function << " nparam=" << nparam << endl;
+  for (unsigned i=0; i<nparam; i++)
+    cerr << i << ":" <<  equation->get_infit(i) 
+         << " name=" << equation->get_param_name(i) << endl;
+}
+
 void SystemCalibrator::configure ( MEAL::Function* equation ) try
 {
   if (equation_configuration.size() == 0)
@@ -1713,16 +1723,13 @@ void SystemCalibrator::configure ( MEAL::Function* equation ) try
   Reference::To<TextInterface::Parser> interface = equation ->get_interface();
   for (unsigned i=0; i<equation_configuration.size(); i++)
     interface->process (equation_configuration[i]);
+
+  // print (equation, "SystemCalibrator::configure");
 }
 catch (Error& error)
 {
   cerr << "SystemCalibrator::configure " << error << endl;
-
-  unsigned nparam = equation->get_nparam();
-  cerr << "SystemCalibrator::configure nparam=" << nparam << endl;
-  for (unsigned i=0; i<nparam; i++)
-    cerr << i << " name=" << equation->get_param_name(i) << endl;
-
+  print (equation, "SystemCalibrator::configure");
   exit (-1);
 }
 
@@ -1797,7 +1804,7 @@ void SystemCalibrator::solve_prepare () try
       if (calibrator_estimate[ichan])
       {
         DEBUG("SystemCalibrator::prepare update calibrator estimate ichan=" << ichan);
-	calibrator_estimate[ichan]->update ();
+        calibrator_estimate[ichan]->update ();
       }
   
   MJD epoch = get_epoch();
@@ -1810,8 +1817,8 @@ void SystemCalibrator::solve_prepare () try
     if (model[ichan]->get_equation()->get_ndata() == 0)
     {
       if (verbose)
-	cerr << "SystemCalibrator::solve_prepare warning"
-	  " ichan=" << ichan << " has no data" << endl;
+        cerr << "SystemCalibrator::solve_prepare warning"
+                " ichan=" << ichan << " has no data" << endl;
 
       model[ichan]->set_valid( false, "no data" );
     }
@@ -1836,19 +1843,19 @@ void SystemCalibrator::solve_prepare () try
       }
 
       if (fabs(I.get_value()-1.0) > I.get_error() && verbose)
-	cerr << "SystemCalibrator::solve_prepare warning"
-	  " ichan=" << ichan << " reference flux=" << I << " != 1" << endl;
+        cerr << "SystemCalibrator::solve_prepare warning"
+                " ichan=" << ichan << " reference flux=" << I << " != 1" << endl;
     }
 
     model[ichan]->set_reference_epoch ( epoch );
-
-    configure (model[ichan]->get_equation());
 
     model[ichan]->check_constraints ();
     
     if (set_initial_guess)
       model[ichan]->update ();
-    
+
+    configure (model[ichan]->get_equation());
+
     if (verbose > 2)
       get_solver(ichan)->set_debug();
   }
@@ -1899,7 +1906,7 @@ void SystemCalibrator::solve () try
     if (!model[ order[ichan] ]->get_valid())
     {
       cerr << "channel " << order[ichan] << " flagged invalid"
-	" (" << model[ order[ichan] ]->get_invalid_reason() << ")" << endl;
+              " (" << model[ order[ichan] ]->get_invalid_reason() << ")" << endl;
       continue;
     }
 

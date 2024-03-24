@@ -512,7 +512,7 @@ void SignalPath::update () try
           throw Error (InvalidState, "SignalPath::update",
                        "unexpected backend[%u].infit(%u) = true", i, iparam);
 
-	backends[i]->get_backend()->set_param ( iparam, identity[iparam] );
+        backends[i]->get_backend()->set_param ( iparam, identity[iparam] );
       }
     }
     else
@@ -525,7 +525,6 @@ void SignalPath::update () try
         if (! backends[i]->get_backend()->get_infit (iparam))
           throw Error (InvalidState, "SignalPath::update",
                        "unexpected backend[%u].infit(%u) = false", i, iparam);
-
       }
       response->set_param ( iparam, identity[iparam] );
     }
@@ -843,7 +842,7 @@ void SignalPath::add_calibrator_epoch (const MJD& epoch)
   {
     if (verbose)
       cerr << "SignalPath::add_calibrator_epoch"
-	" add_polncal_backend" << endl;
+              " add_polncal_backend" << endl;
 
     add_cal_path (backend);
   }
