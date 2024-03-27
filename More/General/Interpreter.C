@@ -103,7 +103,7 @@ void Pulsar::Interpreter::init()
   add_command
     ( &Interpreter::pop,
       "pop", "pop current archive off top of stack",
-      "usage: pop \n" );
+      "usage: pop [all] \n" );
   
   add_command
     ( &Interpreter::set,
@@ -455,7 +455,7 @@ Pulsar::Archive* Pulsar::Interpreter::get ()
   if (VERBOSE)
     cerr << "Pulsar::Interpreter::get stack size=" << theStack.size() << endl;
 
-  if (theStack.empty() || !theStack.top())
+  if (!has())
     throw Error (InvalidState, "Pulsar::Interpreter::get",
 		 "no archive in stack");
 
@@ -638,10 +638,18 @@ catch (Error& error)
 //! pop the top of the stack
 string Pulsar::Interpreter::pop (const string& args)
 {
-  if (theStack.empty())
-    return response (Warn, "currently at bottom");
+  if (args == "all")
+  {
+     while (has())
+       theStack.pop();
+  }
+  else
+  {
+    if (theStack.empty())
+      return response (Warn, "currently at bottom");
 
-  theStack.pop();
+    theStack.pop();
+  }
 
   current_interface = 0;
 
