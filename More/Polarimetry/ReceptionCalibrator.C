@@ -196,6 +196,7 @@ void ReceptionCalibrator::initial_observation (const Archive* data)
   {
     has_pulsar = true;
     load_calibrators ();
+    load_previous();
   }
 
   assert( pulsar_estimate.size() == phase_bins.size() );
@@ -488,7 +489,7 @@ void set_fixed_QUV ( Calibration::SourceEstimate* cal, double value )
 {
   for (unsigned ipol=1; ipol < 4; ipol++)
     if (!cal->source->get_infit (ipol))
-      cal->source->set_Estimate (ipol, 0.0);
+      cal->source->set_Estimate (ipol, value);
 }
 
 void ReceptionCalibrator::setup_poln_calibrator (Calibration::SourceEstimate* est)
@@ -713,13 +714,6 @@ void ReceptionCalibrator::solve_prepare () try
   */
 
   setup_calibrators ();
-
-  if (previous_cal)
-  {
-    cerr << "Pulsar::ReceptionCalibrator::solve_prepare using previous calibrator solution" << endl;
-    for (unsigned ichan=0; ichan<model.size(); ichan++)
-      calibrator_estimate[ichan]->source -> set_stokes( (Stokes< Estimate<double> >) previous_cal->get_stokes (ichan) );
-  }
 
   /*
     Any configuration set on the command line take precedence

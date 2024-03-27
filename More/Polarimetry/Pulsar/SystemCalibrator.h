@@ -428,7 +428,7 @@ namespace Pulsar
 
     //! Load any postponed calibrators and those set by set_calibrators
     virtual void load_calibrators ();
-
+    
     Reference::To<StepFinder> step_finder;
     
     //! Pulsar data loaded but not submitted or integrated
@@ -480,9 +480,6 @@ namespace Pulsar
     
     //! True if noise diode illuminates feed; false if coupled after OMT
     bool refcal_through_frontend;
-
-    //! Set the initial guess in solve_prepare
-    bool set_initial_guess;
 
     //! Ensure that first guess of calibrator Stokes parameters is physical
     bool guess_physical_calibrator_stokes;
@@ -544,12 +541,20 @@ namespace Pulsar
     unsigned get_data_fail;
     unsigned get_data_call;
 
-    //! A previous solution, if availabe
+    //! Previous solution of the frontend from which to copy initial guess
     Reference::To<const PolnCalibrator> previous;
+
+    //! Previous solution of the calibrator Stokes parameters from which to copy initial guess
     Reference::To<const CalibratorStokes> previous_cal;
 
+    //! Load any previous solutions
+    virtual void load_previous ();
+
+    //! Flag set after previous solutions are loaded
+    bool previous_loaded = false;
+
     //! Flag set after the first pulsar observation is added
-    bool has_pulsar;
+    bool has_pulsar = false;
 
   private:
 

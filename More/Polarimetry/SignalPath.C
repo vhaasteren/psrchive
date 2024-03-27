@@ -958,8 +958,8 @@ VariableBackendEstimate* SignalPath::max_weight_backend ()
   {
     if (backends[i]->get_weight() > maxweight)
       {
-	maxweight = backends[i]->get_weight();
-	backend = backends[i];
+        maxweight = backends[i]->get_weight();
+        backend = backends[i];
       }
   }
 

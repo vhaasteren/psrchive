@@ -792,7 +792,7 @@ void Pulsar::PulsarCalibrator::update_solution () try
       assert (ichan < PolnCalibrator::get_nchan(false));
 
       if (!get_transformation_valid(ichan))
-	set_transformation (ichan, new_transformation (ichan));
+        set_transformation (ichan, new_transformation (ichan));
 
       solution[ichan]->update( PolnCalibrator::get_transformation(ichan) );
     }

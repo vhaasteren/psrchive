@@ -64,7 +64,6 @@ SystemCalibrator::SystemCalibrator (Archive* archive)
 
   refcal_through_frontend = true;
 
-  set_initial_guess = true;
   guess_physical_calibrator_stokes = false;
 
   data_submitted = false;
@@ -483,6 +482,8 @@ void SystemCalibrator::prepare (const Archive* data) try
 
   load_calibrators ();
   
+  load_previous ();
+
   if (verbose)
     cerr << "SystemCalibrator::prepare done" << endl;
 }
@@ -491,6 +492,41 @@ catch (Error& error)
   throw error += "SystemCalibrator::prepare (Archive*)";
 }
 
+void SystemCalibrator::load_previous() try
+{
+  if (previous_loaded)
+    return;
+
+  unsigned nchan = model.size();
+
+  if (previous && previous->get_nchan() == nchan)
+  {
+    cerr << "Copying frontend of previous solution" << endl;
+    for (unsigned ichan=0; ichan<nchan; ichan++)
+      if (previous->get_transformation_valid(ichan))
+        model[ichan]->copy_transformation(previous->get_transformation(ichan));
+  }
+
+  if (previous_cal && previous_cal->get_nchan() == nchan)
+  {
+    cerr << "Copying calibrator polarization of previous solution" << endl;
+    for (unsigned ichan=0; ichan<model.size(); ichan++)
+    {
+      if (previous_cal->get_valid(ichan))
+      {
+        Stokes< Estimate<double> > stokes( previous_cal->get_stokes(ichan) );
+        calibrator_estimate[ichan]->source->set_stokes(stokes);
+      }
+    }
+  }
+
+  previous_loaded = true;
+}
+catch (Error& error)
+{
+  throw error += "SystemCalibrator::load_previous";
+}
+  
 //! Add the specified pulsar observation to the set of constraints
 void SystemCalibrator::add_pulsar (const Archive* data, unsigned isub) try
 {
@@ -759,15 +795,6 @@ void SystemCalibrator::load_calibrators ()
   if (ok == 0)
     throw Error (InvalidState, "SystemCalibrator::load_calibrators",
                  "zero valid models");
-
-  if (previous && previous->get_nchan() == nchan)
-  {
-    cerr << "Copying frontend of previous solution" << endl;
-    // set_initial_guess = false;
-    for (unsigned ichan=0; ichan<nchan; ichan++)
-      if (previous->get_transformation_valid(ichan))
-        model[ichan]->copy_transformation(previous->get_transformation(ichan));
-  }
 }
 
 //! Add the specified pulsar observation to the set of constraints
@@ -777,7 +804,7 @@ void SystemCalibrator::add_calibrator (const Archive* data)
   {
     if (verbose)
       cerr << "SystemCalibrator::add_calibrator"
-	" postponed until pulsar added" << endl;
+              " postponed until pulsar added" << endl;
 
     calibrator_filenames.push_back( data->get_filename() );
 
@@ -794,16 +821,16 @@ void SystemCalibrator::add_calibrator (const Archive* data)
     if (type->is_a<CalibratorTypes::van09_Eq>())
     {
       if (verbose > 2)
-	cerr << "SystemCalibrator::add_calibrator"
-	  " new PolarCalibrator" << endl;
+        cerr << "SystemCalibrator::add_calibrator"
+                " new PolarCalibrator" << endl;
     
       polncal = new PolarCalibrator (data);
     }
     else
     {
       if (verbose > 2)
-	cerr << "SystemCalibrator::add_calibrator"
-	  " new SingleAxisCalibrator" << endl;
+        cerr << "SystemCalibrator::add_calibrator"
+                " new SingleAxisCalibrator" << endl;
       
       polncal = new SingleAxisCalibrator (data);
     }
@@ -829,8 +856,7 @@ void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
     cerr << "SystemCalibrator::add_calibrator nchan=" << nchan << endl;
 
   if (!nchan)
-    throw Error (InvalidState, "SystemCalibrator::add_calibrator",
-		 "nchan == 0");
+    throw Error (InvalidState, "SystemCalibrator::add_calibrator", "nchan == 0");
 
   const Archive* cal = p->get_Archive();
 
@@ -1804,14 +1830,16 @@ void SystemCalibrator::solve_prepare () try
   if (report_input_failed)
     print_input_failed (calibrator_estimate);
   
-  if (set_initial_guess)
+  if (!previous_cal)
+  {
     for (unsigned ichan=0; ichan<calibrator_estimate.size(); ichan++)
       if (calibrator_estimate[ichan])
       {
         DEBUG("SystemCalibrator::prepare update calibrator estimate ichan=" << ichan);
         calibrator_estimate[ichan]->update ();
       }
-  
+  }
+
   MJD epoch = get_epoch();
 
   if (verbose)
@@ -1856,8 +1884,7 @@ void SystemCalibrator::solve_prepare () try
 
     model[ichan]->check_constraints ();
     
-    if (set_initial_guess)
-      model[ichan]->update ();
+    model[ichan]->update ();
 
     configure (model[ichan]->get_equation());
 
