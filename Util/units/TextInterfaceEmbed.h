@@ -35,8 +35,6 @@ namespace TextInterface
 #if _DEBUG
       std::cerr << "OptionalInterface name=" << t << std::endl;
 #endif
-      help = false;
-      value = NULL;
     }
 
     //! Get the name of the attribute
@@ -60,8 +58,8 @@ namespace TextInterface
     virtual Parser* get_parser (const C* ptr) const = 0;
 
     //! Value found during match
-    mutable Value* value;
-    mutable bool help;
+    mutable Reference::To<Value> value;
+    mutable bool help = false;
   };
 
 

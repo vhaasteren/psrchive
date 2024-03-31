@@ -215,8 +215,8 @@ TextInterface::Parser::Parser ()
 
 TextInterface::Parser::~Parser ()
 {
-  instance_count --;
 #if _DEBUG
+  instance_count --;
   cerr << "Parser dtor count=" << instance_count << endl;
 #endif
 }

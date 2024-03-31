@@ -77,7 +77,9 @@ public:
   TextInterface::Parser* get_extension_interface()
   {
     cerr << "tester::get_extension_interface" << endl;
-    return new extensionTUI(ext);
+    auto ui = new extensionTUI(ext);
+    cerr << "tester::get_extension_interface return ptr=" << (void*)ui << endl;
+    return ui;
   }
 
   extension* get_extension ()
@@ -136,10 +138,13 @@ int main () try
   testerTUI getset;
   getset.set_instance (&Test);
 
+  cerr << "main: testerTUI::help" << endl;
   getset.help(true);
 
+  cerr << "main: testerTUI::set_value embed" << endl;
   getset.set_value("embed", "3.456");
 
+  cerr << "main: testerTUI::get_value embed" << endl;
   if (getset.get_value("embed") != "3.456")
   {
     cerr <<
@@ -148,9 +153,11 @@ int main () try
     return -1;
   }
 
+  cerr << "main: testerTUI::set_value embed:text" << endl;
   // test ElementGetSet all elements in the vector
   getset.set_value("embed:text", "hello");
 
+  cerr << "main: testerTUI::get_value embed:text" << endl;
   if (getset.get_value("embed:text") != "hello")
   {
     cerr <<
@@ -159,6 +166,7 @@ int main () try
     return -1;
   }
 
+  cerr << "main: testerTUI::get_value embed" << endl;
   if (getset.get_value("embed") != "3.456")
   {
     cerr <<
