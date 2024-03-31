@@ -35,6 +35,9 @@ namespace TextInterface
     //! Default constructor
     Parser ();
 
+    //! Destructor
+    ~Parser ();
+
     //! Get the named value
     std::string get_value (const std::string& name) const;
 

@@ -197,12 +197,28 @@ void TextInterface::Parser::clean_invalid ()
       i++;
 }
 
+#if _DEBUG
+static unsigned instance_count = 0;
+#endif
+
 TextInterface::Parser::Parser ()
 {
   alphabetical = false;
   import_filter = false;
   prefix_name = true;
   delimiter = ",";
+#if _DEBUG
+  instance_count ++;
+  cerr << "Parser ctor count=" << instance_count << endl;
+#endif
+}
+
+TextInterface::Parser::~Parser ()
+{
+  instance_count --;
+#if _DEBUG
+  cerr << "Parser dtor count=" << instance_count << endl;
+#endif
 }
 
 //! Get the value of the value
@@ -344,6 +360,9 @@ void TextInterface::Parser::insert (Parser* other)
   if (!other)
     return;
 
+  // if no other Reference::To other exists, delete when done
+  Reference::To<Parser> raii = other;
+
   for (unsigned i=0; i < other->values.size(); i++)
     if (!import_filter || !find(other->values[i]->get_name(),false))
     {
@@ -357,6 +376,9 @@ void TextInterface::Parser::insert (const string& prefix, Parser* other)
 {
   if (!other)
     return;
+
+  // if no other Reference::To other exists, delete when done
+  Reference::To<Parser> raii = other;
 
   for (unsigned i=0; i < other->values.size(); i++)
   {
