@@ -30,8 +30,3 @@ void TextInterface::Value::set_modifiers (const std::string& modifiers) const
 #endif
 }
 
-void TextInterface::Value::reset_modifiers () const
-{
-  tostring_precision = 0;
-}
-
