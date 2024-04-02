@@ -8,13 +8,13 @@
 #include "Pulsar/Interpreter.h"
 #include "Pulsar/InterpreterExtension.h"
 
-#include "Pulsar/Archive.h"
+#include "Pulsar/ArchiveInterface.h"
 #include "Pulsar/Integration.h"
 #include "Pulsar/Profile.h"
 #include "Pulsar/ForEachProfile.h"
 
 #include "Pulsar/Config.h"
-#include "Pulsar/Statistics.h"
+#include "Pulsar/StatisticsInterface.h"
 
 #include "Pulsar/ScatteredPowerCorrection.h"
 #include "Pulsar/ImageCorrection.h"
@@ -51,6 +51,8 @@ using namespace std;
 #else
 #define VERBOSE Archive::verbose > 2
 #endif
+
+static unsigned instance_count = 0;
 
 void Pulsar::Interpreter::init()
 {
@@ -303,6 +305,7 @@ void Pulsar::Interpreter::init()
       "dynspec", "compute and write out dynamic spectrum",
       "usage: dynspec output [template]\n");
 
+  instance_count ++;
 }
 
 Pulsar::Interpreter::Interpreter()
@@ -319,7 +322,7 @@ Pulsar::Interpreter::Interpreter (int &argc, char** &argv)
 //! destructor
 Pulsar::Interpreter::~Interpreter ()
 {
-
+  instance_count --;
 }
 
 void Pulsar::Interpreter::import (Extension* ext)
@@ -628,7 +631,9 @@ string Pulsar::Interpreter::push (const string& args) try
   current_interface = 0;
 
   if (verbose > 1)
-    cerr << "Pulsar::Interpreter::push Archive::instances=" << Archive::get_instance_count() << endl;
+    cerr << "Pulsar::Interpreter::push Archive::instances=" << Archive::get_instance_count() <<
+            " Statistics::instances=" << Statistics::get_instance_count () <<
+            " Statistics::Interface::instances=" << Statistics::Interface::get_instance_count () << endl;
 
   return response (Good);
 }
@@ -657,7 +662,9 @@ string Pulsar::Interpreter::pop (const string& args)
   current_interface = 0;
 
   if (verbose > 1)
-    cerr << "Pulsar::Interpreter::pop Archive::instances=" << Archive::get_instance_count() << endl;
+    cerr << "Pulsar::Interpreter::pop Archive::instances=" << Archive::get_instance_count() << 
+	    " Statistics::instances=" << Statistics::get_instance_count () <<
+            " Statistics::Interface::instances=" << Statistics::Interface::get_instance_count () << endl;
 
   return response (Good);
 }

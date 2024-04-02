@@ -14,8 +14,14 @@
 
 using namespace std;
 
+static unsigned instance_count = 0;
+
+unsigned Pulsar::Archive::Interface::get_instance_count () { return instance_count; }
+
 Pulsar::Archive::Interface::Interface( Archive *c )
 {
+  instance_count ++;
+
   add( &Archive::get_filename, "file",    "Name of the file" );
 
   add( &Archive::get_nbin,     "nbin",    "Number of pulse phase bins" );
@@ -82,6 +88,11 @@ Pulsar::Archive::Interface::Interface( Archive *c )
 
   if (c)
     set_instance (c);
+}
+
+Pulsar::Archive::Interface::~Interface()
+{
+  instance_count --;
 }
 
 //! Set the instance

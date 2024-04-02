@@ -88,6 +88,11 @@ void Reference::HeapTracked::operator delete (void* location)
   ::operator delete (location);
 }
 
+void Reference::HeapTracked::__set_deleted ()
+{
+  __heap_state = 0x02;
+}
+
 bool Reference::HeapTracked::__is_on_heap () const
 {
   const char is_on_heap = 0x01;
@@ -122,7 +127,7 @@ bool Reference::HeapTracked::__is_on_heap () const
     heap_addresses().erase (it);
     __heap_state = is_on_heap;
 
-  DEBUG("Reference::HeapTracked::is_on_heap true heap_state=" << (int)__heap_state);
+    DEBUG("Reference::HeapTracked::is_on_heap true heap_state=" << (int)__heap_state);
 
     UNLOCK_HEAP
 
@@ -131,7 +136,7 @@ bool Reference::HeapTracked::__is_on_heap () const
 
   __heap_state = 0x04;
 
-    DEBUG("Reference::HeapTracked::is_on_heap false heap_state=" << (int)__heap_state);
+  DEBUG("Reference::HeapTracked::is_on_heap false heap_state=" << (int)__heap_state);
 
   UNLOCK_HEAP
 

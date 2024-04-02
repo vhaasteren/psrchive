@@ -106,21 +106,6 @@ Reference::Able& Reference::Able::operator = (const Able& other)
 }
 
 //////////////////////////////////////////////////////////////////////////
-// desctructor
-Reference::Able::~Able ()
-{ 
-  instance_count--;
-
-  if (__reference_handle)
-  {
-    DEBUG("Reference::Able dtor this=" << this << " handle_count=" << __reference_handle->handle_count);
-    __reference_handle->pointer = 0;
-  }
-
-  DEBUG("Reference::Able dtor this=" << this << " reference_count=" << __reference_count << " instances=" << instance_count);
-}
-
-//////////////////////////////////////////////////////////////////////////
 //
 /*! Declared const in order to enable Reference::To<const T> */
 Reference::Able::Handle*
@@ -159,6 +144,57 @@ Reference::Able::__reference (bool active) const
   return __reference_handle;
 }
 
+namespace Reference
+{
+  class Bin
+  {
+    std::vector<Able*> bin;
+    public:
+      void add (Able* ptr)
+      { 
+	DEBUG("Reference::Bin add ptr=" << ptr);
+        LOCK_REFERENCE
+        bin.push_back( ptr );
+	UNLOCK_REFERENCE
+      }
+
+      void clear()
+      {
+        LOCK_REFERENCE
+        std::vector<Able*> tmp = bin;
+	bin.clear();
+	UNLOCK_REFERENCE
+
+        for (unsigned i=0; i<tmp.size(); i++)
+        {
+           DEBUG("Reference::Bin delete ptr=" << tmp[i]);
+	   delete tmp[i];
+	}
+      }
+  };
+
+  static Bin bin;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// desctructor
+Reference::Able::~Able ()
+{
+  instance_count--;
+
+  if (__reference_handle)
+  {
+    DEBUG("Reference::Able dtor this=" << this << " handle_count=" << __reference_handle->handle_count);
+    __reference_handle->pointer = 0;
+  }
+
+  __set_deleted ();
+
+  bin.clear();
+
+  DEBUG("Reference::Able dtor this=" << this << " reference_count=" << __reference_count << " instances=" << instance_count);
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 /*! Declared const in order to enable Reference::To<const Klass> */
@@ -194,10 +230,11 @@ void Reference::Able::Handle::decrement (bool active, bool auto_delete)
 {
   LOCK_REFERENCE
 
-  DEBUG("Reference::Able::Handle::decrement this=" << this << " active=" << active << " auto_delete=" << auto_delete);
+  DEBUG("Reference::Able::Handle::decrement this=" << this << " pointer=" << pointer << " active=" << active << " auto_delete=" << auto_delete);
 
   if (pointer && active)
   {
+    DEBUG("Reference::Able::Handle::decrement this=" << this << " dereference pointer=" << pointer);
     // decrease the active reference count
     pointer->__dereference (auto_delete);
   }
@@ -222,6 +259,12 @@ void Reference::Able::Handle::decrement (bool active, bool auto_delete)
       DEBUG("Reference::Able::Handle::decrement this=" << this << " pointer=" << pointer);
       // this instance is about to be deleted, ensure that Reference::Able object no longer points to it
       pointer->__reference_handle = 0;
+
+      if (auto_delete && pointer->__is_on_heap() && pointer->__reference_count == 0)
+      {
+        DEBUG("Reference::Able::Handle::decrement this=" << this << " garbage pointer=" << pointer);
+	bin.add(pointer);
+      }
     }
 
     UNLOCK_REFERENCE

@@ -83,6 +83,9 @@ namespace Reference {
     //! State of this instance
     mutable char __heap_state;
 
+    //! Called by Able destructor
+    void __set_deleted ();
+
   };
 
 }

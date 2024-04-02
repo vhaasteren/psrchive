@@ -13,8 +13,13 @@
 using namespace Pulsar;
 using namespace std;
 
+static unsigned instance_count = 0;
+
+unsigned Pulsar::Statistics::Interface::get_instance_count () { return instance_count; }
+
 Pulsar::Statistics::Interface::Interface (Statistics* instance)
 {
+  instance_count ++;
   if (instance)
   {
     set_instance (instance);
@@ -79,5 +84,17 @@ Pulsar::Statistics::Interface::Interface (Statistics* instance)
 
   add( &Statistics::get_dispersive_smearing,
        "dsmear", "Dispersive smearing in worst channel" );
+}
+
+Pulsar::Statistics::Interface::~Interface()
+{
+/*
+  if (instance)
+    cerr << "Pulsar::Statistics::Interface dtor Statistics instance reference count=" << instance->get_reference_count() << endl;
+  else
+    cerr << "Pulsar::Statistics::Interface dtor no Statistics instance" << endl;
+ */
+
+  instance_count --;
 }
 

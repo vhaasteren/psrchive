@@ -8,6 +8,8 @@
 #define _DEBUG 1
 
 #include <iostream>
+#include <cassert>
+
 using namespace std;
 
 #include "Reference.h"
@@ -46,7 +48,6 @@ public:
 
 unsigned Manager::instance_count = 0;
 
-
 int main (int argc, char** argv)
 {
   Manager* manager_ptr = new Manager;            // refcount = 0
@@ -60,11 +61,26 @@ int main (int argc, char** argv)
   cerr << "Remove reference" << endl;
   manager = 0;                                   // refcount = 1 !!!
 
-  if (Manager::instance_count != 0) {
+  if (Manager::instance_count != 0)
+  {
     cerr << "The Manager instance is not deleted becuase the ManageAble\n"
       "instance is still refering to it!" << endl;
     return -1;
   }
+
+  cerr << endl << "test_circular_reference new Manager" << endl << endl;
+  manager_ptr = new Manager;
+  assert(Manager::instance_count == 1);
+
+  cerr << endl << "test_circular_reference new ManageAble" << endl << endl;
+  ManageAble* managable = new ManageAble;
+
+  cerr << endl << "test_circular_reference Manager::manage" << endl << endl;
+  manager_ptr->manage(managable);
+
+  cerr << endl << "test_circular_reference delete ManageAble" << endl << endl;
+  delete managable;
+  assert(Manager::instance_count == 0);
 
   cerr << "Success!" << endl;
   return 0;

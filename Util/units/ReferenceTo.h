@@ -81,14 +81,14 @@ namespace Reference {
 
     //! The handle to the object
     Able::Handle* the_handle;
-    
+
   };
 }
 
 template<class Type, bool active>
 void Reference::To<Type,active>::unhook (bool auto_delete)
 {
-  DEBUG("Reference::To<"+name()+">::unhook handle=" << the_handle);
+  DEBUG("Reference::To<"+name()+">::unhook handle=" << the_handle << " auto_delete=" << auto_delete);
 
   if (!the_handle)
     return;

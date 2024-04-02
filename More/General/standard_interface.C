@@ -12,10 +12,8 @@
 #include "evaluate.h"
 #include "execute.h"
 
-#if _DEBUG
 #include <iostream>
 using namespace std;
-#endif
 
 using namespace Pulsar;
 
@@ -40,8 +38,10 @@ TextInterface::Parser* standard_interface (Archive* archive)
     stats->add_plugin ( pstats );
   }
 
+  // cerr << "standard_interface insert new Statistics::Interface" << endl;
   interface->insert( new Statistics::Interface( stats ) );
-    
+
+  // cerr << "standard_interface Statistics::Interface::instances=" << Statistics::Interface::get_instance_count () << endl;
   return interface.release();
 }
 

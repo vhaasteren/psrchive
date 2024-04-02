@@ -27,8 +27,14 @@ namespace Pulsar {
 
   public:
 
+    //! Get the number of Statistics objects in existence
+    static unsigned get_instance_count ();
+
     //! Default constructor
     Statistics (const Archive* = 0);
+
+    //! Destructor
+    ~Statistics ();
 
     //! Get the strategy manager owned by the Archive
     StrategySet* get_strategy () const;
