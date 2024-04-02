@@ -25,8 +25,8 @@ Pulsar::PhaseWeight::Interface::Interface (PhaseWeight* instance)
 
   auto stats = PhaseWeightStatistic::children ();
 
-  for (auto element : stats)
-    add( Functor< double(const PhaseWeight*) > (element,
+  for (Reference::To<PhaseWeightStatistic>& element : stats)
+    add( Functor< double(const PhaseWeight*) > (element.ptr(),
                                                 &PhaseWeightStatistic::get),
         element->get_identity().c_str(), 
         element->get_description().c_str() );

@@ -39,7 +39,7 @@ TextInterface::Parser* standard_interface (Archive* archive)
   }
 
   // cerr << "standard_interface insert new Statistics::Interface" << endl;
-  interface->insert( new Statistics::Interface( stats ) );
+  interface->insert( new Statistics::Interface(stats) );
 
   // cerr << "standard_interface Statistics::Interface::instances=" << Statistics::Interface::get_instance_count () << endl;
   return interface.release();

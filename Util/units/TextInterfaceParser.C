@@ -339,8 +339,7 @@ void TextInterface::Parser::insert (Parser* other)
   if (!other)
     return;
 
-  // if no other Reference::To other exists, delete when done
-  Reference::To<Parser> raii = other;
+  inserted.push_back(other);
 
   for (unsigned i=0; i < other->values.size(); i++)
     if (!import_filter || !find(other->values[i]->get_name(),false))
@@ -356,8 +355,7 @@ void TextInterface::Parser::insert (const string& prefix, Parser* other)
   if (!other)
     return;
 
-  // if no other Reference::To other exists, delete when done
-  Reference::To<Parser> raii = other;
+  inserted.push_back(other);
 
   for (unsigned i=0; i < other->values.size(); i++)
   {

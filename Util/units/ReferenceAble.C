@@ -251,6 +251,13 @@ void Reference::Able::Handle::decrement (bool active, bool auto_delete)
 
   DEBUG("Reference::Able::Handle::decrement this=" << this << " handle_count=" << handle_count);
 
+  if (pointer && auto_delete && pointer->__is_on_heap() && pointer->__reference_count == 0)
+  {
+    DEBUG("Reference::Able::Handle::decrement this=" << this << " garbage pointer=" << pointer);
+    bin.add(pointer);
+    pointer->__set_deleted ();
+  }
+
   // delete the handle
   if (handle_count == 0)
   {
@@ -259,12 +266,6 @@ void Reference::Able::Handle::decrement (bool active, bool auto_delete)
       DEBUG("Reference::Able::Handle::decrement this=" << this << " pointer=" << pointer);
       // this instance is about to be deleted, ensure that Reference::Able object no longer points to it
       pointer->__reference_handle = 0;
-
-      if (auto_delete && pointer->__is_on_heap() && pointer->__reference_count == 0)
-      {
-        DEBUG("Reference::Able::Handle::decrement this=" << this << " garbage pointer=" << pointer);
-	bin.add(pointer);
-      }
     }
 
     UNLOCK_REFERENCE

@@ -57,18 +57,27 @@ namespace TextInterface
     
     for (auto ptr=ptrs.begin(); ptr != ptrs.end(); ptr++)
     {
-      Reference::To<TextInterface::Parser> interface = (*ptr)->get_interface();
-      if (interface->get_interface_name() == name)
-	{
-	  result = (*ptr)->clone ();
-	  break;
-	}
-      else if (name == "help")
-	{
-	  message += interface->get_interface_name() + "\t" 
-            + interface->get_interface_description() + "\n"
-	    + interface->help (true, false, "   ") + "\n";
-	}
+      Reference::To<T> candidate = *ptr;
+      Reference::To<TextInterface::Parser> interface = candidate->get_interface();
+
+      bool match = false;
+
+      if (name == "help")
+      {
+        message += interface->get_interface_name() + "\t"
+          + interface->get_interface_description() + "\n"
+          + interface->help (true, false, "   ") + "\n";
+      }
+      else if (interface->get_interface_name() == name)
+      {
+        result = candidate->clone ();
+      }
+
+      interface = 0;
+      candidate.release();
+
+      if (result)
+        break;
     }
 
     if (name == "help")
@@ -105,6 +114,7 @@ namespace TextInterface
       interface->process (options[i]);
     }
 
+    interface = 0;
     return result.release();
   }
   
