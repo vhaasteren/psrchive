@@ -78,6 +78,8 @@ libunits_la_SOURCES = \
 	TextIndex.C \
         TextInterface.C \
 	TextInterfaceName.C \
+	TextInterfaceParser.C \
+	TextInterfaceValue.C \
 	TextLoop.C
 
 TESTS = test_ndIndex test_ndArray test_Alias test_tostring test_Error	\

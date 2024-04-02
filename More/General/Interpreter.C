@@ -627,6 +627,9 @@ string Pulsar::Interpreter::push (const string& args) try
 
   current_interface = 0;
 
+  if (verbose > 1)
+    cerr << "Pulsar::Interpreter::push Archive::instances=" << Archive::get_instance_count() << endl;
+
   return response (Good);
 }
 catch (Error& error)
@@ -652,6 +655,9 @@ string Pulsar::Interpreter::pop (const string& args)
   }
 
   current_interface = 0;
+
+  if (verbose > 1)
+    cerr << "Pulsar::Interpreter::pop Archive::instances=" << Archive::get_instance_count() << endl;
 
   return response (Good);
 }

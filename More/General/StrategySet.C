@@ -138,6 +138,7 @@ Profile::Strategies* Integration::get_strategy() const
   }
 
   DEBUG("Integration::get_strategy this=" << this << " new");
+
   return new StrategySet;
 }
 
