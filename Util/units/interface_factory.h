@@ -60,8 +60,6 @@ namespace TextInterface
       Reference::To<T> candidate = *ptr;
       Reference::To<TextInterface::Parser> interface = candidate->get_interface();
 
-      bool match = false;
-
       if (name == "help")
       {
         message += interface->get_interface_name() + "\t"
