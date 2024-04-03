@@ -7,7 +7,7 @@
 
 #include "Pulsar/Archive.h"
 #include "Pulsar/Integration.h"
-#include "Pulsar/ProfileStrategies.h"
+#include "Pulsar/StrategySet.h"
 
 #include "Pulsar/FourierSNR.h"
 #include "Pulsar/StandardSNR.h"

@@ -6,7 +6,7 @@
  ***************************************************************************/
 
 #include "Pulsar/Integration.h"
-#include "Pulsar/ProfileStrategies.h"
+#include "Pulsar/ManagedStrategies.h"
 
 using namespace std;
 
@@ -34,18 +34,19 @@ void Pulsar::Integration::resize (unsigned new_npol,
 
   if (verbose)
     cerr << "Integration::resize npol=" << new_npol
-	 << " nchan=" << new_nchan << " nbin=" << new_nbin << endl 
-	 << " old npol=" << cur_npol
-	 << " nchan=" << cur_nchan << " nbin=" << cur_nbin << endl;
+        << " nchan=" << new_nchan << " nbin=" << new_nbin << endl 
+        << " old npol=" << cur_npol
+        << " nchan=" << cur_nchan << " nbin=" << cur_nbin << endl;
 
   profiles.resize (new_npol);
+
   for (unsigned ipol=0; ipol < new_npol; ipol++)
   {  
     profiles[ipol].resize (new_nchan);
     for (unsigned ichan=0; ichan < new_nchan; ichan++)
     {
       if (!profiles[ipol][ichan])
-	profiles[ipol][ichan] = new_Profile();
+        profiles[ipol][ichan] = new_Profile();
 
       profiles[ipol][ichan] -> resize(new_nbin);
 

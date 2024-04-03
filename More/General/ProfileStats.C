@@ -6,7 +6,7 @@
  ***************************************************************************/
 
 #include "Pulsar/ProfileStats.h"
-#include "Pulsar/ProfileStrategies.h"
+#include "Pulsar/StrategySet.h"
 #include "Pulsar/Profile.h"
 
 #include "Pulsar/PeakConsecutive.h"

@@ -8,7 +8,7 @@
 #include "Pulsar/AdaptiveSNR.h"
 #include "Pulsar/ProfileWeightFunction.h"
 #include "Pulsar/PhaseWeight.h"
-#include "Pulsar/ProfileStrategies.h"
+#include "Pulsar/StrategySet.h"
 
 #include <math.h>
 

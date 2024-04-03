@@ -7,7 +7,7 @@
 
 // #define _DEBUG 1
 
-#include "Pulsar/ProfileStrategies.h"
+#include "Pulsar/ManagedStrategies.h"
 #include "Pulsar/Integration.h"
 
 #include "debug.h"

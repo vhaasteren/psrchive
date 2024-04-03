@@ -711,6 +711,7 @@ Archive* load_standard (const string& filename) try
 
   if (!full_freq)
     result->fscrunch();
+
   else if (!result->get_dedispersed())
     throw Error (InvalidParam, "pat", 
 		 "Standard is not dedispersed. pam -D can do it for you.");

@@ -13,7 +13,7 @@
 #include "Pulsar/Integration.h"
 #include "Pulsar/Profile.h"
 
-#include "Pulsar/ProfileStrategies.h"
+#include "Pulsar/StrategySet.h"
 #include "Pulsar/ProfileWeightFunction.h"
 #include "Pulsar/PhaseWeight.h"
 #include "Pulsar/ProcHistory.h"

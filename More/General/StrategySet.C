@@ -5,7 +5,8 @@
  *
  ***************************************************************************/
 
-#include "Pulsar/ProfileStrategies.h"
+#include "Pulsar/StrategySet.h"
+#include "Pulsar/ManagedStrategies.h"
 #include "Pulsar/IntegrationMeta.h"
 #include "Pulsar/ArchiveExtension.h"
 
