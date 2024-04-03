@@ -31,6 +31,9 @@ namespace Pulsar
   {   
   public:
 
+    //! Get the number of ProfileStats instances in existence
+    static unsigned get_instance_count ();
+
     //! Default constructor
     ProfileStats (const Profile* profile = 0);
 

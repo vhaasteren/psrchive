@@ -591,7 +591,8 @@ template<class C,class Get,class Size>
 
   for (unsigned i=0; i<ind.size(); i++)
   {
-    Reference::To<Parser> parser = (const_cast<C*>(this->instance)->*get)(ind[i])->get_interface();
+    C* ptr = this->instance.ptr();
+    Reference::To<Parser> parser = (ptr->*get)(ind[i])->get_interface();
     if (! parser->found (remainder))
       return false;
   }

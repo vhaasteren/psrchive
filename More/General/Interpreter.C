@@ -10,7 +10,7 @@
 
 #include "Pulsar/ArchiveInterface.h"
 #include "Pulsar/Integration.h"
-#include "Pulsar/Profile.h"
+#include "Pulsar/ProfileStats.h"
 #include "Pulsar/ForEachProfile.h"
 
 #include "Pulsar/Config.h"
@@ -615,6 +615,18 @@ catch (Error& error)
   return response (error);
 }
 
+namespace Pulsar
+{
+  // useful while seeking memory leaks
+  void instance_report ()
+  {
+    cerr << " Archive::instances=" << Archive::get_instance_count() <<
+            " Statistics::instances=" << Statistics::get_instance_count () <<
+            " Statistics::Interface::instances=" << Statistics::Interface::get_instance_count () <<
+            " ProfileStats::instances=" << ProfileStats::get_instance_count () << endl;
+  }
+}
+
 //! push a clone of the current stack top onto the stack
 string Pulsar::Interpreter::push (const string& args) try
 {
@@ -631,9 +643,10 @@ string Pulsar::Interpreter::push (const string& args) try
   current_interface = 0;
 
   if (verbose > 1)
-    cerr << "Pulsar::Interpreter::push Archive::instances=" << Archive::get_instance_count() <<
-            " Statistics::instances=" << Statistics::get_instance_count () <<
-            " Statistics::Interface::instances=" << Statistics::Interface::get_instance_count () << endl;
+  {
+    cerr << "Pulsar::Interpreter::push";
+    instance_report();
+  }
 
   return response (Good);
 }
@@ -662,9 +675,10 @@ string Pulsar::Interpreter::pop (const string& args)
   current_interface = 0;
 
   if (verbose > 1)
-    cerr << "Pulsar::Interpreter::pop Archive::instances=" << Archive::get_instance_count() << 
-	    " Statistics::instances=" << Statistics::get_instance_count () <<
-            " Statistics::Interface::instances=" << Statistics::Interface::get_instance_count () << endl;
+  {
+    cerr << "Pulsar::Interpreter::pop";
+    instance_report();
+  }
 
   return response (Good);
 }

@@ -16,9 +16,18 @@
 
 using namespace std;
 
+static unsigned instance_count = 0;
+
+unsigned Pulsar::ProfileStats::get_instance_count ()
+{
+  return instance_count;
+}
+
 //! Default constructor
 Pulsar::ProfileStats::ProfileStats (const Profile* _profile)
 {
+  instance_count ++;
+
   PeakConsecutive* on_est = new PeakConsecutive;
   set_onpulse_estimator (on_est);
 
@@ -35,6 +44,8 @@ Pulsar::ProfileStats::ProfileStats (const Profile* _profile)
 
 Pulsar::ProfileStats::ProfileStats (const ProfileStats& copy) : HasBaselineEstimator (copy)
 {
+  instance_count ++;
+
   if (copy.onpulse_estimator)
     onpulse_estimator = copy.onpulse_estimator->clone();
 
@@ -57,6 +68,7 @@ Pulsar::ProfileStats::ProfileStats (const ProfileStats& copy) : HasBaselineEstim
 //! Destructor
 Pulsar::ProfileStats::~ProfileStats()
 {
+  instance_count --;
 }
 
 Pulsar::ProfileStats* Pulsar::ProfileStats::clone () const

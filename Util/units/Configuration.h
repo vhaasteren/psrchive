@@ -11,6 +11,7 @@
 #ifndef __Configuration_h
 #define __Configuration_h
 
+#include "ReferenceAble.h"
 #include "tostring.h"
 #include "debug.h"
 #include "Error.h"
@@ -78,7 +79,7 @@ public:
 
 
 template<class T>
-class Configuration::Parameter
+class Configuration::Parameter : public Reference::Able
 {
 public:
 
