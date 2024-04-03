@@ -362,12 +362,10 @@ void TextInterface::Parser::insert (const string& prefix, Parser* other)
     Value* value = other->values[i];
 
 #ifdef _DEBUG
-    cerr << "TextInterface::Parser::insert " << prefix + ":" + value->get_name()
-	 << endl;
+    cerr << "TextInterface::Parser::insert " << prefix + ":" + value->get_name() << endl;
 #endif
 
-    if ( !import_filter ||
-	 !find( prefix + ":" + value->get_name(), false ) )
+    if ( !import_filter || !find( prefix + ":" + value->get_name(), false ) )
     {
       other->setup( value );
       add_value( new NestedValue(prefix, value) );

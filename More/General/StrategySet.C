@@ -19,6 +19,13 @@
 using namespace Pulsar;
 using namespace std;
 
+unsigned instance_count = 0;
+
+unsigned StrategySet::get_instance_count()
+{
+  return instance_count;
+}
+
 //! The implementation of the baseline finding algorithm
 ProfileWeightFunction* StrategySet::baseline () const
 {
@@ -89,12 +96,21 @@ ProfileStats* StrategySet::get_stats () const
 StrategySet::StrategySet ()
 {
   DEBUG("StrategySet ctor this=" << this);
+  instance_count ++;
+}
+
+StrategySet::~StrategySet ()
+{
+  DEBUG("StrategySet dtor this=" << this);
+  instance_count --;
 }
 
 StrategySet::StrategySet (const StrategySet& copy)
 {
   if (copy.stats)
     stats = copy.stats->clone();
+
+  instance_count ++;
 }
 
 StrategySet* StrategySet::clone () const

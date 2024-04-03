@@ -11,6 +11,7 @@
 #include "Pulsar/ArchiveInterface.h"
 #include "Pulsar/Integration.h"
 #include "Pulsar/ProfileStats.h"
+#include "Pulsar/StrategySet.h"
 #include "Pulsar/ForEachProfile.h"
 
 #include "Pulsar/Config.h"
@@ -623,7 +624,8 @@ namespace Pulsar
     cerr << " Archive::instances=" << Archive::get_instance_count() <<
             " Statistics::instances=" << Statistics::get_instance_count () <<
             " Statistics::Interface::instances=" << Statistics::Interface::get_instance_count () <<
-            " ProfileStats::instances=" << ProfileStats::get_instance_count () << endl;
+            " ProfileStats::instances=" << ProfileStats::get_instance_count () <<
+            " StrategySet::instances=" << StrategySet::get_instance_count () << endl;
   }
 }
 

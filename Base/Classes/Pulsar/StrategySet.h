@@ -25,6 +25,9 @@ namespace Pulsar {
 
   public:
 
+    //! Return the number of StrategySet instances in existence
+    static unsigned get_instance_count();
+
     //! The default implementation of the baseline finding algorithm
     /*! The default baseline estimator is the BaselineWindow class */
     static Configuration::Parameter< Reference::To<ProfileWeightFunction> >& 
@@ -46,6 +49,9 @@ namespace Pulsar {
     //! Copy constructor
     StrategySet (const StrategySet&);
 
+    //! Destructor
+    ~StrategySet ();
+    
     //! Clone
     StrategySet* clone () const;
 
