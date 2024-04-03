@@ -11,7 +11,7 @@
 #ifndef __TextInterfaceValue_h
 #define __TextInterfaceValue_h
 
-#include "ReferenceAble.h"
+#include "Reference.h"
 #include "Error.h"
 
 #include <string>
@@ -30,8 +30,12 @@ namespace TextInterface {
   class Value : public Reference::Able
   {
   public:
-    
-    Value () { parent = 0; }
+
+    //! Explicit default constructor required to delay definition of Reference::To<Parser>
+    Value ();
+
+    //! Explicit destructor required to delay definition of Reference::To<Parser>
+    ~Value ();
 
     //! Get the name of the value
     virtual std::string get_name () const = 0;
@@ -63,11 +67,12 @@ namespace TextInterface {
     //! Reset any output stream modifiers
     virtual void reset_modifiers () const = 0;
 
-    virtual void set_parent (Parser* p) { parent = p; }
+    virtual void set_parent (Parser* p);
 
   protected:
 
-    Parser* parent;
+    //! The Parser composite in which this Value component is integrated
+    Reference::To<Parser,false> parent;
   };
 
   //! Read-only interface to a value of type T

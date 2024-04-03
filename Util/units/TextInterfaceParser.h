@@ -35,6 +35,9 @@ namespace TextInterface
     //! Default constructor
     Parser ();
 
+    //! Destructor
+    ~Parser ();
+
     //! Get the named value
     std::string get_value (const std::string& name) const;
 
@@ -100,9 +103,11 @@ namespace TextInterface
     void set_aliases (const Alias* alias) { aliases = alias; }
 
     //! Insert Parser into self
+    /*! The Parser becomes owned by this */
     void insert (Parser*);
 
     //! Import a nested interface
+    /*! The Parser becomes owned by this */
     void insert (const std::string& prefix, Parser*);
 
     //! Clear all nested interfaces
@@ -140,6 +145,8 @@ namespace TextInterface
     //! The vector of values
     std::vector< Reference::To<Value> > values;
 
+    //! Any inserted Parser is owned by this
+    std::vector< Reference::To<Parser> > inserted;
   };
 
   //! returns true when name = prefix + ":" + value->get_name()

@@ -32,6 +32,8 @@ CommandParser::~CommandParser()
 
 void CommandParser::import (CommandParser* other)
 {
+  // on completion, delete other if no other references to it exist
+  Reference::To<CommandParser> raii = other;
   for (unsigned icmd=0; icmd < other->commands.size(); icmd++)
     add_command (other->commands[icmd]);
 }

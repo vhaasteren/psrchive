@@ -31,6 +31,9 @@ namespace Pulsar
   {   
   public:
 
+    //! Get the number of ProfileStats instances in existence
+    static unsigned get_instance_count ();
+
     //! Default constructor
     ProfileStats (const Profile* profile = 0);
 
@@ -144,7 +147,10 @@ namespace Pulsar
     //! The algorithm used to find the on-pulse phase bins
     Reference::To<ProfileWeightFunction> onpulse_estimator;
 
+    //! The algorithm used to compute the signal-to-noise ratio
     Reference::To<SNRatioEstimator> snratio_estimator;
+
+    //! The algorithm used to estimate the pulse width
     Reference::To<WidthEstimator> width_estimator;
 
     //! True when the onpulse and baseline regions have been set

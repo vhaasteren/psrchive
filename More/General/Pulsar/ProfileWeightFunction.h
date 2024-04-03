@@ -53,7 +53,7 @@ namespace Pulsar {
   protected:
 
     //! The Profile from which the PhaseWeight will be derived
-    Reference::To<const Profile> profile;
+    Reference::To<const Profile, false> profile;
 
     //! Derived classes implement the PhaseWeight calculation
     virtual void calculate (PhaseWeight* weight) = 0;

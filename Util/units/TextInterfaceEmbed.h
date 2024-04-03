@@ -35,8 +35,6 @@ namespace TextInterface
 #if _DEBUG
       std::cerr << "OptionalInterface name=" << t << std::endl;
 #endif
-      help = false;
-      value = NULL;
     }
 
     //! Get the name of the attribute
@@ -60,8 +58,8 @@ namespace TextInterface
     virtual Parser* get_parser (const C* ptr) const = 0;
 
     //! Value found during match
-    mutable Value* value;
-    mutable bool help;
+    mutable Reference::To<Value> value;
+    mutable bool help = false;
   };
 
 
@@ -339,7 +337,7 @@ TextInterface::OptionalInterface<C,T,G,S>::get_value (const C* ptr) const try
 {
   if (help)
   {
-    Parser* parser = get_parser(ptr);
+    Reference::To<Parser> parser = get_parser(ptr);
     if (parser)
       return "\n" + parser->help();
     else
@@ -418,7 +416,7 @@ bool TextInterface::OptionalInterface<C,T,G,S>::matches
     " getting Parser" << std::endl;
 #endif
 
-  Parser* parser = 0;
+  Reference::To<Parser> parser;
 
   try
   {
@@ -593,7 +591,8 @@ template<class C,class Get,class Size>
 
   for (unsigned i=0; i<ind.size(); i++)
   {
-    Parser* parser = (const_cast<C*>(this->instance)->*get)(ind[i])->get_interface();
+    C* ptr = this->instance.ptr();
+    Reference::To<Parser> parser = (ptr->*get)(ind[i])->get_interface();
     if (! parser->found (remainder))
       return false;
   }
@@ -710,7 +709,7 @@ template<class M, class K, class G>
 
   for (unsigned i=0; i<ind.size(); i++)
   {
-    Parser* parser = (const_cast<M*>(this->instance)->*get)(ind[i])->get_interface();
+    Reference::To<Parser> parser = (const_cast<M*>(this->instance)->*get)(ind[i])->get_interface();
     if (! parser->found (remainder))
       return false;
   }

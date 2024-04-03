@@ -126,10 +126,10 @@ void Pulsar::UVMArchive::load_header (const char* filename)
 
   cerr << "anumsbc=" << header->anumsbc << endl;
   cerr << "aendscan=" << header->aendscan << endl;
-  cerr << "samint=" << header->samint << endl;
+  cerr << "sampled fraction of period, samint=" << header->samint << endl;
   cerr << "apbins=" << header->apbins << endl;
   cerr << "nseq=" << header->nseq << endl;
-  cerr << "baseval=" << header->baseval << endl;
+  cerr << "off-pulse baseline mean, baseval=" << header->baseval << endl;
   
   /*
   if (header->apoladd)

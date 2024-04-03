@@ -44,7 +44,7 @@ Pulsar::PhaseWeightStatistic* Pulsar::PhaseWeightStatistic::clone () const
 
 #include "identifiable_factory.h"
 
-static std::vector< Pulsar::PhaseWeightStatistic* >* instances = NULL;
+static Pulsar::PhaseWeightStatistic::registry_type* instances = NULL;
 
 void Pulsar::PhaseWeightStatistic::build ()
 {
@@ -55,7 +55,7 @@ void Pulsar::PhaseWeightStatistic::build ()
 
   // cerr << "Pulsar::PhaseWeightStatistic::build" << endl;
  
-  instances = new std::vector< PhaseWeightStatistic* >;
+  instances = new registry_type;
  
   unsigned start_count = instance_count;
 
@@ -67,7 +67,7 @@ void Pulsar::PhaseWeightStatistic::build ()
   assert (instances->size() == instance_count - start_count);
 }
 
-const std::vector<Pulsar::PhaseWeightStatistic*>& 
+const Pulsar::PhaseWeightStatistic::registry_type&
 Pulsar::PhaseWeightStatistic::children ()
 {
   if (instances == NULL)

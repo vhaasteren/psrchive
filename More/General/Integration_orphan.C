@@ -7,7 +7,8 @@
 
 #include "Pulsar/Integration.h"
 #include "Pulsar/IntegrationMeta.h"
-#include "Pulsar/ProfileStrategies.h"
+#include "Pulsar/StrategySet.h"
+#include "Pulsar/ManagedStrategies.h"
 #include "Pulsar/Archive.h"
 
 #include <iostream>

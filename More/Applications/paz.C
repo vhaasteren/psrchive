@@ -20,7 +20,7 @@
 
 #include "Pulsar/StandardSNR.h"
 #include "Pulsar/IntegrationExpert.h"
-#include "Pulsar/ProfileStrategies.h"
+#include "Pulsar/StrategySet.h"
 #include "Pulsar/ProcHistory.h"
 
 #include "Error.h"

@@ -71,6 +71,9 @@ namespace Phase
     friend std::istream& operator>> (std::istream&, Value&);
   };
 
+  std::ostream& operator<< (std::ostream&, const Value&);
+  std::istream& operator>> (std::istream&, Value&);
+
   //! A range of values with a Phase::Unit
   class Range : public HasUnit, public ::Range
   {

@@ -52,7 +52,7 @@ namespace TextInterface
     virtual void set_detailed_description (const std::string&) = 0;
 
     //! Pointer to the instance from which attribute value will be obtained
-    mutable C* instance;
+    mutable Reference::To<C,false> instance;
 
   };
 

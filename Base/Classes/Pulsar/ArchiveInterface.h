@@ -23,8 +23,14 @@ namespace Pulsar
 
   public:
 
+    //! Get the number of Archive::Interface instances
+    static unsigned get_instance_count ();
+
     //! Default constructor that takes an optional instance
     Interface ( Archive* = 0 );
+
+    //! Desctructor
+    ~Interface();
 
     //! Set the instance to which this interface interfaces
     void set_instance (Archive*) ;

@@ -8,13 +8,14 @@
 #include "Pulsar/Interpreter.h"
 #include "Pulsar/InterpreterExtension.h"
 
-#include "Pulsar/Archive.h"
+#include "Pulsar/ArchiveInterface.h"
 #include "Pulsar/Integration.h"
-#include "Pulsar/Profile.h"
+#include "Pulsar/ProfileStats.h"
+#include "Pulsar/StrategySet.h"
 #include "Pulsar/ForEachProfile.h"
 
 #include "Pulsar/Config.h"
-#include "Pulsar/Statistics.h"
+#include "Pulsar/StatisticsInterface.h"
 
 #include "Pulsar/ScatteredPowerCorrection.h"
 #include "Pulsar/ImageCorrection.h"
@@ -51,6 +52,8 @@ using namespace std;
 #else
 #define VERBOSE Archive::verbose > 2
 #endif
+
+static unsigned instance_count = 0;
 
 void Pulsar::Interpreter::init()
 {
@@ -103,7 +106,7 @@ void Pulsar::Interpreter::init()
   add_command
     ( &Interpreter::pop,
       "pop", "pop current archive off top of stack",
-      "usage: pop \n" );
+      "usage: pop [all] \n" );
   
   add_command
     ( &Interpreter::set,
@@ -303,6 +306,7 @@ void Pulsar::Interpreter::init()
       "dynspec", "compute and write out dynamic spectrum",
       "usage: dynspec output [template]\n");
 
+  instance_count ++;
 }
 
 Pulsar::Interpreter::Interpreter()
@@ -319,7 +323,7 @@ Pulsar::Interpreter::Interpreter (int &argc, char** &argv)
 //! destructor
 Pulsar::Interpreter::~Interpreter ()
 {
-
+  instance_count --;
 }
 
 void Pulsar::Interpreter::import (Extension* ext)
@@ -455,7 +459,7 @@ Pulsar::Archive* Pulsar::Interpreter::get ()
   if (VERBOSE)
     cerr << "Pulsar::Interpreter::get stack size=" << theStack.size() << endl;
 
-  if (theStack.empty() || !theStack.top())
+  if (!has())
     throw Error (InvalidState, "Pulsar::Interpreter::get",
 		 "no archive in stack");
 
@@ -612,6 +616,19 @@ catch (Error& error)
   return response (error);
 }
 
+namespace Pulsar
+{
+  // useful while seeking memory leaks
+  void instance_report ()
+  {
+    cerr << " Archive::instances=" << Archive::get_instance_count() <<
+            " Statistics::instances=" << Statistics::get_instance_count () <<
+            " Statistics::Interface::instances=" << Statistics::Interface::get_instance_count () <<
+            " ProfileStats::instances=" << ProfileStats::get_instance_count () <<
+            " StrategySet::instances=" << StrategySet::get_instance_count () << endl;
+  }
+}
+
 //! push a clone of the current stack top onto the stack
 string Pulsar::Interpreter::push (const string& args) try
 {
@@ -627,6 +644,12 @@ string Pulsar::Interpreter::push (const string& args) try
 
   current_interface = 0;
 
+  if (verbose > 1)
+  {
+    cerr << "Pulsar::Interpreter::push";
+    instance_report();
+  }
+
   return response (Good);
 }
 catch (Error& error)
@@ -638,12 +661,26 @@ catch (Error& error)
 //! pop the top of the stack
 string Pulsar::Interpreter::pop (const string& args)
 {
-  if (theStack.empty())
-    return response (Warn, "currently at bottom");
+  if (args == "all")
+  {
+     while (has())
+       theStack.pop();
+  }
+  else
+  {
+    if (theStack.empty())
+      return response (Warn, "currently at bottom");
 
-  theStack.pop();
+    theStack.pop();
+  }
 
   current_interface = 0;
+
+  if (verbose > 1)
+  {
+    cerr << "Pulsar::Interpreter::pop";
+    instance_report();
+  }
 
   return response (Good);
 }

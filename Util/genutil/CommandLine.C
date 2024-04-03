@@ -148,7 +148,7 @@ void CommandLine::Menu::parse (int argc, char* const * argv)
 
     resize (longopts, nlong+1);
     
-    longopts[nlong].name = strdup (arg->long_name.c_str());
+    longopts[nlong].name = arg->long_name.c_str();
     longopts[nlong].has_arg = arg->has_arg;
     longopts[nlong].flag = NULL;
     longopts[nlong].val = arg->val;
@@ -189,6 +189,8 @@ void CommandLine::Menu::parse (int argc, char* const * argv)
       }
     }
   }
+
+  free(longopts);
 }
 
 int CommandLine::Menu::process_error (int code, char* const *argv)

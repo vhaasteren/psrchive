@@ -25,8 +25,10 @@ namespace Pulsar {
     //! Create a new instance of PhaseWeightStatistic based on name
     static PhaseWeightStatistic* factory (const std::string& name);
 
+    typedef std::vector< Reference::To<Pulsar::PhaseWeightStatistic> > registry_type;
+
     //! Returns a list of available PhaseWeightStatistic children
-    static const std::vector<PhaseWeightStatistic*>& children ();
+    static const registry_type& children ();
 
     //! Construct from a UnaryStatistic
     PhaseWeightStatistic (UnaryStatistic*);

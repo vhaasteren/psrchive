@@ -10,7 +10,7 @@
 
 #include "Pulsar/ProfileStats.h"
 #include "Pulsar/ProfileShiftFit.h"
-#include "Pulsar/ProfileStrategies.h"
+#include "Pulsar/StrategySet.h"
 
 #include "Pulsar/PolnCalibratorExtension.h"
 #include "Pulsar/TwoBitStats.h"
@@ -22,11 +22,24 @@
 
 using namespace std;
 
+static unsigned instance_count = 0;
+
+unsigned Pulsar::Statistics::get_instance_count ()
+{
+  return instance_count;
+}
 
 //! Default constructor
 Pulsar::Statistics::Statistics (const Archive* data)
 {
+  instance_count ++;
   set_Archive (data);
+}
+
+Pulsar::Statistics::~Statistics ()
+{
+  // cerr << "Pulsar::Statistics dtor" << endl;
+  instance_count --;
 }
 
 //! Get the text interface to this

@@ -24,6 +24,12 @@ namespace Pulsar {
     //! Default constructor
     Interface ( Statistics* = 0 );
 
+    //! Destructor
+    ~Interface();
+
+    //! Return the number of Statistics::Interface intances in existence
+    static unsigned get_instance_count ();
+
   };
 
 }

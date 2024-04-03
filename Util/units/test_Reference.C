@@ -530,10 +530,16 @@ class Container : public Reference::Able
 
 Container* new_container_release()
 {
+  cerr << "new_container_release new Container(2048)" << endl;
   Reference::To<Container> c1 = new Container(2048);
+  cerr << "new_container_release Container ptr1=" << c1.ptr() << endl;
+
   Reference::To<Container> c2 = new Container(2048);
+  cerr << "new_container_release Container ptr2=" << c2.ptr() << endl;
+
   c1->copy(c2);
 
+  cerr << "new_container_release return ptr1" << endl;
   return c1.release();
 }
 
