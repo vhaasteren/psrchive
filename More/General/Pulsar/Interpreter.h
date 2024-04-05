@@ -121,6 +121,9 @@ namespace Pulsar {
     //! extract part of the current archive
     std::string extract (const std::string& args);
 
+    //! evaluate any expressions and print result
+    std::string echo (const std::string& args);
+
     //! edit the current archive
     std::string edit (const std::string& args);
 
