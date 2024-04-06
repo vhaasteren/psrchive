@@ -148,7 +148,7 @@ public:
   void disable_plotting ();
   
   // Construct a calibrator model for MEM mode
-  SystemCalibrator* measurement_equation_modeling (const string& binfile, unsigned nbin);
+  SystemCalibrator* measurement_equation_modeling (const string& binfile);
 
   // Construct a calibrator model for METM mode
   SystemCalibrator* matrix_template_matching (const string& stdname);
@@ -420,10 +420,10 @@ vector<unsigned> phase_bins;
 // Flag raised when software may choose the maximum harmonic
 bool choose_maximum_harmonic = false;
 
-// Mode B: Solve the measurement equation for each observation
+// METM Mode: Solve the measurement equation for each observation
 bool solve_each = false;
 
-// Mode B: Share a single phase estimate between all observations
+// METM Mode: Share a single phase estimate between all observations
 bool shared_phase = false;
 
 // significance of phase shift required to fail test
@@ -1134,8 +1134,8 @@ void pcm::add_options (CommandLine::Menu& menu)
   arg = menu.add (maxbins, 'n', "nbin");
   arg->set_help ("set the number of phase bins to choose as input states");
 
-  arg = menu.add (this, &pcm::set_phase_range, 'p', "pA,pB");
-  arg->set_help ("set the phase window from which to choose input states");
+  // arg = menu.add (this, &pcm::set_phase_range, 'p', "pA,pB");
+  // arg->set_help ("set the phase window from which to choose input states");
 
   arg = menu.add (this, &pcm::set_alignment_threshold, 'a', "bins");
   arg->set_help ("set the threshold for testing input data phase alignment");
@@ -1490,8 +1490,7 @@ void pcm::process (Pulsar::Archive* archive)
     for (auto filename: binfiles)
     {
       cerr << "pcm: constructing MEM with " << filename << endl;
-      unsigned nbin = archive->get_nbin();
-      SystemCalibrator* model = measurement_equation_modeling (filename, nbin);
+      SystemCalibrator* model = measurement_equation_modeling (filename);
       configure_model( model );  
       model_manager->manage( model );
     }
@@ -1780,8 +1779,7 @@ void pcm::finalize ()
 
 using namespace Pulsar;
 
-SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile,
-						      unsigned nbin) try
+SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile) try
 {
   ReceptionCalibrator* model = new ReceptionCalibrator (model_type);
 
@@ -1883,23 +1881,20 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile,
   model->set_calibrator_preprocessor (standard_options);
   model->set_calibrators (filenames);
 
-  if (phmin != phmax)
-    range_select (phase_bins, phmin, phmax, nbin, maxbins);
-
   // add the specified phase bins
   for (unsigned ibin=0; ibin<phase_bins.size(); ibin++)
     model->add_state (phase_bins[ibin]);
 
   cerr << "pcm: " << model->get_nstate_pulsar() << " states" << endl;
   if ( model->get_nstate_pulsar() == 0 )
-    throw Error (InvalidState, "pcm:mode A",
+    throw Error (InvalidState, "pcm::measurement_equation_modeling",
                  "no pulsar phase bins have been selected");
 
   return model;
 }
 catch (Error& error)
 {
-  throw error += "pcm:mode A";
+  throw error += "pcm::measurement_equation_modeling";
 }
 
 SystemCalibrator* pcm::matrix_template_matching (const string& stdname)
