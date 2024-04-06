@@ -53,9 +53,9 @@ T* construct (const YAML::Node& node, Factory factory)
     throw Error (InvalidParam, "ConfigurableProjection::load",
                  "model map does not contain 'name'");
 
-  T* object = factory( model["name"].as<std::string>() );
+  Reference::To<T> object = factory( model["name"].as<std::string>() );
 
-  auto interface = object->get_interface();
+  Reference::To<TextInterface::Parser> interface = object->get_interface();
 
   for (auto it=model.begin(); it!=model.end(); ++it)
   {
@@ -70,7 +70,10 @@ T* construct (const YAML::Node& node, Factory factory)
     interface->set_value (key, value);
   }
 
-  return object;
+  // before releasing the object, delete the interface so that its passive reference does not delete object
+  interface = nullptr;
+
+  return object.release();
 }
 
 #endif

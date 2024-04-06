@@ -52,7 +52,7 @@ void Pulsar::PlotLabel::plot (const Archive* archive,
   vector<string> labels;
   separate (elabel, labels, "\n");
 
-  TextInterface::Parser* parser 
+  Reference::To<TextInterface::Parser> parser 
     = standard_interface( const_cast<Archive*>(archive) );
   parser->set_indentation ("");
 
@@ -60,7 +60,7 @@ void Pulsar::PlotLabel::plot (const Archive* archive,
   {
     DEBUG( "Pulsar::PlotLabel::plot label[" <<i<< "]=" << labels[i] );
 
-    labels[i] = substitute( labels[i], parser );
+    labels[i] = substitute( labels[i], parser.get() );
 
     DEBUG( "Pulsar::PlotLabel::plot subst label=" << labels[i] );
 
