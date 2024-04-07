@@ -13,34 +13,39 @@
 using namespace Pulsar;
 using namespace std;
 
+  /* TO DO: think about how to manage different channels flagged as
+     invalid for different pulsars */
+
 SystemCalibratorManager::SystemCalibratorManager ()
 {
 }
 
-void SystemCalibratorManager::manage (SystemCalibrator* cal)
+void SystemCalibratorManager::manage (SystemCalibrator* newcal)
 {
-  /* TO DO: think about how to manage different channels flagged as
-     invalid for different pulsars */
-  
-  calibrator.push_back (cal);
+  // protect against multiple/ambiguous matches
+  for (auto & cal: calibrator)
+    if (cal->get_name() == newcal->get_name())
+      throw Error (InvalidParam, "SystemCalibratorManager::manage",
+                  "SystemCalibrator for " + cal->get_name() + " already added");
+
+  if (sharing_setup)
+    newcal->share(calibrator[0]);
+
+  calibrator.push_back (newcal);
 }
 
-//! Return the number of managed system calibrators
 unsigned SystemCalibratorManager::get_ncalibrator ()
 {
   return calibrator.size ();
 }
 
-//! Return the ith system calibrator
 SystemCalibrator* SystemCalibratorManager::get_calibrator (unsigned i)
 {
   return calibrator[i];
 }
 
-//! Return the fiducial system calibrator
 SystemCalibrator* SystemCalibratorManager::get_model ()
 {
-  // TO DO: define fiducial calibrator
   return calibrator[0];
 }
 
@@ -48,7 +53,6 @@ SystemCalibrator* SystemCalibratorManager::get_calibrator (const Archive* data)
 {
   bool throw_exception = false;
 
-  // TO DO: match will fail if model nchan != data nchan
   for (auto cal: calibrator)
   {
     if (fscrunch_data_to_model)
@@ -65,7 +69,7 @@ SystemCalibrator* SystemCalibratorManager::get_calibrator (const Archive* data)
   }
   
   throw Error (InvalidState, "SystemCalibratorManager::get_calibrator",
-	       "no model matches filename=" + data->get_filename()); 
+	       "no model matches file=" + data->get_filename() + " with source=" + data->get_source()); 
 }
 
 void SystemCalibratorManager::solve ()
@@ -91,56 +95,11 @@ void SystemCalibratorManager::solve ()
   get_model()->solve ();
 }
 
-//! Return the reference epoch of the calibration experiment
-MJD SystemCalibratorManager::get_epoch () const
-{
-  return 0.0;
-}
-
-//! Get the number of data points in the given frequency channel
-unsigned SystemCalibratorManager::get_ndata (unsigned ichan) const
-{
-  return 0;
-}
-
-//! Get the total number of input polarization states (pulsar and cal)
-unsigned SystemCalibratorManager::get_nstate () const
-{
-  return 0;
-}
-
-//! Get the number of pulsar polarization states in the model
-unsigned SystemCalibratorManager::get_nstate_pulsar () const
-{
-  return 0;
-}
-
-//! Return true if the state index is a pulsar
-unsigned SystemCalibratorManager::get_state_is_pulsar (unsigned istate) const
-{
-  return false;
-}
-
-//! Return true if calibrator (e.g. noise diode) data are incorporated
-bool SystemCalibratorManager::has_cal () const
-{
-  return false;
-}
-
-//! Return a new plot information interface for the specified pulsar state
-Calibrator::Info*
-SystemCalibratorManager::new_info_pulsar (unsigned istate) const
-{
-  return 0;
-}
-
-//! Prepare the data for inclusion in the model
 void SystemCalibratorManager::preprocess (Archive* data)
 {
   SystemCalibrator* model = get_calibrator (data);
   
-  if (fscrunch_data_to_model &&
-      model->get_nchan() < data->get_nchan())
+  if (fscrunch_data_to_model && model->get_nchan() < data->get_nchan())
   {
     cerr << "SystemCalibratorManager::preprocess frequency integrating data"
       " (nchan=" << data->get_nchan() << ") to match model"
@@ -151,7 +110,6 @@ void SystemCalibratorManager::preprocess (Archive* data)
   model->preprocess (data);
 }
 
-//! Add the observation to the set of constraints
 void SystemCalibratorManager::add_observation (const Archive* data)
 {
   if (Archive::verbose > 1)
@@ -164,56 +122,53 @@ void SystemCalibratorManager::add_observation (const Archive* data)
   SystemCalibrator* model = get_calibrator (data);
   model->add_observation (data);
 
-  // model is not in pole position, swap it in
-  if (calibrator[0]->get_nchan() == 0 && model->get_nchan() > 0)
+  if (!sharing_setup)
+  {
+    if (Archive::verbose > 1)
+      cerr << "SystemCalibratorManager::add_observation setup sharing" << endl;
+
+    setup_sharing (model);
+  }
+}
+
+void SystemCalibratorManager::setup_sharing (SystemCalibrator* model)
+{
+  if (model->get_nchan() == 0)
+    return;
+
+  // if the first SystemCalibrator does not yet have data, swap with model that does
+  if (calibrator[0]->get_nchan() == 0)
   {
     if (Archive::verbose > 1)
     {
-      cerr << "SystemCalibratorManager::add_observation before swap:" << endl;
+      cerr << "SystemCalibratorManager::setup_sharing before swap:" << endl;
       for (auto & cal: calibrator)
         cerr << "\t" << cal->get_name() << endl;
     }
 
     for (auto & cal: calibrator)
     {
-      if (cal == model)
+      if (cal.ptr() == model)
       {
         if (Archive::verbose > 1)
-          cerr << "SystemCalibratorManager::add_observation swapping " << model->get_name() 
-              << " with " << calibrator[0]->get_name() << endl;
+          cerr << "SystemCalibratorManager::setup_sharing"
+                  " swapping " << model->get_name() << " with " << calibrator[0]->get_name() << endl;
         std::swap(cal,calibrator[0]);
       }
     }
 
     if (Archive::verbose > 1)
     {
-      cerr << "SystemCalibratorManager::add_observation after swap:" << endl;
+      cerr << "SystemCalibratorManager::setup_sharing after swap:" << endl;
       for (auto & cal: calibrator)
         cerr << "\t" << cal->get_name() << endl;
     }
   }
 
-  if (!sharing_setup)
-  {
-    if (Archive::verbose > 1)
-      cerr << "SystemCalibratorManager::add_observation setup sharing" << endl;
-    for (unsigned i=1; i < calibrator.size(); i++)
-      calibrator[i]->share (calibrator[0]);
+  for (unsigned i=1; i < calibrator.size(); i++)
+    calibrator[i]->share (calibrator[0]);
 
-    sharing_setup = true;
-  }
-}
-
-//! Get the epoch of the first observation
-MJD SystemCalibratorManager::get_start_epoch () const
-{
-  return 0.0;
-}
-
-//! Get the epoch of the last observation
-MJD SystemCalibratorManager::get_end_epoch () const
-{
-  return 0.0;
+  sharing_setup = true;
 }
 
 //! Calibrate the the given archive using the current state of the model
