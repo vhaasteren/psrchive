@@ -96,7 +96,10 @@ namespace Pulsar
     std::vector< Reference::To<SystemCalibrator> > calibrator;
 
     //! If needed, frequency integrate data to same resolution as model
-    bool fscrunch_data_to_model;
+    bool fscrunch_data_to_model = false;
+
+    //! Delay setting up sharing in case first data does not match first model
+    bool sharing_setup = false;
   };
 
 }

@@ -37,6 +37,8 @@
 
 #include "Pauli.h"
 
+#include "debug.h"
+
 #include <algorithm>
 #include <assert.h>
 
@@ -87,13 +89,17 @@ void ReceptionCalibrator::set_standard_data (const Archive* data)
   Reference::To<PolnProfile> p = clone->get_Integration(0)->new_PolnProfile(0);
 
   standard_data = new Calibration::StandardData;
-
-  if (verbose)
-    cerr << "Pulsar::ReceptionCalibrator::set_standard_data"
-      " normalize_by_invariant=" << normalize_by_invariant << endl;
-
   standard_data->set_normalize (normalize_by_invariant);
   standard_data->select_profile( p );
+
+  if (verbose)
+  {
+    ProfileStats* stats = standard_data->get_poln_stats()->get_stats();
+
+    cerr << "Pulsar::ReceptionCalibrator::set_standard_data standard_data=" << standard_data.ptr()
+         << " stats=" << stats << endl
+         << "Pulsar::ReceptionCalibrator::set_standard_data normalize_by_invariant=" << normalize_by_invariant << endl;
+  }
 
   ensure_consistent_onpulse ();
 }
@@ -105,26 +111,57 @@ void ReceptionCalibrator::ensure_consistent_onpulse ()
 
   ProfileStats* stats = standard_data->get_poln_stats()->get_stats();
 
+  if (verbose)
+  {
+    cerr << "Pulsar::ReceptionCalibrator::ensure_consistent_onpulse standard_data=" << standard_data.ptr()
+         << " stats=" << stats << endl
+         << "Pulsar::ReceptionCalibrator::ensure_consistent_onpulse phase bins=";
+  }
+
   for (unsigned istate=0; istate < phase_bins.size(); istate++)
+  {
+    if (verbose)
+    {
+      if (istate > 0)
+        cerr << ",";
+      cerr << phase_bins[istate];
+    }
     stats->set_onpulse (phase_bins[istate], true);
+  }
+
+  if (verbose)
+    cerr << endl;
 }
 
 const Pulsar::PhaseWeight* ReceptionCalibrator::get_baseline () const
 {
+  if (verbose)
+    cerr << "Pulsar::ReceptionCalibrator::get_baseline standard_data=" << standard_data.ptr()
+         << " stats=" << standard_data->get_poln_stats()->get_stats() << endl;
   return standard_data->get_poln_stats()->get_stats()->get_baseline();
 }
 
 //! Get the on-pulse mask
 const Pulsar::PhaseWeight* ReceptionCalibrator::get_onpulse () const
 {
+  if (verbose)
+    cerr << "Pulsar::ReceptionCalibrator::get_onpulse standard_data=" << standard_data.ptr()
+         << " stats=" << standard_data->get_poln_stats()->get_stats() << endl;
   return standard_data->get_poln_stats()->get_stats()->get_onpulse();
 }
 
 void ReceptionCalibrator::set_normalize_by_invariant (bool set)
 {
   normalize_by_invariant = set;
-  if (standard_data)
-    standard_data->set_normalize (normalize_by_invariant);
+
+  if (!standard_data)
+    return;
+
+  if (verbose)
+    cerr << "Pulsar::ReceptionCalibrator::set_normalize_by_invariant standard_data=" << standard_data.ptr()
+         << " stats=" << standard_data->get_poln_stats()->get_stats() << endl;
+         
+  standard_data->set_normalize (normalize_by_invariant);
 }
 
 /*!
@@ -170,7 +207,11 @@ void ReceptionCalibrator::initial_observation (const Archive* data)
   set_calibrator( data->clone() );
 
   if (!standard_data)
+  {
+    if (verbose)
+      cerr << "Pulsar::ReceptionCalibrator::initial_observation create new standard_data" << endl;
     set_standard_data (data);
+  }
 
   Signal::Basis basis = get_calibrator()->get_basis ();
 
@@ -299,10 +340,22 @@ bool equal_pi (const Angle& a, const Angle& b, float tolerance = 0.01);
 bool ReceptionCalibrator::match (const Archive* data, bool throw_exception)
 {
   if (verbose > 1)
-    cerr << "ReceptionCalibrator::match" << endl;
+    cerr << "ReceptionCalibrator::match name=" << get_name() << " data.source=" << data->get_source() << endl;
   
+  if (get_name() != data->get_source())
+  {
+    if (verbose > 1)
+      cerr << "ReceptionCalibrator::match return false" << endl;
+    return false;
+  }
+
   if (!has_calibrator())
+  {
+    if (verbose)
+    cerr << "ReceptionCalibrator::match initial observation for data.source=" << data->get_source() << endl;
+
     initial_observation (data);
+  }
 
   return SystemCalibrator::match (data, throw_exception);
 }
@@ -312,6 +365,9 @@ void ReceptionCalibrator::add_pulsar
 ( Calibration::CoherencyMeasurementSet& measurements,
   const Integration* integration, unsigned ichan )
 {
+  DEBUG("Pulsar::ReceptionCalibrator::add_pulsar standard_data=" << standard_data.ptr()
+        << " stats=" << standard_data->get_poln_stats()->get_stats());
+         
   standard_data->set_profile( integration->new_PolnProfile (ichan) );
 
   for (unsigned istate=0; istate < pulsar_estimate.size(); istate++)
@@ -329,6 +385,9 @@ void ReceptionCalibrator::add_data
   get_data_call ++;
 
   unsigned ibin = estimate->phase_bin;
+
+  DEBUG("Pulsar::ReceptionCalibrator::add_data standard_data=" << standard_data.ptr()
+        << " stats=" << standard_data->get_poln_stats()->get_stats());
 
   try {
 
@@ -445,13 +504,13 @@ void ReceptionCalibrator::prepare_calibrator_estimate (Signal::Source source)
     for (unsigned ichan=0; ichan<nchan; ichan++)
     {
       if (!model[ichan])
-	{
-	  cerr << "no model ichan=" << ichan;
-	  continue;
-	}
+      {
+        cerr << "no model ichan=" << ichan;
+        continue;
+      }
       
       if (!model[ichan]->get_valid())
-	continue;
+        continue;
 
       fluxcal[ichan] = new Calibration::FluxCalManager( model[ichan] );
 
@@ -642,15 +701,15 @@ void ReceptionCalibrator::solve_prepare () try
       "Pulsar::ReceptionCalibrator::solve_prepare WARNING: \n\t"
       "Without a ReferenceCalibrator observation, there remains \n\t";
     if (degenerate_V_boost)
-    {
       cerr << "a degeneracy along the Stokes V axis and \n\t";
+    cerr << "an unconstrained scalar gain.  Therefore, \n\t";
+
+    if (degenerate_V_boost) 
+    {
+      cerr << "the boost along the Stokes V axis and \n\t";
       set_equal_ellipticities = true;
     }
-    cerr << "an unconstrained scalar gain.  Therefore, \n\t";
-    if (degenerate_V_boost) 
-      cerr << "the boost along the Stokes V axis and \n\t";
     cerr << "the absolute gain will be fixed." << endl;
-
     fit_gain = false;
   }
 

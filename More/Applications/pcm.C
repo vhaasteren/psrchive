@@ -1496,16 +1496,13 @@ void pcm::process (Pulsar::Archive* archive)
     }
   }
 
-  if ( phase_std_manager )
+  if (phase_std_manager)
   {
     if (verbose)
       cerr << "pcm: checking phase" << endl;
 
     check_phase (archive);
-  }
 
-  if (phase_std_manager)
-  {
     DataSet* dataset = phase_std_manager->get (archive);
 
     if (!dataset)

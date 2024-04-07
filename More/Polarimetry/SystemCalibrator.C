@@ -106,7 +106,7 @@ void SystemCalibrator::share (SystemCalibrator* other)
 
 void SystemCalibrator::setup_sharing (unsigned ichan)
 {
-  if (verbose > 2)
+  if (verbose > 1)
     cerr << "SystemCalibrator::setup_sharing ichan=" << ichan << endl;
   
   if (!partner)
@@ -671,6 +671,10 @@ bool SystemCalibrator::match (const Archive* data, bool throw_exception)
       return false;
   }
 
+  if (verbose)
+    cerr << "SystemCalibrator::match true for data.source=" << data->get_source() 
+         << " source=" << get_calibrator()->get_source() << endl;
+
   return true;
 }
 
@@ -890,7 +894,7 @@ void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
 
   if (verbose > 2)
     cerr << "SystemCalibrator::add_calibrator prepare calibrator source="
-	 << source << " nsubint=" << nsub << endl;
+        << source << " nsubint=" << nsub << endl;
 
   prepare_calibrator_estimate( source );
 
@@ -930,21 +934,21 @@ void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
     {
       if ( solution->get_transformation_valid (ichan) )
       {
-	if (verbose > 2)
-	  cerr << "SystemCalibrator::add_calibrator ichan="
-	       << ichan << " saving response" << endl;
+        if (verbose > 2)
+          cerr << "SystemCalibrator::add_calibrator ichan="
+              << ichan << " saving response" << endl;
 
-	response[ichan] = solution->get_response(ichan);
+        response[ichan] = solution->get_response(ichan);
 
-	if (verbose > 2)
-	  cerr << "SystemCalibrator::add_calibrator ichan="
-	       << ichan << " saving transformation" << endl;
-	
-	xform[ichan] = solution->get_transformation(ichan);
+        if (verbose > 2)
+          cerr << "SystemCalibrator::add_calibrator ichan="
+              << ichan << " saving transformation" << endl;
+        
+        xform[ichan] = solution->get_transformation(ichan);
       }
       else if (verbose > 2)
-	cerr << "SystemCalibrator::add_calibrator ichan="
-	     << ichan << " transformation not valid" << endl;
+        cerr << "SystemCalibrator::add_calibrator ichan="
+            << ichan << " transformation not valid" << endl;
     }
   }
 
@@ -1142,15 +1146,15 @@ void SystemCalibrator::submit_pulsar_data () try
 
     if (verbose > 2)
       cerr << "SystemCalibrator::submit_pulsar_data isub="
-	   << isub << " nchan=" << nchan << endl;
+          << isub << " nchan=" << nchan << endl;
 
     if (nchan == 0)
       continue;
 
     if (nchan && verbose > 2)
       cerr << "SystemCalibrator::submit_pulsar_data isub="
-	   << isub << " name="
-	   << pulsar_data[isub][0].get_name() << endl;
+          << isub << " name="
+          << pulsar_data[isub][0].get_name() << endl;
 
     for (unsigned jchan=0; jchan<nchan; jchan++) try
     {
@@ -1258,9 +1262,9 @@ void SystemCalibrator::init_estimates
 
     if (verbose > 2)
       cerr << "SystemCalibrator::init_estimates ichan=" << ichan
-	   << " model=" << (void*) model[ichan]
-	   << " eq=" << (void*) model[ichan]->get_equation()
-	   << endl;
+          << " model=" << (void*) model[ichan]
+          << " eq=" << (void*) model[ichan]->get_equation()
+          << endl;
     
     estimate[ichan]->create_source( model[ichan]->get_equation() );
     estimate[ichan]->phase_bin = ibin;
@@ -1302,14 +1306,14 @@ void SystemCalibrator::copy_calibrator_estimate ()
 
   if (verbose > 2)
     cerr << "SystemCalibrator::copy_calibrator_estimate size="
-	 << partner->calibrator_estimate.size() << endl;
+         << partner->calibrator_estimate.size() << endl;
   
   try
   {
     calibrator_estimate.resize( partner->calibrator_estimate.size() );
     for (unsigned i=0; i<calibrator_estimate.size(); i++)
       if (partner->calibrator_estimate[i])
-	calibrator_estimate[i] = partner->calibrator_estimate[i];
+        calibrator_estimate[i] = partner->calibrator_estimate[i];
   }
   catch (Error& error)
     {
@@ -1425,12 +1429,12 @@ void SystemCalibrator::integrate_calibrator_data
     if (p > I)
     {
       cerr << "SystemCalibrator::integrate_calibrator_data ichan=" << data.ichan
-	   << " correcting over polarization=" << (p-I)/I << endl;
+           << " correcting over polarization=" << (p-I)/I << endl;
 
       // 99% polarized is assumed to be close enough to a good guess
       double scale = 0.99 * I.val / p.val;
       for (unsigned i=1; i<4; i++)
-	observed[i] *= scale;
+        observed[i] *= scale;
     }
   }
   
@@ -1457,14 +1461,14 @@ void SystemCalibrator::integrate_calibrator_solution
 {
   if (!model[data.ichan])
     throw Error (InvalidState,
-		 "SystemCalibrator::integrate_calibrator_solution",
-		 "model[%u] is null", data.ichan);
+      "SystemCalibrator::integrate_calibrator_solution",
+      "model[%u] is null", data.ichan);
   
   if (data.source == Signal::PolnCal) try
   {
     if (verbose > 2)
       cerr << "SystemCalibrator::integrate_calibrator_solution"
-	" SignalPath::integrate_calibrator ichan=" << data.ichan << endl;
+              " SignalPath::integrate_calibrator ichan=" << data.ichan << endl;
     
     model[data.ichan]->integrate_calibrator (data.epoch, data.xform);
   }
@@ -1488,9 +1492,9 @@ SystemCalibrator::get_CalibratorStokes () const
 
   if (nchan != calibrator_estimate.size())
     throw Error (InvalidState,
-		 "SystemCalibrator::get_CalibratorStokes",
-		 "Calibrator Stokes nchan=%d != Transformation nchan=%d",
-		 calibrator_estimate.size(), nchan);
+      "SystemCalibrator::get_CalibratorStokes",
+      "Calibrator Stokes nchan=%d != Transformation nchan=%d",
+      calibrator_estimate.size(), nchan);
 
   Reference::To<CalibratorStokes> ext = new CalibratorStokes;
     
@@ -1515,7 +1519,7 @@ SystemCalibrator::get_CalibratorStokes () const
   catch (Error& error)
   {
     cerr << "SystemCalibrator::get_CalibratorStokes ichan="
-	 << ichan << " error\n" << error.get_message() << endl;
+         << ichan << " error\n" << error.get_message() << endl;
     ext->set_valid (ichan, false);
   }
   
@@ -1560,10 +1564,10 @@ void SystemCalibrator::create_model () try
       invert_basis = inv( basis->evaluate() );
 
       if (verbose)
-	cerr << "SystemCalibrator::create_model basis corrections:\n"
-	     << basis_correction.get_summary () << endl
-	     << "SystemCalibrator::create_model receiver=\n  " 
-	     << basis->evaluate() << endl;
+        cerr << "SystemCalibrator::create_model basis corrections:\n"
+            << basis_correction.get_summary () << endl
+            << "SystemCalibrator::create_model receiver=\n  " 
+            << basis->evaluate() << endl;
     }
     else if (verbose)
       cerr << "SystemCalibrator::create_model basis correction not required"
@@ -1588,7 +1592,7 @@ void SystemCalibrator::create_model () try
   {
     if (verbose > 2)
       cerr << "SystemCalibrator::create_model ichan=" << ichan
-	   << " type=" << type->get_name() << endl;
+           << " type=" << type->get_name() << endl;
 
     model[ichan] = new Calibration::SignalPath (type);
 

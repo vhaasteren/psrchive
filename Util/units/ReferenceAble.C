@@ -15,7 +15,8 @@
 #include "Error.h"
 #include "debug.h"
 
-#include <assert.h>
+#include <algorithm>
+#include <cassert>
 
 #ifdef HAVE_PTHREAD
 #include <pthread.h>
@@ -152,24 +153,23 @@ namespace Reference
     public:
       void add (Able* ptr)
       { 
-	DEBUG("Reference::Bin add ptr=" << ptr);
+        DEBUG("Reference::Bin add ptr=" << ptr);
         LOCK_REFERENCE
-        bin.push_back( ptr );
-	UNLOCK_REFERENCE
+        if (std::find(bin.begin(), bin.end(), ptr) == bin.end())
+          bin.push_back( ptr );
+        UNLOCK_REFERENCE
       }
 
       void clear()
       {
-        LOCK_REFERENCE
         std::vector<Able*> tmp = bin;
-	bin.clear();
-	UNLOCK_REFERENCE
+        bin.clear();
 
         for (unsigned i=0; i<tmp.size(); i++)
         {
-           DEBUG("Reference::Bin delete ptr=" << tmp[i]);
-	   delete tmp[i];
-	}
+          DEBUG("Reference::Bin delete ptr=" << tmp[i]);
+          delete tmp[i];
+        }
       }
   };
 
@@ -182,6 +182,8 @@ Reference::Able::~Able ()
 {
   instance_count--;
 
+  LOCK_REFERENCE
+
   if (__reference_handle)
   {
     DEBUG("Reference::Able dtor this=" << this << " handle_count=" << __reference_handle->handle_count);
@@ -191,6 +193,8 @@ Reference::Able::~Able ()
   __set_deleted ();
 
   bin.clear();
+
+  UNLOCK_REFERENCE
 
   DEBUG("Reference::Able dtor this=" << this << " reference_count=" << __reference_count << " instances=" << instance_count);
 }

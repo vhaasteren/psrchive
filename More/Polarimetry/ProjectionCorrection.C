@@ -115,8 +115,8 @@ bool Pulsar::ProjectionCorrection::required (unsigned isub) const try
       cerr << "Pulsar::ProjectionCorrection::get_transformation WARNING\n"
               "  Pointing position_angle=" << pointing->get_position_angle() 
            << " != feed_angle+parallactic_angle="
-	   << pointing->get_feed_angle() + pointing->get_parallactic_angle()
-	   << endl;
+           << pointing->get_feed_angle() + pointing->get_parallactic_angle()
+           << endl;
 
     if (trust_pointing_feed_angle)
     {
@@ -283,7 +283,7 @@ Jones<double> Pulsar::ProjectionCorrection::get_antenna_rotation () const
             "  Pointing parallactic angle="
                << pointing_pa.getDegrees() << " deg != \n"
             "  " << origin << " parallactic angle="
-               << para_pa.getDegrees() << " deg";
+               << para_pa.getDegrees() << " deg" << endl;
         }
 
         if (Archive::verbose > 2)

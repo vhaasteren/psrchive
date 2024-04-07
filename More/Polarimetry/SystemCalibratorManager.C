@@ -15,14 +15,10 @@ using namespace std;
 
 SystemCalibratorManager::SystemCalibratorManager ()
 {
-  fscrunch_data_to_model = false;
 }
 
 void SystemCalibratorManager::manage (SystemCalibrator* cal)
 {
-  if (calibrator.size() > 0)
-    cal->share (calibrator[0]);
-
   /* TO DO: think about how to manage different channels flagged as
      invalid for different pulsars */
   
@@ -64,7 +60,7 @@ SystemCalibrator* SystemCalibratorManager::get_calibrator (const Archive* data)
 
     if (match)
       return cal;
-    else if (Archive::verbose > 2)
+    else if (Archive::verbose > 1)
       cerr << "SystemCalibratorManager::get_calibrator mismatch reason=" << cal->get_mismatch_reason() << endl;
   }
   
@@ -82,14 +78,14 @@ void SystemCalibratorManager::solve ()
       throw Error (InvalidState, "SystemCalibratorManager::solve",
 		   "SystemCalibrator for " + cal->get_name() + " has no data");
     
-    if (Archive::verbose > 2)
+    if (Archive::verbose > 1)
       cerr << "SystemCalibratorManager::solve preparing name="
-	   << cal->get_calibrator()->get_source () << endl;
+          << cal->get_calibrator()->get_source () << endl;
     
     cal->solve_prepare ();
   }
 
-  if (Archive::verbose > 2)
+  if (Archive::verbose > 1)
     cerr << "SystemCalibratorManager::solve calling SystemCalibrator::solve" << endl;
   
   get_model()->solve ();
@@ -158,8 +154,54 @@ void SystemCalibratorManager::preprocess (Archive* data)
 //! Add the observation to the set of constraints
 void SystemCalibratorManager::add_observation (const Archive* data)
 {
+  if (Archive::verbose > 1)
+  {
+    cerr << "SystemCalibratorManager::add_observation" << endl;
+    for (auto & cal: calibrator)
+      cerr << "\tname=" << cal->get_name() << " nchan=" << cal->get_nchan() << endl;
+  }
+
   SystemCalibrator* model = get_calibrator (data);
   model->add_observation (data);
+
+  // model is not in pole position, swap it in
+  if (calibrator[0]->get_nchan() == 0 && model->get_nchan() > 0)
+  {
+    if (Archive::verbose > 1)
+    {
+      cerr << "SystemCalibratorManager::add_observation before swap:" << endl;
+      for (auto & cal: calibrator)
+        cerr << "\t" << cal->get_name() << endl;
+    }
+
+    for (auto & cal: calibrator)
+    {
+      if (cal == model)
+      {
+        if (Archive::verbose > 1)
+          cerr << "SystemCalibratorManager::add_observation swapping " << model->get_name() 
+              << " with " << calibrator[0]->get_name() << endl;
+        std::swap(cal,calibrator[0]);
+      }
+    }
+
+    if (Archive::verbose > 1)
+    {
+      cerr << "SystemCalibratorManager::add_observation after swap:" << endl;
+      for (auto & cal: calibrator)
+        cerr << "\t" << cal->get_name() << endl;
+    }
+  }
+
+  if (!sharing_setup)
+  {
+    if (Archive::verbose > 1)
+      cerr << "SystemCalibratorManager::add_observation setup sharing" << endl;
+    for (unsigned i=1; i < calibrator.size(); i++)
+      calibrator[i]->share (calibrator[0]);
+
+    sharing_setup = true;
+  }
 }
 
 //! Get the epoch of the first observation
@@ -185,7 +227,7 @@ void SystemCalibratorManager::precalibrate (Archive* data)
   {
     if (!fiducial->get_valid(ichan) && model->get_valid(ichan))
     {
-      if (Archive::verbose > 2)
+      if (Archive::verbose > 1)
         cerr << "SystemCalibratorManager::precalibrate invalid ichan=" << ichan << " in fiducial model" << endl;
       model->set_valid (ichan, false, "invalid in fiducial model");
     }
