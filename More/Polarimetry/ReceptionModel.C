@@ -182,3 +182,29 @@ void Calibration::ReceptionModel::range_check (unsigned idata,
 		 idata, data.size());
 }
 
+void Calibration::ReceptionModel::erase_input (unsigned index)
+{
+  MeasurementEquation::erase_input (index);
+
+  for (auto& datum: data)
+  {
+    for (auto& meas: datum)
+    {
+      unsigned input_index = meas.get_input_index();
+      if (input_index >= index)
+        meas.set_input_index(input_index - 1);
+    }
+  }
+}
+
+void Calibration::ReceptionModel::erase_transformation (unsigned index)
+{
+  MeasurementEquation::erase_transformation (index);
+
+  for (auto& datum: data)
+  {
+    unsigned xform_index = datum.get_transformation_index();
+    if (xform_index >= index)
+      datum.set_transformation_index(xform_index - 1);
+  } 
+}

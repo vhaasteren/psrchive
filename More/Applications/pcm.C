@@ -1514,7 +1514,7 @@ void pcm::process (Pulsar::Archive* archive)
     }
   }
 
-  cerr << "pcm: adding observation" << endl;
+  cerr << "pcm: adding observation file=" << archive->get_filename() << endl;
 
   model_manager->preprocess( archive );
   model_manager->add_observation( archive );
