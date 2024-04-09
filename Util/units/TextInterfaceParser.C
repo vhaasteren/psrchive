@@ -69,7 +69,7 @@ string TextInterface::Parser::process (const string& command)
   string after = command.substr (set+1);
 
   // remove any white space from the key
-  string param = stringtok (before, " \t");
+  string param = stringtok (before, WHITESPACE);
 
   try
   {

@@ -69,7 +69,7 @@ int main (int argc, char *argv[]) try {
       break;
 
     case 'c': {
-      char whitespace[5] = " \n\t";
+      const char* whitespace = WHITESPACE;
       char* key = strtok (optarg, whitespace);
       while (key) {
         keys.push_back(key);

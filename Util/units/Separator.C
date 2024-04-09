@@ -6,6 +6,7 @@
  ***************************************************************************/
 
 #include "Separator.h"
+#include "whitespace.h"
 
 using namespace std;
 
@@ -36,7 +37,7 @@ bool Separator::part_of_numeric_range (const string& s, string::size_type pos)
   if (pos == 0 || pos+1 == s.length())
     return false;
 
-  const string whitespaces (" \t\f\v\n\r");
+  const string whitespaces (WHITESPACE);
 
   /*
     the primary intent of this function is to ignore commas that are

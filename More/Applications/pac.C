@@ -229,7 +229,7 @@ int main (int argc, char *argv[]) try
 
   int gotc = 0;
   char* key = NULL;
-  char whitespace[5] = " \n\t";
+  const char* whitespace = WHITESPACE;
 
   string command = "pac ";
 

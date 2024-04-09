@@ -11,7 +11,7 @@
 #ifndef __Configuration_h
 #define __Configuration_h
 
-#include "ReferenceAble.h"
+#include "Reference.h"
 #include "tostring.h"
 #include "debug.h"
 #include "Error.h"
@@ -114,6 +114,7 @@ public:
   Parameter (const std::string& _key, Configuration* config,
 	     Parser* parser, const std::string& default_value)
   {
+    DEBUG("Configuration::Parameter<T> ctor parser=" << parser);
     key = _key;
     loader = new ParseLoader<Parser> (parser, default_value);
     loader->parameter = this;
@@ -252,13 +253,9 @@ class Configuration::Parameter<T>::ParseLoader : public Loader
 {
 public:
 
-  ParseLoader ()
-  {
-    parser = 0;
-  }
-
   ParseLoader (P* _parser, const std::string& _default)
   {
+    DEBUG("Configuration::Parameter<T>::ParseLoader ctor parser=" << _parser);
     parser = _parser;
     default_value = _default;
   }
@@ -270,18 +267,21 @@ public:
       = this->configuration->get (this->parameter->key, default_value);
 
     DEBUG("Configuration::Parameter<T>::ParseLoader::load" \
+    " parser=" << (void*) this->parser.ptr() << \
 	  " key=" << this->parameter->key << \
 	  " default=" << this->default_value << \
 	  " value=" << value);
 
     parser->parse( value );
 
+    DEBUG("Configuration::Parameter<T>::ParseLoader::load parse method called");
+
     /* the parser must call either set_value or the assignment operator,
-       which will result in the desctruction of this loader */
+       which will result in the destruction of this loader */
   }
 
 protected:
-  P* parser;
+  Reference::To<P> parser;
   std::string default_value;
 };
 

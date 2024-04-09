@@ -38,12 +38,12 @@ Pulsar::Receiver* Pulsar::Receiver::new_Receiver (const string& name)
 void Pulsar::Receiver::parse (string line)
 {
   // the key should be the name of the parameter to be set
-  string key = stringtok (line, " \t");
+  string key = stringtok (line, WHITESPACE);
 
   if (Archive::verbose == 3)
     cerr << "Pulsar::Receiver::parse key '" << key << "'" << endl;
 
-  string value = stringtok (line, " \t");
+  string value = stringtok (line, WHITESPACE);
 
   if (Archive::verbose == 3)
     cerr << "Pulsar::Receiver::parse value '" << value << "'" << endl;
@@ -80,7 +80,7 @@ void Pulsar::Receiver::parse (string line)
       throw Error (InvalidParam, "Pulsar::Receiver::parse",
 		   "value='" + value + "' could not be parsed as a double");
     
-    string unit = stringtok (line, " \t");
+    string unit = stringtok (line, WHITESPACE);
     
     if (Archive::verbose == 3)
       cerr << "Pulsar::Receiver::parse unit '" << unit << "'" << endl;

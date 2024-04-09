@@ -519,7 +519,7 @@ class session
   session () { start_lst.setWrapPoint( 2*M_PI ); }
   void parse (string line)
   {
-    string whitespace = " \t\n";
+    string whitespace = WHITESPACE;
     string temp = stringtok (line, whitespace);
     hours = fromstring<float>(temp);
 
@@ -563,7 +563,7 @@ void source::parse (string line)
 {
   text = line;
 
-  string whitespace = " \t\n";
+  string whitespace = WHITESPACE;
   name = stringtok (line, whitespace);
 
   string temp = stringtok (line, whitespace);

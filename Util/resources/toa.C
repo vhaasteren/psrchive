@@ -380,7 +380,7 @@ int Tempo::toa::Psrclock_load (const char* instring)
 
   destroy ();
 
-  string whitespace (" \n\t");
+  string whitespace (WHITESPACE);
   
   string parse;
   if (instring[0] == 'C' || instring[0] == 'c') {

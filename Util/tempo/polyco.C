@@ -16,6 +16,7 @@
 #include "Error.h"
 
 #include "inverse_phase.h"
+#include "whitespace.h"
 
 #include <stdio.h> 
 #include <stdlib.h>
@@ -142,7 +143,7 @@ int polynomial::load (string* instr)
   if (instr->length() < 160)
     return -1;
 
-  string whitespace (" \t\n");
+  string whitespace (WHITESPACE);
   string line;
 
   line = stringtok (*instr, "\n");

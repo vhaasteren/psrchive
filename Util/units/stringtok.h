@@ -10,6 +10,7 @@
 #ifndef __STRINGTOK_H
 #define __STRINGTOK_H
 
+#include "whitespace.h"
 #include <string>
 
 // ///////////////////////////////////////////////////////////

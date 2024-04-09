@@ -75,8 +75,8 @@ void MEAL::Polynomial::parse (const string& line)
   string temp = line;
 
   // the key should be the name of the parameter to be set
-  string key = stringtok (temp, " \t\n");
-  string value = stringtok (temp, " \t\n");
+  string key = stringtok (temp, WHITESPACE);
+  string value = stringtok (temp, WHITESPACE);
 
   if (verbose)
     cerr << "MEAL::Polynomial::parse key='" << key << "'"

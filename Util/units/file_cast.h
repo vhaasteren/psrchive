@@ -14,7 +14,7 @@
 #include <memory>
 
 template<typename T>
-T* smart_const_cast (const T* x)
+T* hard_const_cast (const T* x)
 {
   return const_cast<T*> (x);
 }
@@ -29,9 +29,9 @@ To* file_cast (const From* from)
   from->unload (temp);
   rewind (temp);
 
-  std::auto_ptr<To> to (new To);
+  std::unique_ptr<To> to (new To);
 
-  smart_const_cast(to.get())->load (temp);
+  hard_const_cast(to.get())->load (temp);
 
   return to.release();
 }

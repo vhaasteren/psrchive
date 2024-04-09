@@ -5,11 +5,14 @@
  *
  ***************************************************************************/
 
-// #define _DEBUG
+// #define _DEBUG 1
 
 #include "Pulsar/Generator.h"
-#include "Pulsar/Predictor.h"
+#include "Predict.h"
 #include "lazy.h"
+#include "debug.h"
+
+#include <cassert>
 
 using namespace std;
 
@@ -50,10 +53,13 @@ LAZY_GLOBAL(Pulsar::Predictor, \
 
 LAZY_GLOBAL(Pulsar::Generator, \
 	    Configuration::Parameter<Pulsar::Generator*>, \
-	    default_generator, 0);
+	    default_generator, new Tempo::Predict);
 
 Pulsar::Generator* Pulsar::Generator::get_default ()
 {
-  return get_default_generator().get_value()->clone ();
+  Pulsar::Generator* generator = get_default_generator().get_value();
+  DEBUG("Pulsar::Generator::get_default default_generator=" << generator);
+  assert (generator != nullptr);
+  return generator->clone ();
 }
 

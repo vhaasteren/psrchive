@@ -7,6 +7,8 @@
 
 #include "Pulsar/Config.h"
 #include "Pulsar/Interpreter.h"
+#include "tempo++.h"
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -26,5 +28,7 @@ void Pulsar::Config::ensure_linkage ()
 #if HAVE_PGPLOT
   ensure_ColourMap_linkage ();
 #endif
+
+  Tempo::config();
 }
 

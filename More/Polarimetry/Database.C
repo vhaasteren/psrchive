@@ -262,7 +262,7 @@ Database::Entry* Database::Entry::create (const Archive* archive)
 // load from ascii string
 Database::Entry* Database::Entry::load (const string& str) try
 {
-  const char* whitespace = " \t\n";
+  const char* whitespace = WHITESPACE;
   string line = str;
 
   // /////////////////////////////////////////////////////////////////

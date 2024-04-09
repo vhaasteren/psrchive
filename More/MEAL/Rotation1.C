@@ -128,7 +128,7 @@ void MEAL::Rotation1::parse (const string& line)
   string temp = line;
 
   // the key should be the name of the parameter to be set
-  string key = stringtok (temp, " \t");
+  string key = stringtok (temp, WHITESPACE);
 
   if (verbose)
     cerr << "MEAL::Rotation1::parse key '" << key << "'" << endl;

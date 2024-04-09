@@ -162,7 +162,13 @@ void Pulsar::Interpreter::init()
     ( &Interpreter::shuffle,
       "shuffle", "randomly rearrange sub-integrations",
       "usage: shuffle\n" );
-  
+
+  add_command
+    ( &Interpreter::echo,
+      "echo", "print the evaluated string on stdout",
+      "usage: echo <text> ...\n"
+      "  string text       any text including expressions understood by psrstat \n" );
+
   add_command
     ( &Interpreter::edit, 'e',
       "edit", "edit archive parameters",
@@ -837,9 +843,28 @@ TextInterface::Parser* Pulsar::Interpreter::get_interface ()
   return current_interface;
 }
 
+string Pulsar::Interpreter::echo (const string& args) try
+{
+  vector<string> arguments = setup (args);
+
+  string retval;
+  for (unsigned icmd=0; icmd < arguments.size(); icmd++)
+  {
+    if (icmd)
+      retval += " ";
+
+    retval += arguments[icmd];
+  }
+
+  return retval;
+}
+catch (Error& error)
+{
+  return response (error);
+}
+
 string Pulsar::Interpreter::edit (const string& args) try
 { 
-
   // replace variable names with values
   if (args == "help")
     return get_interface()->help (true);

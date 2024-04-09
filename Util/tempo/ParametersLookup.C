@@ -11,6 +11,7 @@
 #include "load_factory.h"
 #include "tempo++.h"
 #include "dirutil.h"
+#include "whitespace.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -104,7 +105,6 @@ string Pulsar::Parameters::Lookup::get_param (const string& param, const string 
   pclose(pipe);
 
   // trim whitespace/newline
-  const std::string WHITESPACE = " \n\r\t\f\v";
   size_t start = result.find_first_of(WHITESPACE);
   if (start != std::string::npos)
     result.resize(start);

@@ -10,6 +10,7 @@
 #endif
 
 #include "tempo++.h"
+#include "polyco.h"
 
 #ifdef HAVE_TEMPO2
 #include "T2Observatory.h"

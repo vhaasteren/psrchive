@@ -3,44 +3,44 @@ noinst_LTLIBRARIES = libunits.la
 
 include_HEADERS = \
 	Alias.h \
-        Callback.h \
-        Cloude.h \
+	Callback.h \
+	Cloude.h \
 	complex_public.h \
-        Configuration.h \
+	Configuration.h \
 	debug.h \
-        Error.h \
+	Error.h \
 	escape.h \
-        EstimateStats.h \
+	EstimateStats.h \
 	Factory.h \
 	file_cast.h \
 	FilePtr.h \
-        Functor.h \
-        HeapTracked.h \
+	Functor.h \
+	HeapTracked.h \
 	identifiable_factory.h \
 	Identifiable.h \
 	interface_factory.h \
 	interface_stream.h \
 	lazy.h \
 	MethodFunction.h \
-        ModifyRestore.h \
+	ModifyRestore.h \
 	NestedTextInterface.h \
 	ndArray.h \
 	ndIndex.h \
 	OwnStream.h \
-        pad.h \
-        ReferenceAble.h \
-        Reference.h \
-        ReferenceTo.h \
+	pad.h \
+	ReferenceAble.h \
+	Reference.h \
+	ReferenceTo.h \
 	ReferenceVector.h \
-        Registry.h \
-        separate.h \
+	Registry.h \
+	separate.h \
 	Separator.h \
 	stringcase.h \
-        stringtok.h \
-        substitute.h \
+	stringtok.h \
+	substitute.h \
 	TextEditor.h \
 	TextIndex.h \
-        TextInterface.h \
+	TextInterface.h \
 	TextInterfaceAdapter.h \
 	TextInterfaceAttribute.h \
 	TextInterfaceElement.h \
@@ -55,29 +55,30 @@ include_HEADERS = \
 	TextInterfaceTransform.h \
 	TextInterfaceValue.h \
 	TextLoop.h \
-        tostring.h
+	tostring.h \
+	whitespace.h
 
 libunits_la_SOURCES = \
 	Alias.C \
-        Configuration.C \
-        Error.C \
+	Configuration.C \
+	Error.C \
 	Estimate.C \
 	escape.C \
 	FilePtr.C \
-        HeapTracked.C \
+	HeapTracked.C \
 	Identifiable.C \
 	OwnStream.C \
-        pad.C \
+	pad.C \
 	parse_indeces.C \
-        ReferenceAble.C \
-        separate.C \
+	ReferenceAble.C \
+	separate.C \
 	Separator.C \
 	stringcase.C \
-        stringtok.C \
+	stringtok.C \
 	test.cfg \
 	tostring.C \
 	TextIndex.C \
-        TextInterface.C \
+	TextInterface.C \
 	TextInterfaceName.C \
 	TextInterfaceParser.C \
 	TextInterfaceValue.C \
@@ -91,7 +92,7 @@ TESTS = test_ndIndex test_ndArray test_Alias test_tostring test_Error	\
 	test_substitute test_escape test_ModifyRestore test_MethodFunction \
 	test_stringtok
 
-check_PROGRAMS = $(TESTS) many_references many_calls benchmark_tostring
+check_PROGRAMS = $(TESTS) many_references many_calls benchmark_tostring examples_Reference
 
 test_ndIndex_SOURCES		= test_ndIndex.C
 test_ndArray_SOURCES		= test_ndArray.C
@@ -122,6 +123,7 @@ many_references_SOURCES		= many_references.C
 many_calls_SOURCES		= many_calls.C
 
 benchmark_tostring_SOURCES	= benchmark_tostring.C
+examples_Reference_SOURCES	= examples_Reference.C
 
 #############################################################################
 #

@@ -120,13 +120,13 @@ std::string Tempo::get_configuration (const std::string& parameter)
       continue;
 
     // the first key loaded should be the name of the instance
-    string key = stringtok (line, " \t");
+    string key = stringtok (line, WHITESPACE);
 
     if (verbose)
       cerr << "Tempo::get_configuration key=" << key << endl;
 
     if (key == parameter)
-      return stringtok (line, " \t");
+      return stringtok (line, WHITESPACE);
 
   }
 

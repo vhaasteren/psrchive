@@ -82,7 +82,7 @@ Pulsar::StandardCandles::Entry::~Entry ()
 // load from ascii string
 void Pulsar::StandardCandles::Entry::load (const string& str) 
 {
-  const string whitespace = " \t\n";
+  const string whitespace = WHITESPACE;
 
   string temp = str;
 
@@ -256,9 +256,9 @@ void Pulsar::StandardCandles::load (const std::string& filename)
 		     "cannot add aliases before entries");
 
       // take off the aka
-      string name = stringtok (line, " \t\n");
+      string name = stringtok (line, WHITESPACE);
       // get the name
-      name = stringtok (line, " \t\n");
+      name = stringtok (line, WHITESPACE);
 
       if (verbose)
 	cerr << "Pulsar::StandardCandles::load alias: " 

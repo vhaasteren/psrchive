@@ -288,7 +288,7 @@ void psrplot::load_plot_options (const std::string& arg)
   {
     string line = style[i];
 
-    string key = stringtok (line, " \t\n");
+    string key = stringtok (line, WHITESPACE);
 
     if (key == "plot")
     {

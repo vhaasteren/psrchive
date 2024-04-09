@@ -281,7 +281,7 @@ void Pulsar::TimerArchive::subint_load (FILE* fptr)
         /* get the year data was processed */
         char comment[64];
         char* key;
-        const char* whitespace = " \n\t";
+        const char* whitespace = WHITESPACE;
         int year;
         strcpy(comment, hdr.comment);
         key = strtok(comment, whitespace);

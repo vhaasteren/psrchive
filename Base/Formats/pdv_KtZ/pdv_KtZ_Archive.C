@@ -103,7 +103,7 @@ bool parse (std::string& line, const std::string& key, T& value)
     return false;
   }
   
-  const string whitespace = " \t\n";
+  const string whitespace = WHITESPACE;
 
   // remove preceding whitespace
   string_split_on_any (after, before, after, whitespace);

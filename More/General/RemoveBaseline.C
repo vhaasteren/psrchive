@@ -13,6 +13,7 @@
 
 #include "Pulsar/PhaseWeight.h"
 #include "Pulsar/DisperseWeight.h"
+#include "whitespace.h"
 
 #include <iostream>
 using namespace std;
@@ -121,7 +122,7 @@ using Pulsar::RemoveBaseline;
 RemoveBaseline::Operation*
 RemoveBaseline::Operation::factory (const std::string& description)
 {
-  const string whitespace = " \t\n";
+  const string whitespace = WHITESPACE;
 
   string line = description;
 

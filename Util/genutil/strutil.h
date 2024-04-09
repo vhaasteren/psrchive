@@ -24,6 +24,7 @@
 #include "tostring.h"
 #include "stringtok.h"
 #include "stringcase.h"
+#include "whitespace.h"
 
 //! Return true if every character in string is printable
 bool printable (const std::string& s);
