@@ -154,16 +154,16 @@ namespace Pulsar
     Reference::To<WidthEstimator> width_estimator;
 
     //! True when the onpulse and baseline regions have been set
-    bool regions_set;
+    bool regions_set = false;
 
     //! The on-pulse phase bin mask
-    mutable PhaseWeight onpulse;
+    mutable Reference::To<PhaseWeight> onpulse = new PhaseWeight;
 
     //! The off-pulse baseline mask
-    mutable PhaseWeight baseline;
+    mutable Reference::To<PhaseWeight> baseline = new PhaseWeight;
 
     //! All phase bins (subject to include and exclude)
-    mutable PhaseWeight all;
+    mutable Reference::To<PhaseWeight> all = new PhaseWeight;
 
     //! The variance of the total intensity baseline
     mutable Estimate<double> baseline_variance;
@@ -172,13 +172,13 @@ namespace Pulsar
     mutable Reference::To<ProfileWeightFunction> include_estimator;
 
     //! The included phase bin mask
-    mutable PhaseWeight include;
+    mutable Reference::To<PhaseWeight> include;
 
     //! The algorithm used to find the excluded phase bins
     mutable Reference::To<ProfileWeightFunction> exclude_estimator;
 
     //! The excluded phase bin mask
-    mutable PhaseWeight exclude;
+    mutable Reference::To<PhaseWeight> exclude;
 
     //! Computes the phase bin masks
     void build () const;
@@ -186,7 +186,7 @@ namespace Pulsar
   private:
 
     //! flag set when built
-    mutable bool built;
+    mutable bool built = false;
   };
 
 }

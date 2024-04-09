@@ -191,10 +191,12 @@ Reference::Able::~Able ()
     __reference_handle->pointer = 0;
   }
 
-  __set_deleted ();
-
-  bin.clear();
-
+  if (__is_on_heap())
+  {
+    __set_deleted ();
+    bin.clear();
+  }
+  
   UNLOCK_REFERENCE
 
   DEBUG("Reference::Able dtor this=" << this << " reference_count=" << __reference_count << " instances=" << instance_count);
