@@ -27,8 +27,7 @@ Pulsar::PolnProfile* Pulsar::Integration::new_PolnProfile (unsigned ichan)
 			  get_Profile(2,ichan), get_Profile(3,ichan));
 }
 
-const Pulsar::PolnProfile*
-Pulsar::Integration::new_PolnProfile (unsigned ichan) const
+Pulsar::PolnProfile* Pulsar::Integration::new_PolnProfile (unsigned ichan) const
 {
   if (Profile::verbose)
     cerr << "Pulsar::Integration::new_PolnProfile" << endl;

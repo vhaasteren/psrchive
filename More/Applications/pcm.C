@@ -218,8 +218,7 @@ void plot_chosen (Pulsar::Archive* archive, const vector<unsigned>& bins,
   cpgend();
 }
 
-void plot_onpulse (Pulsar::ReceptionCalibrator& model, Pulsar::Archive* archive,
-		   string base = "onpulse")
+void plot_onpulse (Pulsar::ReceptionCalibrator& model, Pulsar::Archive* archive, string base = "onpulse")
 {
   string device = base + ".ps/cps";
   cpgbeg (0, device.c_str(), 0, 0);

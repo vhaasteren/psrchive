@@ -141,6 +141,7 @@ Reference::Able::__reference (bool active) const
        << " reference_count=" << __reference_count << " handle_count=" << __reference_handle->handle_count);
 
   assert (__reference_handle);
+  assert (__reference_handle->handle_count > 0);
 
   return __reference_handle;
 }
@@ -211,16 +212,18 @@ void Reference::Able::__dereference (bool auto_delete) const
   DEBUG("Reference::Able::__dereference this=" << this << " count=" << __reference_count);
 
   // delete when reference count reaches zero and instance is on heap
-  if ( auto_delete && __reference_count == 0 && __is_on_heap() ) {
-
+  if ( auto_delete && __reference_count == 0 && __is_on_heap() )
+  {
     DEBUG("Reference::Able::__dereference this=" << this << " delete object on heap");
 
     assert (__heap_state != 0x02);
-
     __heap_state = 0x02;
 
     if (__reference_handle)
+    {
       __reference_handle->pointer = 0;
+      assert (__reference_handle->handle_count > 0);
+    }
 
     delete this;
     return;
@@ -244,11 +247,7 @@ void Reference::Able::Handle::decrement (bool active, bool auto_delete)
   }
 
   // there should never be a handle without any references to it
-  if (handle_count == 0)
-  {
-    cerr << "Reference::Able::Handle::decrement this=" << this << " exists with reference count==0";
-    exit (-1);
-  }
+  assert (handle_count > 0);
 
   // decrease the total reference count (both active and passive)
   handle_count --;
@@ -297,7 +296,8 @@ void Reference::Able::Handle::copy (Handle* &to, Handle* const &from, bool activ
     return;
   }
 
-  assert (from->handle_count > 0);
+  unsigned initial_count = from->handle_count;
+  assert (initial_count > 0);
 
   to = const_cast<Handle*>( from );
 
@@ -305,6 +305,9 @@ void Reference::Able::Handle::copy (Handle* &to, Handle* const &from, bool activ
   {
     Handle* ptr = to->pointer->__reference (active);
     assert (ptr == to);
+
+    unsigned final_count = from->handle_count;
+    assert(final_count == initial_count + 1);
   }
 
   DEBUG("Reference::Able::Handle::copy to=" << to << " handle_count=" << to->handle_count);

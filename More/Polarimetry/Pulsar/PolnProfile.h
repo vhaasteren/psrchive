@@ -157,8 +157,7 @@ namespace Pulsar {
     //! Return the ellipticity and its estimated error for each pulse phase
     void get_ellipticity (std::vector< Estimate<double> >&, float sigma) const;
 
-    void get_linear (std::vector< std::complex< Estimate<double> > >& L,
-		     float sigma) const;
+    void get_linear (std::vector< std::complex< Estimate<double> > >& L, float sigma) const;
 
     const StokesCovariance* get_covariance () const;
     StokesCovariance* get_covariance ();
