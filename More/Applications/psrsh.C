@@ -99,6 +99,10 @@ void psrsh::add_options (CommandLine::Menu& menu)
   arg->set_long_name ("nofiles");
   arg->set_help ("no filenames required");
 
+  arg = menu.add (refresh_foreach_archive, '1');
+  arg->set_long_name ("reuse");
+  arg->set_help ("use one command processor for all files");
+
   menu.set_help_footer
     ("\n"
      "If no files are specified, psrsh enters the interactive shell mode \n"
