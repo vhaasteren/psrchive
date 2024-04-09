@@ -542,8 +542,8 @@ void Legacy::psrephem::read_old_ephem_str(vector<string>& lines,
 	string psrname = lines[i].substr(0, 19);
 	
 	// get rid of white space
-	string::size_type start = psrname.find_first_not_of (" \t");
-	string::size_type end = psrname.find_last_not_of(" \t");
+	string::size_type start = psrname.find_first_not_of (WHITESPACE);
+	string::size_type end = psrname.find_last_not_of(WHITESPACE);
 	
 	if (start != string::npos && end != string::npos) {
 		psrname = psrname.substr(start, end-start+1);

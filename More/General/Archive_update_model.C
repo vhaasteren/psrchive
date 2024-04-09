@@ -11,13 +11,11 @@
 #include "Pulsar/Parameters.h"
 #include "Pulsar/Generator.h"
 #include "Pulsar/Predictor.h"
+#include "tempo++.h"
 
 #include "Error.h"
 
 using namespace std;
-
-// defined in Base/Resources/Tempo_config.C
-namespace Tempo { int config (); }
 
 static int ensure_tempo_configuration = Tempo::config ();
 

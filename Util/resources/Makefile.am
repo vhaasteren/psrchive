@@ -16,11 +16,12 @@ getRiseSet_SOURCES = getRiseSet.C
 schedule_SOURCES = schedule.C
 benchmark_Predictor_SOURCES = benchmark_Predictor.C
 
-check_PROGRAMS = test_Parameters_factory test_Predictor_factory test_Predictor
+check_PROGRAMS = test_Parameters_factory test_Predictor_factory test_Predictor test_Generator
 
 test_Parameters_factory_SOURCES = test_Parameters_factory.C
 test_Predictor_factory_SOURCES = test_Predictor_factory.C
 test_Predictor_SOURCES = test_Predictor.C
+test_Generator_SOURCES = test_Generator.C
 
 #############################################################################
 #

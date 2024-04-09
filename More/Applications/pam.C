@@ -253,7 +253,7 @@ int main (int argc, char *argv[]) try {
     bool flip_freq = false;
     double flip_freq_mhz = 0.0;
 
-    Pulsar::Parameters* new_eph = 0;
+    Reference::To<Pulsar::Parameters> new_eph;
     string ephver = "";
 
     string command = "pam";

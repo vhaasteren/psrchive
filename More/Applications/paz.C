@@ -239,7 +239,7 @@ void paz::add_options (CommandLine::Menu& menu)
      "need to experiment to find the best value for your archives");
 }
 
-const char* whitespace = " ,\n\t";
+const char* whitespace = WHITESPACE",";
 
 template<typename T>
 void parse_array (std::vector<T>& array, std::string text)

@@ -29,7 +29,7 @@ LogFile::LogFile (const std::string& filename)
       continue;
 
     // the first key loaded should be the name of the instance
-    std::string index = stringtok (line, " \t");
+    std::string index = stringtok (line, WHITESPACE);
 
     add (index, line);
   }

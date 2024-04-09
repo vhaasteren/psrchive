@@ -42,7 +42,7 @@ namespace Factory {
       if (!instance) {
 
 	// the first key loaded should be the name of the instance
-	std::string key = stringtok (line, " \t");
+	std::string key = stringtok (line, WHITESPACE);
 
 	if (verbose)
 	  std::cerr << "Factory::load construct new " << key << std::endl;

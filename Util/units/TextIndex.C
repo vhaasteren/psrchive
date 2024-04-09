@@ -24,8 +24,8 @@ TextIndex::TextIndex (const std::string& named_range)
   string after = named_range.substr (set+1);
 
   // remove any white space
-  name = stringtok (before, " \t");
-  range = stringtok (after, " \t");
+  name = stringtok (before, WHITESPACE);
+  range = stringtok (after, WHITESPACE);
 
   size_name = "n" + name;
 }

@@ -13,8 +13,8 @@
 
 #include "Pulsar/Parameters.h"
 
-#include "polyco.h"
 #include "Observatory.h"
+#include "MJD.h"
 #include "Warning.h"
 
 #include <vector>
@@ -22,6 +22,9 @@
 //! Interface to Tempo
 namespace Tempo
 {
+  //! Call this global method to ensure that configuration is loaded
+  int config ();
+
   //! Return the Observatory data given the telescope name
   const Observatory* observatory (const std::string& telescope_name);
 
@@ -29,21 +32,19 @@ namespace Tempo
   char code (const std::string& telescope_name);
 
   // get the tempo version
-  float  get_version ();
+  float get_version ();
 
   // get the specified tempo configuration parameter
   std::string get_configuration (const std::string& parameter);
 
   // set the system call used to run tempo
-  void   set_system (const std::string& system_call);
+  void set_system (const std::string& system_call);
   // get the system call used to run tempo
   std::string get_system ();
 
-
-
   // convenience overloads
-  void   set_system (const std::string& system_call);
-  void   set_directory (const std::string& directory);
+  void set_system (const std::string& system_call);
+  void set_directory (const std::string& directory);
 
   // verbosity flag of functions working in the Tempo namespace
   extern bool verbose;

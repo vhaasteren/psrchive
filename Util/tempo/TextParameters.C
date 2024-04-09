@@ -6,6 +6,7 @@
  ***************************************************************************/
 
 #include "Pulsar/TextParameters.h"
+#include "whitespace.h"
 #include "strutil.h"
 
 using namespace std;
@@ -65,7 +66,7 @@ void Pulsar::TextParameters::parse_rows () const
 
   // cerr << "TextParameters::parse_rows nlines=" << lines.size() << endl;
 
-  string whitespace = " \t\n";
+  string whitespace = WHITESPACE;
   
   for (unsigned iline=0; iline < lines.size(); iline++)
   {
@@ -83,7 +84,7 @@ void Pulsar::TextParameters::parse_rows () const
 //! Retrieve a string from the text
 string Pulsar::TextParameters::get_value (const string& keyword) const
 {
-  const string whitespace = " \t\n";
+  const string whitespace = WHITESPACE;
 
   string empty;
 

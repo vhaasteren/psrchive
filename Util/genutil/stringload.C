@@ -106,7 +106,7 @@ int stringload (vector<string>* lines, FILE* fptr)
   static char* rdline = NULL;
   if (!rdline) rdline = new char [FILENAME_MAX+1];
 
-  const char* whitespace = " \t\n";
+  const char* whitespace = WHITESPACE;
   // load the lines from file
   while (fgets (rdline, FILENAME_MAX, fptr) != NULL)
   {

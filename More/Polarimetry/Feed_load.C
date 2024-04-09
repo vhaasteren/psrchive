@@ -25,12 +25,12 @@ void Calibration::Feed::parse (const string& input)
   string line = input;
   
   // the key should be the name of the parameter to be set
-  string key = stringtok (line, " \t");
+  string key = stringtok (line, WHITESPACE);
 
   if (verbose)
     cerr << "Calibration::Feed::parse key '" << key << "'" << endl;
 
-  string value = stringtok (line, " \t");
+  string value = stringtok (line, WHITESPACE);
 
   if (verbose)
     cerr << "Calibration::Feed::parse value '" << value << "'" << endl;
@@ -40,7 +40,7 @@ void Calibration::Feed::parse (const string& input)
     throw Error (InvalidParam, "Calibration::Feed::parse",
 		 "value='" + value + "' could not be parsed as a double");
     
-  string unit = stringtok (line, " \t");
+  string unit = stringtok (line, WHITESPACE);
     
   if (verbose)
     cerr << "Calibration::Feed::parse unit '" << unit << "'" << endl;

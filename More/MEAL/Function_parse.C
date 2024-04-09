@@ -18,7 +18,7 @@ void MEAL::Function::parse (const string& line)
   string temp = line;
 
   // the key should be the name of the parameter to be set
-  string key = stringtok (temp, " \t");
+  string key = stringtok (temp, WHITESPACE);
 
   if (verbose)
     cerr << "MEAL::Function::parse key '" << key << "'" << endl;
@@ -50,7 +50,7 @@ void MEAL::Function::parse (const string& line)
 		 key.c_str(), get_nparam(), names.c_str());
   }
 
-  string value = stringtok (temp, " \t");
+  string value = stringtok (temp, WHITESPACE);
 
   if (verbose)
     cerr << "MEAL::Function::parse value " << value << endl;
@@ -62,7 +62,7 @@ void MEAL::Function::parse (const string& line)
 
   set_param (iparam, param_value);
 
-  value = stringtok (temp, " \t");
+  value = stringtok (temp, WHITESPACE);
 
   if (!value.length())
     return;
@@ -83,7 +83,7 @@ void MEAL::Function::parse (const string& line)
     throw Error (InvalidParam, "MEAL::Function::parse",
 		 "value='" + value + "' could not be parsed as a boolean");
 
-  value = stringtok (temp, " \t");
+  value = stringtok (temp, WHITESPACE);
 
   if (!value.length())
     return;

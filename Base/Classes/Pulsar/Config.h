@@ -267,8 +267,7 @@ Pulsar::Option<T>::Option (Configuration::Parameter<T>& parameter,
   detailed_description = _detailed_description;
   parameter.set_key (_name);
 
-  DEBUG("Pulsar::Option<T> wrap parser that=" << &parameter \
-	<< " loader=" << this->loader);
+  DEBUG("Pulsar::Option<T> wrap parser that=" << &parameter << " loader=" << this->loader);
 
   parameter.set_loader( this->loader );
   this->loader = 0;

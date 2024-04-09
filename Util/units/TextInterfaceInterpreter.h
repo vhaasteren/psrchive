@@ -71,7 +71,7 @@ namespace TextInterface {
     std::string name;
     std::string description;
     std::string detailed_description;
-    I* interpreter;
+    Reference::To<I> interpreter;
     Get get;
     Set set;
 

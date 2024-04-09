@@ -163,7 +163,7 @@ void MEAL::GroupRule<T>::parse (const std::string& line)
 
   // the key should be the name of a new class to be added
   std::string temp = line;
-  std::string key = stringtok (temp, " \t");
+  std::string key = stringtok (temp, WHITESPACE);
 
   if (this->get_verbose())
     std::cerr << class_name() << "::parse key '" << key << "'" << std::endl;

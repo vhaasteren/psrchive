@@ -15,7 +15,7 @@
 
 using namespace std;
 
-class FakeParser
+class FakeParser : public Reference::Able
 {
 public:
   void parse (const std::string&) { }
@@ -86,7 +86,7 @@ int main () try {
 
   cerr << "All tests passed" << endl;
 
-  Configuration::Parameter<double>::ParseLoader<FakeParser> fake_test;
+  Configuration::Parameter<double>::ParseLoader<FakeParser> fake_test (new FakeParser, "fake");
 
   return 0;
 }

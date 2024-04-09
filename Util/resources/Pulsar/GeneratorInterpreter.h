@@ -25,6 +25,8 @@ namespace Pulsar
 
     Interpreter ();
 
+    ~Interpreter ();
+
     //! Install the interative Gaussian baseline algorithm
     std::string polyco (const std::string& args);
 

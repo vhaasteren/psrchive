@@ -176,7 +176,7 @@ Pulsar::ManualPolnCalibrator::Entry::~Entry ()
 // load from ASCII string
 void Pulsar::ManualPolnCalibrator::Entry::load (const string& str)
 {
-  const string whitespace = " \t\n";
+  const string whitespace = WHITESPACE;
   string temp = str;
   std::vector<string> words = stringdecimate(temp, whitespace);
 

@@ -52,7 +52,7 @@ void Configuration::load (const string& filename)
       continue;
     
     // parse the key
-    string key = stringtok (line, " \t=");
+    string key = stringtok (line, " \r\t=");
 
     DEBUG("Configuration::load key=" << key);
 

@@ -18,6 +18,9 @@ bool CommandParser::debug = false;
 
 CommandParser::CommandParser()
 {
+  if (debug)
+    cerr << "CommandParser ctor this=" << this << endl;
+    
   out = &std::cout;
 
   startCommand = true;
@@ -26,6 +29,9 @@ CommandParser::CommandParser()
 
 CommandParser::~CommandParser()
 {
+  if (debug)
+    cerr << "CommandParser dtor this=" << this << endl;
+
   for (unsigned icmd=0; icmd < commands.size(); icmd++)
     delete commands[icmd];
 }
@@ -45,7 +51,7 @@ string CommandParser::script (const string& filename)
   return script (cmds);
 }
 
-static const char* whitespace = " \t\n";
+static const char* whitespace = WHITESPACE;
 
 string CommandParser::script (const vector<string>& cmds)
 {
@@ -196,34 +202,34 @@ string CommandParser::parse2 (const string& command, const string& arguments)
   for (icmd=0; icmd < commands.size(); icmd++)
 
     if ( (shortcut && command[0] == commands[icmd]->shortcut)
-	 || command == commands[icmd]->command)
+        || command == commands[icmd]->command )
     {
       current_command = commands[icmd]->command;
 
       if (debug)
-	cerr << "CommandParser::parse execute " << command << endl;
+        cerr << "CommandParser::parse execute " << command << endl;
 
       string reply;
 
       try
       {
-	reply = commands[icmd]->execute (arguments);
+        reply = commands[icmd]->execute (arguments);
       }
       catch (Error& error)
       {
-	if (abort && error.get_code() != HelpMessage)
-	  throw error += "CommandParser::parse";
-	else
-	  reply = error.get_message();
+        if (abort && error.get_code() != HelpMessage)
+          throw error += "CommandParser::parse";
+        else
+          reply = error.get_message();
       }
 
       if (debug)
-	cerr << "CommandParser::parse execute reply '" << reply << "'" << endl;
+        cerr << "CommandParser::parse execute reply '" << reply << "'" << endl;
 
       if (reply.empty())
-	return "";
+        return "";
       else
-	return reply + newline;
+        return reply + newline;
     }
 
   // special case: command may be a string of shortcut keys
@@ -238,7 +244,7 @@ string CommandParser::parse2 (const string& command, const string& arguments)
   for (ikey=0; ikey < length; ikey++) {
     for (icmd=0; icmd < commands.size(); icmd++)
       if (command[ikey] == commands[icmd]->shortcut)
-	break;
+        break;
     if (icmd == commands.size())
       break;
   }
@@ -246,6 +252,11 @@ string CommandParser::parse2 (const string& command, const string& arguments)
   if (ikey != length)
   {
     fault = true;
+
+    if (abort)
+      throw Error (InvalidParam, "CommandParser::parse",
+                  "invalid command='" + command + "'");
+
     return "invalid command: " + command + newline;
   }
 
@@ -257,14 +268,14 @@ string CommandParser::parse2 (const string& command, const string& arguments)
     for (icmd=0; icmd < commands.size(); icmd++)
       if (command[ikey] == commands[icmd]->shortcut)
       {
-	current_command = commands[icmd]->command;
+        current_command = commands[icmd]->command;
 
-	// only the last command gets the arguments
-	string args = (ikey == length-1) ? arguments : "";
-	string reply = commands[icmd]->execute (args);
+        // only the last command gets the arguments
+        string args = (ikey == length-1) ? arguments : "";
+        string reply = commands[icmd]->execute (args);
 
-	if (!reply.empty())
-	  total_reply += reply + "\n";
+        if (!reply.empty())
+          total_reply += reply + "\n";
       }
 
   return total_reply;

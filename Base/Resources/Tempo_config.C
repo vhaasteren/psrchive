@@ -9,11 +9,12 @@
 #include <config.h>
 #endif
 
-// #define _DEBUG
+// #define _DEBUG 1
 
 #include "Pulsar/GeneratorInterpreter.h"
 #include "Pulsar/Predictor.h"
 #include "Pulsar/Config.h"
+#include "tempo++.h"
 
 #ifdef HAVE_TEMPO2
 #include "T2Generator.h"
@@ -22,13 +23,10 @@
 
 using namespace std;
 
-namespace Tempo
+int Tempo::config ()
 {
-  int config ()
-  {
-    DEBUG("Tempo::config");
-    return 0;
-  }
+   DEBUG("Tempo::config");
+   return 0;
 }
 
 /* ***********************************************************************
