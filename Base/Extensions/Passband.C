@@ -63,7 +63,7 @@ unsigned Pulsar::Passband::get_nband () const
 
 bool Pulsar::Passband::has_data () const
 {
-  return nband * npol * nchan;
+  return (nband * npol * nchan) > 0;
 }
 
 //! Set the number of channels, polarizations, and bands
@@ -166,6 +166,4 @@ TextInterface::Parser* Pulsar::Passband::get_interface( void )
 {
   return new Interface( this );
 }
-
-
 
