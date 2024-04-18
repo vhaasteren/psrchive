@@ -117,11 +117,26 @@ string MJD::printall() const
 }
 
 // more convenient interface
-std::string MJD::datestr (const char* format) const
+std::string MJD::datestr (const char* format, unsigned fractional_second_digits) const
 {
-  // assumes that result will be less than 4 times the length of format
-  vector<char> temp ( strlen(format) * 4 );
-  return datestr (&(temp[0]), temp.size(), format);
+  vector<char> temp ( strlen(format) + fractional_second_digits + 8 );
+  string result = datestr (&(temp[0]), temp.size(), format);
+
+  if (fractional_second_digits == 0)
+    return result;
+
+  snprintf (&(temp[0]), temp.size(), "%*.*lf", fractional_second_digits+3, fractional_second_digits, fracsec);
+  char* period = strchr (&(temp[0]), '.');
+  if (!period)
+  {
+    result += ".";
+    result += &(temp[0]);
+  }
+  else
+  {
+    result += period;
+  }
+  return result;
 }
 
 char* MJD::datestr (char* dstr, int len, const char* format) const
