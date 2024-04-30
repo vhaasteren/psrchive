@@ -112,6 +112,9 @@ void LinearRegression::generalized_least_squares
   offset.val = bar_x - scale.val * bar_y;
   offset.var = 0.5 * x_2 / alpha_2 * scale.var;
 
+  weighted_mean_abscissa = bar_x;
+  covariance = -bar_x * scale.var;
+
   if ( ! myfinite(scale.val) )
   {
     ofstream out ("linear_fit_work.dat");

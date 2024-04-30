@@ -54,7 +54,7 @@ void weighted_linear_fit (Estimate<double>& scale, Estimate<double>& offset,
                           const std::vector<double>& xval,
                           const std::vector<double>& wt);
 
-// used by both ordinary and weighted
+// work generalized least squares
 void linear_fit_work (Estimate<double>& scale, Estimate<double>& offset,
 		      const std::vector<double>& dat1,
 		      const std::vector<double>& dat2,

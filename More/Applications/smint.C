@@ -46,9 +46,9 @@
 #include "MEAL/Polynomial.h"
 #include "MEAL/Axis.h"
 
-#include "UnaryStatistic.h"
-#include "strutil.h"
 #include "SmoothingSpline.h"
+#include "statutil.h"
+#include "strutil.h"
 
 #include <fstream>
 

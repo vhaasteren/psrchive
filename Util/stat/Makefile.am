@@ -1,11 +1,13 @@
 
 noinst_LTLIBRARIES = libstat.la
 
-nobase_include_HEADERS = BinaryStatistic.h UnaryStatistic.h evaluate.h \
-	ChiSquared.h GeneralizedChiSquared.h
+nobase_include_HEADERS = evaluate.h statutil.h \
+	BinaryStatistic.h UnaryStatistic.h \
+	ChiSquared.h GeneralizedChiSquared.h LinearRegression.h
 
-libstat_la_SOURCES = BinaryStatistic.C UnaryStatistic.C evaluate.C \
-	ChiSquared.C GeneralizedChiSquared.C 
+libstat_la_SOURCES = evaluate.C statutil.C \
+	BinaryStatistic.C UnaryStatistic.C \
+	ChiSquared.C GeneralizedChiSquared.C LinearRegression.C
 
 if HAVE_ARMADILLO
   nobase_include_HEADERS += GaussianMixtureProbabilityDensity.h

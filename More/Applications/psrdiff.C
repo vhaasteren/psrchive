@@ -19,6 +19,7 @@
 
 #include "Pulsar/StokesPlot.h"
 
+#include "statutil.h"
 #include "strutil.h"
 #include "dirutil.h"
 

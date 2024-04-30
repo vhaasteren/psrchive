@@ -16,7 +16,7 @@
 
 #include "GeneralizedChiSquared.h"
 #include "ChiSquared.h"
-#include "UnaryStatistic.h"
+#include "statutil.h"
 
 #include "myfinite.h"
 
@@ -232,9 +232,7 @@ void CompareWith::get_residual (vector<double>& amps,
 {
   chi.set_outlier_threshold (0.0);
 
-  double chisq = chi.get (amps, mamps);
-
-  // DEBUG( "CompareWith::get_residual chisq=" << chisq );
+  DEBUG("CompareWith::get_residual chisq=" << chi.get (amps, mamps));
 
 #if _DEBUG
 	

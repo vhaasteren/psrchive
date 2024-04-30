@@ -10,8 +10,7 @@
 #endif
 
 #include "BinaryStatistic.h"
-#include "UnaryStatistic.h"
-#include "FTransform.h"
+#include "statutil.h"
 
 #include <algorithm>
 #include <numeric>
@@ -29,7 +28,7 @@ namespace BinaryStatistics {
     NormalizedCrossCorrelation ()
       : BinaryStatistic ("ncc", "Pearson correlation coefficient")
       {
-	add_alias ("pcc");
+        add_alias ("pcc");
       }
 
     double get (const vector<double>& dat1, const vector<double>& dat2)
@@ -46,7 +45,7 @@ namespace BinaryStatistics {
 
       double coeff = 0.0;
       for (unsigned i=0; i<dat1.size(); i++)
-	coeff += (dat1[i]-mu1[0]) * (dat2[i]-mu2[0]);
+        coeff += (dat1[i]-mu1[0]) * (dat2[i]-mu2[0]);
 
       return coeff / ( dat1.size() * sqrt( mu1[1] * mu2[1] ) );
     }
@@ -63,8 +62,8 @@ namespace BinaryStatistics {
     RelativeSpectralEntropy ()
       : BinaryStatistic ("rse", "relative spectral entropy")
       {
-	// exponential distribution has a long tail
-	threshold = 3.0; // sigma
+        // exponential distribution has a long tail
+        threshold = 3.0; // sigma
 
         add_alias ("kld");  // Kullback-Leibler divergence
       }
@@ -72,7 +71,7 @@ namespace BinaryStatistics {
     double get (const vector<double>& dat1, const vector<double>& dat2)
     {
       /* robust_variance returns the variance of dat1; which is the
-	 standard deviation of the exponentially distributed PSD */
+         standard deviation of the exponentially distributed PSD */
       vector<float> fps1;
       double cut1 = robust_variance (dat1, &fps1) * threshold*threshold;
 
@@ -87,12 +86,12 @@ namespace BinaryStatistics {
       for (unsigned i=istart; i < fps1.size(); i++)
       {
         // ignore the noise
-	if (fps1[i] < cut1 || fps2[i] < cut2)
-	  continue;
-      
-	sum1 += fps1[i];
-	sum2 += fps2[i];
-	count ++;
+        if (fps1[i] < cut1 || fps2[i] < cut2)
+          continue;
+            
+        sum1 += fps1[i];
+        sum2 += fps2[i];
+        count ++;
       }
 
       cerr << "count=" << count << " sum1/sum2=" << sum1/sum2 << endl;
@@ -100,13 +99,13 @@ namespace BinaryStatistics {
       double relative_entropy = 0;
       for (unsigned i=istart; i < fps1.size(); i++)
       {
-	if (fps1[i] < cut1 || fps2[i] < cut2)
-	  continue;
-	
-	double p = fps1[i] / sum1;
-	double q = fps2[i] / sum2;
+        if (fps1[i] < cut1 || fps2[i] < cut2)
+          continue;
+        
+        double p = fps1[i] / sum1;
+        double q = fps2[i] / sum2;
 
-	relative_entropy += p * abs(log(p/q));
+        relative_entropy += p * abs(log(p/q));
       }
     
       return relative_entropy;

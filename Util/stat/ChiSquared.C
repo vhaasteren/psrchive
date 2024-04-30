@@ -6,7 +6,7 @@
  ***************************************************************************/
 
 #include "ChiSquared.h"
-#include "UnaryStatistic.h"
+#include "statutil.h"
 #include "myfinite.h"
 
 #include <algorithm>
@@ -30,7 +30,7 @@ void linear_fit (Estimate<double>& scale, Estimate<double>& offset,
   {
     for (unsigned idat=0; idat < ndat; idat++)
       if (! (*mask)[idat])
-	wt[idat] = 0.0;
+        wt[idat] = 0.0;
   }
 
   linear_fit_work (scale, offset, dat1, dat2, one, wt, false);
@@ -108,7 +108,7 @@ void linear_fit_work (Estimate<double>& scale, Estimate<double>& offset,
     for (unsigned idim=0; idim<ndim; idim++)
     {
       if (wt[idim] == 0)
-	continue;
+        continue;
     
       diff[idiff] = dat1[idim]*wt[idim] - scale.val * dat2[idim]*wt[idim];
       idiff ++;
@@ -172,15 +172,15 @@ double ChiSquared::get (const vector<double>& dat1, const vector<double>& dat2) 
       
       for (unsigned i=0; i<ndat; i++)
       {
-	if (!mask[i])
-	  continue;
+        if (!mask[i])
+          continue;
 
-	double residual = dat1[i] - scale.val * dat2[i] - offset.val;
-	if ( outlier_threshold > 0 && sqr(residual) > cut )
-        {
-	  mask[i] = false;
-	  zapped ++;
-	}
+        double residual = dat1[i] - scale.val * dat2[i] - offset.val;
+        if ( outlier_threshold > 0 && sqr(residual) > cut )
+              {
+          mask[i] = false;
+          zapped ++;
+        }
       }
       
       total_zapped += zapped;
