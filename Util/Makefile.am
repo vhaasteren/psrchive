@@ -2,7 +2,7 @@
 SUBDIRS                 = epsic/src units third genutil fft stat tempo
 
 lib_LTLIBRARIES         = libpsrutil.la
-
+libpsrutil_la_LDFLAGS = -version-info $(PACKAGE_VERSION_INFO)
 libpsrutil_la_SOURCES  =
 libpsrutil_la_LIBTOOLFLAGS = --tag=CXX
 libpsrutil_la_LIBADD  = third/libthird.la units/libunits.la fft/libpsrfft.la \

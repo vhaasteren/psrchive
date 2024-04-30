@@ -5,6 +5,7 @@ lib_LTLIBRARIES = libpsrmore.la
 libpsrmore_la_LIBTOOLFLAGS = --tag=CXX
 libpsrmore_la_SOURCES =
 libpsrmore_la_LIBADD =
+libpsrmore_la_LDFLAGS = -version-info $(PACKAGE_VERSION_INFO)
 
 SUBDIRS += General
 libpsrmore_la_LIBADD += General/libGeneral.la

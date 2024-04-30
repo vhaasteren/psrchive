@@ -2,6 +2,7 @@
 SUBDIRS = Classes Extensions Checks Resources Formats . Applications
 
 lib_LTLIBRARIES = libpsrbase.la
+libpsrbase_la_LDFLAGS = -version-info $(PACKAGE_VERSION_INFO)
 libpsrbase_la_SOURCES =
 libpsrbase_la_LIBTOOLFLAGS = --tag=CXX
 libpsrbase_la_LIBADD = \

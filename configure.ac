@@ -2,7 +2,19 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([PSRCHIVE],[2023-10-02+],[psrchive-developers@lists.sourceforge.net])
+
+# Release version
+m4_define([package_version_major],[14])
+m4_define([package_version_minor],[0])
+m4_define([package_version_micro],[0])
+
+AC_INIT([PSRCHIVE],
+	[package_version_major.package_version_minor.package_version_micro],
+	[psrchive-developers@lists.sourceforge.net])
+
+# Dependencies
+PKG_PROG_PKG_CONFIG
+PKG_INSTALLDIR
 
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([config])
@@ -14,6 +26,12 @@ AC_ARG_VAR([PACKAGES],   [Root directory of third-party packages])
 AC_ARG_VAR([PGPLOT_DIR], [Pgplot graphics library directory])
 
 AC_PREFIX_DEFAULT([${PSRHOME:-"/usr/local"}${PSRHOME:+"/$LOGIN_ARCH"}])
+
+AC_SUBST([PACKAGE_VERSION_MAJOR],package_version_major)
+AC_SUBST([PACKAGE_VERSION_MINOR],package_version_minor)
+AC_SUBST([PACKAGE_VERSION_MICRO],package_version_micro)
+AC_SUBST([PACKAGE_VERSION_INFO],package_version_major:package_version_minor:package_version_micro)
+AC_SUBST([API_VERSION],package_version_major)
 
 ################################################################################
 #
@@ -105,7 +123,7 @@ SWIN_TEST_LIMITS
 #
 AC_ARG_ENABLE([existing],
               AC_HELP_STRING([--disable-existing],
-              [Don't look for dependencies in existing installation]))
+              ["Don't look for dependencies in existing installation"]))
 
 if test -d $PSRCHIVE_INSTALL -a x"$enable_existing" != x"no"; then
   CPPFLAGS="-I$PSRCHIVE_INSTALL/include $CPPFLAGS"
@@ -317,6 +335,7 @@ AC_CONFIG_FILES([
 		Management/psrchive
 		Management/psrchive_install.h
 		Management/release.csh
+		Management/psrchive.pc
 		Makefile])
 
 AC_CONFIG_SUBDIRS([Util/epsic/src])
