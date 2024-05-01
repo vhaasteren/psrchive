@@ -44,10 +44,10 @@ fi
 
 EPSIC_SOURCE='$(top_srcdir)/Util/epsic/src'
 EPSIC_BUILD='$(top_builddir)/Util/epsic/src'
-EPSIC_INCLUDE='-I$(EPSIC_SOURCE) -I$(EPSIC_SOURCE)/util -I$(EPSIC_BUILD) -I$(EPSIC_BUILD)/util'
+INCLUDE_CPPFLAGS='-I$(EPSIC_SOURCE) -I$(EPSIC_SOURCE)/util -I$(EPSIC_BUILD) -I$(EPSIC_BUILD)/util'
 AC_SUBST(EPSIC_SOURCE)
 AC_SUBST(EPSIC_BUILD)
-AC_SUBST(EPSIC_INCLUDE)
+AC_SUBST(INCLUDE_CPPFLAGS)
 
 ################################################################################
 #
