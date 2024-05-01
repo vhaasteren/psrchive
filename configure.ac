@@ -32,10 +32,22 @@ else
   fi
 fi
 
+################################################################################
+#
+# Setup to use EPSIC sub-module
+#
+
 # ensure that epsic source is configured
 if test -f $srcdir/config/epsic.sh; then
   $srcdir/config/epsic.sh $srcdir
 fi
+
+EPSIC_SOURCE='$(top_srcdir)/Util/epsic/src'
+EPSIC_BUILD='$(top_builddir)/Util/epsic/src'
+EPSIC_INCLUDE='-I$(EPSIC_SOURCE) -I$(EPSIC_SOURCE)/util -I$(EPSIC_BUILD) -I$(EPSIC_BUILD)/util'
+AC_SUBST(EPSIC_SOURCE)
+AC_SUBST(EPSIC_BUILD)
+AC_SUBST(EPSIC_INCLUDE)
 
 ################################################################################
 #
@@ -256,6 +268,8 @@ AM_CONDITIONAL(MAKE_LEAN, [test x"$enable_lean" == xyes])
 #
 SWIN_FUNC_GETOPT_LONG
 
+PUBLIC_LIBS="$FFT_LIBS $CFITSIO_LIBS $PUMA_LIBS $TEMPO2_LIBS $GSL_LIBS $PTHREAD_CFLAGS $PTHREAD_LIBS $FLIBS"
+AC_SUBST(PUBLIC_LIBS)
 
 ################################################################################
 #
