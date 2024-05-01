@@ -2,15 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-
-# Release version
-m4_define([package_version_major],[14])
-m4_define([package_version_minor],[0])
-m4_define([package_version_micro],[0])
-
-AC_INIT([PSRCHIVE],
-	[package_version_major.package_version_minor.package_version_micro],
-	[psrchive-developers@lists.sourceforge.net])
+AC_INIT([PSRCHIVE],[2024-05-01],[psrchive-developers@lists.sourceforge.net])
 
 # Dependencies
 PKG_PROG_PKG_CONFIG
@@ -26,12 +18,6 @@ AC_ARG_VAR([PACKAGES],   [Root directory of third-party packages])
 AC_ARG_VAR([PGPLOT_DIR], [Pgplot graphics library directory])
 
 AC_PREFIX_DEFAULT([${PSRHOME:-"/usr/local"}${PSRHOME:+"/$LOGIN_ARCH"}])
-
-AC_SUBST([PACKAGE_VERSION_MAJOR],package_version_major)
-AC_SUBST([PACKAGE_VERSION_MINOR],package_version_minor)
-AC_SUBST([PACKAGE_VERSION_MICRO],package_version_micro)
-AC_SUBST([PACKAGE_VERSION_INFO],package_version_major:package_version_minor:package_version_micro)
-AC_SUBST([API_VERSION],package_version_major)
 
 ################################################################################
 #
@@ -306,11 +292,11 @@ AC_CONFIG_FILES([
 		Base/Formats/Timer/Makefile
 		Base/Formats/PSRFITS/Makefile
 		Base/Formats/PuMa/Makefile
-                Base/Formats/ASCII/Makefile
-                Base/Formats/BPP/Makefile
-                Base/Formats/WAPP/Makefile
-                Base/Formats/PRESTO/Makefile
-                Base/Formats/ASP/Makefile
+		Base/Formats/ASCII/Makefile
+		Base/Formats/BPP/Makefile
+		Base/Formats/WAPP/Makefile
+		Base/Formats/PRESTO/Makefile
+		Base/Formats/ASP/Makefile
 		Base/Formats/UVM/Makefile
 		Base/Formats/UVM/uvmlib/Makefile
 		Base/Formats/pdv_KtZ/Makefile
