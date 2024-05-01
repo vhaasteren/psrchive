@@ -27,6 +27,7 @@
 #include <unistd.h>
 
 using namespace std;
+using namespace Pulsar;
 
 void usage ()
 {
@@ -42,6 +43,7 @@ void usage ()
     " -L               print/compare the likelihood of data \n"
 #endif
     " -M metafile      Specify list of archive filenames in metafile \n"
+    " -X               print the reduced chi squared of the difference \n"
     " -q               Quiet mode \n"
     " -v               Verbose mode \n"
     " -V               Very verbose mode \n"
@@ -54,10 +56,21 @@ static bool fscrunch = false;
 static bool tscrunch = false;
 static bool pscrunch = false;
 
+// print the reduced chi squared of the difference
+bool print_reduced_chisq = false;
+
+vector<vector<double>> empty; // dummy variable
+double numerical_precision = pow(2.0,-16); // assume 16-bit archives
+
+double reduced_chisq(
+  const Archive* archive, const Integration* std_subint = 0, 
+  const vector<vector<double>>& std_variance = empty, 
+  double expected_variance = numerical_precision*numerical_precision);
+
 void diff_two (const std::string& fileA, const std::string& fileB);
 
 int likelihood_analysis (vector<string>& filenames);
-			  
+
 int main (int argc, char** argv) try
 {
   Pulsar::Profile::default_duty_cycle = 0.10;
@@ -76,7 +89,7 @@ int main (int argc, char** argv) try
   bool likelihood = false;
 
   char c;
-  while ((c = getopt(argc, argv, "c:dfhLM:pqs:tvV")) != -1) 
+  while ((c = getopt(argc, argv, "c:dfhLM:pqs:tXvV")) != -1) 
 
     switch (c)
     {
@@ -114,6 +127,10 @@ int main (int argc, char** argv) try
 
     case 't':
       tscrunch = true;
+      break;
+
+    case 'X':
+      print_reduced_chisq = true;
       break;
 
     case 'q':
@@ -210,21 +227,21 @@ int main (int argc, char** argv) try
     if (nbin != std_nbin)
     {
       cerr << "psrdiff: " << archive->get_filename() << "\n    nbin=" << nbin
-	   << " != standard nbin=" << std_nbin << endl;
+            << " != standard nbin=" << std_nbin << endl;
       continue;
     }
 
     if (nchan != std_nchan)
     {
       cerr << "psrdiff: " << archive->get_filename() << "\n    nchan=" << nchan
-	   << " != standard nchan=" << std_nchan << endl;
+            << " != standard nchan=" << std_nchan << endl;
       continue;
     }
 
     if (npol != std_npol)
     {
       cerr << "psrdiff: " << archive->get_filename() << "\n    npol=" << npol
-	   << " != standard npol=" << std_npol << endl;
+            << " != standard npol=" << std_npol << endl;
       continue;
     }
 
@@ -246,129 +263,81 @@ int main (int argc, char** argv) try
 
       for (unsigned ichan=0; ichan < nchan; ichan++) try
       {
-	if (std_subint->get_weight(ichan) == 0 ||
-	    subint->get_weight(ichan) == 0)
-	  continue;
+        if (std_subint->get_weight(ichan) == 0 || subint->get_weight(ichan) == 0)
+          continue;
 
-	Reference::To<Pulsar::PolnProfile> std_profile;
-	std_profile = std_subint->new_PolnProfile (ichan);
+        Reference::To<Pulsar::PolnProfile> std_profile;
+        std_profile = std_subint->new_PolnProfile (ichan);
 
-	Reference::To<Pulsar::PolnProfile> profile;
-	profile = subint->new_PolnProfile (ichan);
-	
-	// polar->set_rotationEuler (0, M_PI/2);
+        Reference::To<Pulsar::PolnProfile> profile;
+        profile = subint->new_PolnProfile (ichan);
+        
+        // polar->set_rotationEuler (0, M_PI/2);
 
-	fit.set_standard (std_profile);
+        fit.set_standard (std_profile);
         fit.fit (profile);
-  
-	unsigned nfree = fit.get_equation()->get_solver()->get_nfree ();
-	float chisq = fit.get_equation()->get_solver()->get_chisq ();
+        
+        unsigned nfree = fit.get_equation()->get_solver()->get_nfree ();
+        float chisq = fit.get_equation()->get_solver()->get_chisq ();
 
-	float reduced_chisq = chisq / nfree;
+        float reduced_chisq = chisq / nfree;
 
-	if (verbose)
-	  cerr << ichan << " REDUCED CHISQ=" << reduced_chisq << endl;
+        if (verbose)
+          cerr << ichan << " REDUCED CHISQ=" << reduced_chisq << endl;
 
-	fit_chisq[ichan] = reduced_chisq;
+        fit_chisq[ichan] = reduced_chisq;
 
-	total_chisq += reduced_chisq;
-	count ++;
+        total_chisq += reduced_chisq;
+        count ++;
 
-	bool plot_this = (plot || (plot_when && reduced_chisq > plot_when));
+        bool plot_this = (plot || (plot_when && reduced_chisq > plot_when));
 
-	Estimate<double> pulse_phase = fit.get_phase ();
+        Estimate<double> pulse_phase = fit.get_phase ();
 
-	MEAL::Complex2* xform = fit.get_transformation();
+        MEAL::Complex2* xform = fit.get_transformation();
 
-	if (verbose)
-	  for (unsigned i=0; i<xform->get_nparam(); i++)
-	    cerr << i << ":" << xform->get_param_name(i) << "=" 
-		 << xform->get_Estimate(i) << endl;
+        if (verbose)
+          for (unsigned i=0; i<xform->get_nparam(); i++)
+            cerr << i << ":" << xform->get_param_name(i) << "=" 
+                 << xform->get_Estimate(i) << endl;
 
-	Jones<double> transformation = xform->evaluate();
-	
-	if (verbose)
-	  cerr << ichan << " shift=" << pulse_phase << endl;
+        Jones<double> transformation = xform->evaluate();
+        
+        if (verbose)
+          cerr << ichan << " shift=" << pulse_phase << endl;
 
-	profile->rotate_phase (pulse_phase.get_value());
-	profile->transform (inv(transformation));
+        profile->rotate_phase (pulse_phase.get_value());
+        profile->transform (inv(transformation));
 
-	if (plot_this) {
+        if (plot_this)
+        {
+          profile->diff(std_profile);
 
-	  profile->diff(std_profile);
+          Pulsar::Profile::rotate_in_phase_domain = false;
+          profile->rotate_phase (.5);
 
-	  Pulsar::Profile::rotate_in_phase_domain = false;
-	  profile->rotate_phase (.5);
-
-	  cpgpage();
-	  splot.set_subint (isub);
-	  splot.set_chan (ichan);
-	  splot.plot(archive);
-
-	}
+          cpgpage();
+          splot.set_subint (isub);
+          splot.set_chan (ichan);
+          splot.plot(archive);
+        }
 
       }
       catch (Error& error) {
-	cerr << error << endl;
+        cerr << error << endl;
       }
 
     }
 
     total_chisq /= count;
 
-    double alt_chisq = 0.0;
-    count = 0;
+    double alt_chisq = reduced_chisq(archive, std_subint, std_variance);
 
-    for (isub=0; isub < nsub; isub++)
-    {
-      Pulsar::Integration* subint = archive->get_Integration(isub);
-
-      vector< vector< double > > variance;
-      subint->baseline_stats (0, &variance);
-
-      for (unsigned ichan=0; ichan < nchan; ichan++)
-      {
-	if (std_subint->get_weight(ichan) == 0 ||
-	    subint->get_weight(ichan) == 0)
-	  continue;
-
-	for (unsigned ipol=0; ipol < npol; ipol++)
-	{
-	  double var = variance[ipol][ichan] + std_variance[ipol][ichan];
-
-	  float* std_amps = std_subint->get_Profile(ipol,ichan)->get_amps();
-	  float* amps = subint->get_Profile (ipol,ichan)->get_amps();
-
-	  double diff = 0;
-	  for (unsigned ibin = 0; ibin < nbin; ibin++)
-	  {
-	    double val = std_amps[ibin] - amps[ibin];
-	    diff += val * val;
-	  }
-
-	  double reduced_chisq = diff / (nbin * var);
-
-	  if (verbose)
-	    cout << ichan << " ipol=" << ipol
-		 << " var=" << var << " chisq=" << reduced_chisq << endl;
-
-	  alt_chisq += reduced_chisq;
-	  count ++;
-	}
-
-      }
-
-    }
-
-    alt_chisq /= count;
-
-    cout << archive->get_filename() << " " << total_chisq << " " << alt_chisq
-	 << endl;
+    cout << archive->get_filename() << " " << total_chisq << " " << alt_chisq << endl;
     
   }
   catch (Error& error) {
-    cerr << "Error while handling '" << filenames[ifile] << "'" << endl
-	 << error.get_message() << endl;
+    cerr << "Error while handling '" << filenames[ifile] << "'" << endl << error.get_message() << endl;
   }
 
   if (plot || plot_when)
@@ -427,17 +396,93 @@ void diff_two (const std::string& fileA, const std::string& fileB)
     for (unsigned ipol=0; ipol < npol; ipol++)
       for (unsigned ichan=0; ichan < nchan; ichan++)
       {
-	Pulsar::Profile* profileA = A->get_Profile (isub, ipol, ichan);
-	Pulsar::Profile* profileB = B->get_Profile (isub, ipol, ichan);
+        Pulsar::Profile* profileA = A->get_Profile (isub, ipol, ichan);
+        Pulsar::Profile* profileB = B->get_Profile (isub, ipol, ichan);
 
-	profileA->diff(profileB);
+        profileA->diff(profileB);
       }
 
-  std::string output_filename = "psrdiff.out";
+  if (print_reduced_chisq)
+  {
+    cout << "Reduced chisq: " << reduced_chisq(A) << endl;
+    return;
+  }
 
+  std::string output_filename = "psrdiff.out";
   cerr << "psrdiff: unloading " << output_filename << endl;
   A->unload (output_filename);
 }
+
+double reduced_chisq(
+  const Archive* archive, const Integration* std_subint,
+  const vector<vector<double>>& std_variance, double expected_variance)
+{
+  const unsigned nsubint = archive->get_nsubint();
+  const unsigned nchan = archive->get_nchan();
+  const unsigned npol = archive->get_npol();
+  const unsigned nbin = archive->get_nbin();
+  
+  double total_chisq = 0.0;
+  unsigned count = 0;
+
+  vector<double> tmp_amps(nbin);
+
+  for (unsigned isub=0; isub < nsubint; isub++)
+  {
+    const Pulsar::Integration* subint = archive->get_Integration(isub);
+    vector<vector<double>> variance;
+
+    if (std_variance.size() == nchan)
+      subint->baseline_stats (0, &variance);
+
+    for (unsigned ichan=0; ichan < nchan; ichan++)
+    {
+      if (std_subint && std_subint->get_weight(ichan) == 0)
+        continue;
+
+      if (subint->get_weight(ichan) == 0)
+        continue;
+
+      for (unsigned ipol=0; ipol < npol; ipol++)
+      {
+        double var = expected_variance;
+        
+        if (std_variance.size() == nchan)
+          var = variance[ipol][ichan] + std_variance[ipol][ichan];
+
+        const float* amps = subint->get_Profile (ipol,ichan)->get_amps();
+        for (unsigned ibin = 0; ibin < nbin; ibin++)
+          tmp_amps[ibin] = amps[ibin];
+
+        if (std_subint)
+        {
+          const float* std_amps = 0;
+          std_amps = std_subint->get_Profile(ipol,ichan)->get_amps();
+          for (unsigned ibin = 0; ibin < nbin; ibin++)
+            tmp_amps[ibin] -= std_amps[ibin];
+        }
+
+        double diff = 0;
+        for (unsigned ibin = 0; ibin < nbin; ibin++)
+        {
+          double val = tmp_amps[ibin];
+          diff += val * val;
+        }
+
+        double reduced_chisq = diff / (nbin * var);
+
+        if (verbose)
+          cout << ichan << " ipol=" << ipol << " var=" << var << " chisq=" << reduced_chisq << endl;
+
+        total_chisq += reduced_chisq;
+        count ++;
+      }
+    }
+  }
+
+  return total_chisq / count;
+}
+
 
 #if HAVE_ARMADILLO
 #include "Pulsar/ArchiveComparisons.h"
