@@ -59,17 +59,58 @@ static bool pscrunch = false;
 // print the reduced chi squared of the difference
 bool print_reduced_chisq = false;
 
-vector<vector<double>> empty; // dummy variable
-double numerical_precision = pow(2.0,-16); // assume 16-bit archives
-
-double reduced_chisq(
-  const Archive* archive, const Integration* std_subint = 0, 
-  const vector<vector<double>>& std_variance = empty, 
-  double expected_variance = numerical_precision*numerical_precision);
-
 void diff_two (const std::string& fileA, const std::string& fileB);
 
 int likelihood_analysis (vector<string>& filenames);
+
+class Difference
+{
+protected:
+
+  unsigned isubint = 0;
+  unsigned ichan = 0;
+  unsigned ipol = 0;
+
+  Reference::To<const Archive> archive;
+  Reference::To<const Profile> profile;
+
+public:
+
+  //! return the reduced chisq for an entire archive
+  double reduced_chisq(const Archive*);
+
+  //! Perform any setup for the current sub-integration
+  virtual void set_subint (const Integration*) {}
+
+  //! Return any additional weight information for the specified channel of the current sub-integration
+  virtual unsigned get_weight (unsigned ichan) { return 1; }
+
+  //! return the reduced chisq for the current isubint, ichan, and ipol
+  /*! Defined by children. */
+  virtual double chisq(const Profile*) = 0;
+};
+
+class TemplateDifference : public Difference
+{
+  Reference::To<const Integration> std_subint;
+  vector<vector<double>> std_variance;
+  vector<vector<double>> variance;
+
+public:
+
+  //! Set the template to which the data will be compared
+  void set_template(const Integration* _template);
+
+  //! Perform any setup for the current sub-integration
+  void set_subint (const Integration*) override;
+
+  //! Return the weight of the specified channel of the template sub-integration
+  unsigned get_weight (unsigned ichan) override;
+
+  //! return the reduced chisq for the current isubint, ichan, and ipol
+  /*! Defined by the off-pulse noise in the template profile and provided profile. */
+  double chisq(const Profile*) override;
+};
 
 int main (int argc, char** argv) try
 {
@@ -190,11 +231,6 @@ int main (int argc, char** argv) try
   std_archive->convert_state (Signal::Stokes);
   std_archive->remove_baseline ();
 
-  Pulsar::Integration* std_subint = std_archive->get_Integration(0);
-
-  vector< vector< double > > std_variance;
-  std_subint->baseline_stats (0, &std_variance);
-
   Pulsar::PolnProfileFit fit;
   fit.choose_maximum_harmonic = true;
 
@@ -247,6 +283,8 @@ int main (int argc, char** argv) try
 
     archive->convert_state (Signal::Stokes);
     archive->remove_baseline ();
+
+    Pulsar::Integration* std_subint = std_archive->get_Integration(0);
 
     unsigned isub=0;
 
@@ -331,7 +369,10 @@ int main (int argc, char** argv) try
 
     total_chisq /= count;
 
-    double alt_chisq = reduced_chisq(archive, std_subint, std_variance);
+    TemplateDifference diff;
+    diff.set_template(std_subint);
+
+    double alt_chisq = diff.reduced_chisq(archive);
 
     cout << archive->get_filename() << " " << total_chisq << " " << alt_chisq << endl;
     
@@ -351,6 +392,23 @@ catch (Error& error)
   cerr << "psrdiff: error" << error << endl;
   return -1;
 }
+
+
+
+class NumericDifference : public Difference
+{
+  Reference::To<const Archive> difference;
+  double tolerance = pow(2.0,-16); // assume 16-bit archives
+
+public:
+
+  //! Set the difference between the data and another archive
+  void set_difference(const Archive* _diff) { difference = _diff; }
+
+  //! return the reduced chisq for the current isubint, ichan, and ipol
+  /*! Defined by children. */
+  double chisq(const Profile*) override;
+};
 
 void diff_two (const std::string& fileA, const std::string& fileB)
 {
@@ -404,7 +462,10 @@ void diff_two (const std::string& fileA, const std::string& fileB)
 
   if (print_reduced_chisq)
   {
-    cout << "Reduced chisq: " << reduced_chisq(A) << endl;
+    NumericDifference diff;
+    diff.set_difference(A);
+
+    cout << "Reduced chisq: " << diff.reduced_chisq(B) << endl;
     return;
   }
 
@@ -413,74 +474,110 @@ void diff_two (const std::string& fileA, const std::string& fileB)
   A->unload (output_filename);
 }
 
-double reduced_chisq(
-  const Archive* archive, const Integration* std_subint,
-  const vector<vector<double>>& std_variance, double expected_variance)
+double Difference::reduced_chisq(const Archive* archive)
 {
   const unsigned nsubint = archive->get_nsubint();
   const unsigned nchan = archive->get_nchan();
   const unsigned npol = archive->get_npol();
-  const unsigned nbin = archive->get_nbin();
   
   double total_chisq = 0.0;
   unsigned count = 0;
 
-  vector<double> tmp_amps(nbin);
-
-  for (unsigned isub=0; isub < nsubint; isub++)
+  for (isubint=0; isubint < nsubint; isubint++)
   {
-    const Pulsar::Integration* subint = archive->get_Integration(isub);
-    vector<vector<double>> variance;
+    const Pulsar::Integration* subint = archive->get_Integration(isubint);
+    set_subint(subint);
 
-    if (std_variance.size() == nchan)
-      subint->baseline_stats (0, &variance);
-
-    for (unsigned ichan=0; ichan < nchan; ichan++)
+    for (ichan=0; ichan < nchan; ichan++)
     {
-      if (std_subint && std_subint->get_weight(ichan) == 0)
+      if (subint->get_weight(ichan) == 0 || get_weight(ichan) == 0)
         continue;
 
-      if (subint->get_weight(ichan) == 0)
-        continue;
-
-      for (unsigned ipol=0; ipol < npol; ipol++)
+      for (ipol=0; ipol < npol; ipol++)
       {
-        double var = expected_variance;
-        
-        if (std_variance.size() == nchan)
-          var = variance[ipol][ichan] + std_variance[ipol][ichan];
-
-        const float* amps = subint->get_Profile (ipol,ichan)->get_amps();
-        for (unsigned ibin = 0; ibin < nbin; ibin++)
-          tmp_amps[ibin] = amps[ibin];
-
-        if (std_subint)
-        {
-          const float* std_amps = 0;
-          std_amps = std_subint->get_Profile(ipol,ichan)->get_amps();
-          for (unsigned ibin = 0; ibin < nbin; ibin++)
-            tmp_amps[ibin] -= std_amps[ibin];
-        }
-
-        double diff = 0;
-        for (unsigned ibin = 0; ibin < nbin; ibin++)
-        {
-          double val = tmp_amps[ibin];
-          diff += val * val;
-        }
-
-        double reduced_chisq = diff / (nbin * var);
+        const Profile* profile = subint->get_Profile (ipol,ichan);
+        double chi2 = chisq(profile);
 
         if (verbose)
-          cout << ichan << " ipol=" << ipol << " var=" << var << " chisq=" << reduced_chisq << endl;
+          cout << ichan << " ipol=" << ipol << " chisq=" << chi2 << endl;
 
-        total_chisq += reduced_chisq;
+        total_chisq += chi2;
         count ++;
       }
     }
   }
 
   return total_chisq / count;
+}
+
+//! Set the template to which the data will be compared
+void TemplateDifference::set_template(const Integration* _template) 
+{ 
+  std_subint = _template;
+  std_subint->baseline_stats (0, &std_variance);
+}
+
+unsigned TemplateDifference::get_weight(unsigned ichan)
+{
+  return std_subint->get_weight(ichan);
+}
+
+//! Perform any setup for the current sub-integration
+void TemplateDifference::set_subint (const Integration* subint)
+{
+  subint->baseline_stats (0, &variance);
+}
+
+//! return the reduced chisq for the current isubint, ichan, and ipol
+/*! Defined by the off-pulse noise in the template profile and provided profile. */
+double TemplateDifference::chisq(const Profile* profile)
+{
+  double var = variance[ipol][ichan] + std_variance[ipol][ichan];
+
+  const float* amps = profile->get_amps();
+  const unsigned nbin = profile->get_nbin();
+
+  const float* std_amps = std_subint->get_Profile(ipol,ichan)->get_amps();
+
+  double diff = 0;
+  for (unsigned ibin = 0; ibin < nbin; ibin++)
+  {
+    double val = amps[ibin] - std_amps[ibin];
+    diff += val * val;
+  }
+
+  return diff / (nbin * var);
+}
+
+//! return the reduced chisq for the current isubint, ichan, and ipol
+/*! Defined by children. */
+double NumericDifference::chisq(const Profile* profile)
+{
+  const float* diff = difference->get_Profile(isubint,ipol,ichan)->get_amps();
+  const unsigned nbin = profile->get_nbin();
+
+  double range = profile->max() - profile->min();
+
+  // cerr << "NumericDifference::chisq isubint=" << isubint << " ichan=" << ichan << " ipol=" << ipol << " range=" << range << endl;
+
+  double error = tolerance * range;
+  double var = 1.0;
+
+  if (error > 0)
+    var = error * error;
+
+  double total_diff = 0;
+  for (unsigned ibin = 0; ibin < nbin; ibin++)
+  {
+    double val = diff[ibin];
+    total_diff += val * val;
+  }
+
+  double chi2 = total_diff / (nbin * var);
+  
+  // cerr << "NumericDifference::chisq tolerance=" << tolerance << " chisq=" << chi2 << endl;
+
+  return chi2;
 }
 
 
@@ -513,7 +610,7 @@ vector<double> log_likelihood (Archive* data, ArchiveComparisons* model)
     for (unsigned ichan=0; ichan < nchan; ichan++)
     {
       if (subint->get_weight(ichan) == 0)
-	continue;
+        continue;
 
       model->set_chan (ichan);
       result.push_back (model->get());
