@@ -95,12 +95,18 @@ UnaryStatistic* get_command (string& text)
   if (command.empty())
     return 0;
 
-  text = (start == string::npos) ? "" : text.substr (0, start);
-
-  DEBUG ("get_command command='" << command << "'");
-  DEBUG ("get_command remaining text='" << text << "'");
-
-  return UnaryStatistic::factory (command);
+  try
+  {
+    DEBUG ("get_command command='" << command << "'");
+    auto cmd = UnaryStatistic::factory (command);
+    text = (start == string::npos) ? "" : text.substr (0, start);
+    DEBUG ("get_command remaining text='" << text << "'");
+    return cmd;
+  }
+  catch(...)
+  {
+  }
+  return 0;
 }
 
 string evaluate2 (UnaryStatistic* stat, string vals, unsigned precision)
