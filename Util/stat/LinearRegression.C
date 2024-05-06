@@ -84,6 +84,7 @@ void LinearRegression::generalized_least_squares
     }
  
     x_offset = orig_alpha_x / orig_alpha_2;
+    weighted_mean_abscissa = x_offset;
   }
 
   for (unsigned idim=0; idim < ndim; idim++)
@@ -103,16 +104,16 @@ void LinearRegression::generalized_least_squares
  
   double bar_x = alpha_x / alpha_2;
   double bar_y = alpha_y / alpha_2;
-  double numerator   = x_y - bar_y * alpha_x;
-  double denominator = x_2 - bar_x * alpha_x;
   
-  scale.val = numerator / denominator;
-  scale.var = 0.5 / (x_2 - bar_x * alpha_x);
+  scale.var = 1.0 / (x_2 - bar_x * alpha_x);
+  scale.val = (x_y - bar_y * alpha_x) * scale.var;
 
-  offset.val = bar_x - scale.val * bar_y;
-  offset.var = 0.5 * x_2 / alpha_2 * scale.var;
+  offset.val = bar_y - scale.val * bar_x;
+  offset.var = (x_2 / alpha_2 + x_offset*x_offset) * scale.var;
 
-  weighted_mean_abscissa = bar_x;
+  if (!subtract_weighted_mean_abscissa)
+    weighted_mean_abscissa = bar_x;
+
   covariance = -bar_x * scale.var;
 
   if ( ! myfinite(scale.val) )
