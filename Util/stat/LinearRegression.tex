@@ -1,4 +1,4 @@
-\documentclass[manuscript]{aastex631}
+\documentclass[12pt]{article}
 \usepackage{amsmath}
 
 % This note derives the equation used in psrchive LinearRegression.C
@@ -90,14 +90,14 @@ lead to the following pair of equations,
 where, for $z^\prime=x^\prime$ or $z^\prime=y^\prime$,
 \begin{equation}
 \bar{z}^\prime = \frac{\sum_{i=1}^N \alpha_i z_i^\prime \lambda_i^{-1}}{\sum_{i=1}^N \alpha_i^2 \lambda_i^{-1}} 
-= \frac{\Sigma(\alpha z)}{\Sigma(\alpha^2)}
+= \frac{\Sigma\alpha z}{\Sigma\alpha^2}
 \quad \text{and} \quad
 \tilde{z}^\prime = \frac{\sum_{i=1}^N z_i^\prime x_i^\prime \lambda_i^{-1}}{\sum_{i=1}^N \alpha_i x_i^\prime \lambda_i^{-1}}
-= \frac{\Sigma(z x)}{\Sigma(\alpha x)}.
+= \frac{\Sigma z x}{\Sigma \alpha x}.
 \end{equation}
 Here,
 \begin{equation}
-\Sigma(v)=\sum_{i=1}^N v_i \lambda_i^{-1}
+\Sigma v=\sum_{i=1}^N v_i \lambda_i^{-1}
 \end{equation}
 provides convenient short-hand notation for each sum.
 %
@@ -106,8 +106,8 @@ can be solved for the scale factor,
 \begin{equation}
 m= \frac{\tilde{y}^\prime - \bar{y}^\prime}
         {\tilde{x}^\prime - \bar{x}^\prime} 
-= \frac{ \Sigma(y x) - \bar{y}^\prime \Sigma(\alpha x)}
-       { \Sigma(x^2) - \bar{x}^\prime \Sigma(\alpha x)},
+= \frac{ \Sigma y x - \bar{y}^\prime \Sigma \alpha x}
+       { \Sigma x^2 - \bar{x}^\prime \Sigma \alpha x},
 \end{equation}
 %
 which can then be plugged back into equation \ref{gls_weighted_mean}
@@ -119,23 +119,23 @@ terms of the second partial derivatives,
 %
 \[
 \alpha_{mm} = \frac{1}{2} \frac{\partial^2 \chi^2}{\partial^2 m} 
-            = \sum_{i=1}^N x_i^{\prime 2} \lambda_i^{-1},
+            = \Sigma x^2,
 %
 \quad
 %
 \alpha_{mb} = \frac{1}{2} \frac{\partial^2 \chi^2}{\partial m \partial b}
-            = \sum_{i=1}^N \alpha_i x_i^\prime \lambda_i^{-1},
+            = \Sigma \alpha x,
 %
 \quad \text{and} \quad
 %
 \alpha_{bb} = \frac{1}{2} \frac{\partial^2 \chi^2}{\partial^2 b}
-            = \sum_{i=1}^N \alpha_i^2 \lambda_i^{-1}.
+            = \Sigma \alpha^2.
 \]
 %
 Noting that the determinant of the curvature matrix
 \begin{equation}
 |\mbf{\alpha}| = \alpha_{mm}\alpha_{bb} - \alpha_{mb}^2
-    = \Sigma(x^2) \Sigma(\alpha^2) - \Sigma^2(\alpha x)
+    = \Sigma x^2 \Sigma \alpha^2  - \left(\Sigma \alpha x\right)^2
 \end{equation}
 %
 and that the covariance matrix
@@ -157,7 +157,7 @@ we have
 
 \begin{equation}
 \mathrm{Var}[m] = \alpha_{bb} |\mbf{\alpha}|^{-1} 
-= \left( \Sigma(x^2) - \Sigma(\alpha x) \bar{x}^\prime \right)^{-1}
+= \left( \Sigma x^2 - \bar{x}^\prime \Sigma\alpha x \right)^{-1}
 \label{eqn:var_m}
 \end{equation}
 
@@ -169,7 +169,7 @@ we have
 
 \begin{equation}
 \mathrm{Var}[b] = \alpha_{mm} |\mbf{\alpha}|^{-1} 
-= \frac{\Sigma(x^2)}{\Sigma(\alpha^2)}\mathrm{Var}[m] 
+= \frac{\Sigma x^2}{\Sigma\alpha^2}\mathrm{Var}[m] 
 \end{equation}
 
 Equation \ref{covariance} shows that the covariance between
