@@ -1,0 +1,191 @@
+\documentclass[manuscript]{aastex631}
+\usepackage{amsmath}
+
+% This note derives the equation used in psrchive LinearRegression.C
+
+% bold math italic font
+\newcommand{\mbf}[1]{\mbox{\boldmath $#1$}}
+% bold math italic super- or subscript size font
+\newcommand{\mbfs}[1]{\mbox{\scriptsize\boldmath $#1$}}
+
+\begin{document}
+
+\appendix
+
+\section{Weighted Linear Regression} \label{app:wls}
+
+To warm up, consider estimating the best-fit slope $m$ and y-intercept $b$ (or best-fit scale and offset between two arrays) using weighted least-squares
+%
+\begin{equation}
+    \chi^2 = \sum_{i=1}^N \left( y_i - mx_i - b\right)^2 \sigma_i^{-2}
+\end{equation}
+%
+At the $\chi^2$ minimum, the partial derivatives
+\begin{equation}
+    \frac{\partial \chi^2}{\partial m} = -2 \sum_{i=1}^N \left( y_i - mx_i - b\right) x_i \sigma_i^{-2} = 0
+\end{equation}
+and
+\begin{equation}
+    \frac{\partial \chi^2}{\partial b} = -2 \sum_{i=1}^N \left( y_i - mx_i - b\right) \sigma_i^{-2} = 0.
+\end{equation}
+%
+These equations can be re-written as the following pair,
+\begin{eqnarray}
+    \tilde{y} - m \tilde{x} & = & b \label{x_weighted_mean} \\
+    \bar{y} - m \bar{x} & = & b \label{weighted_mean}
+\end{eqnarray}
+where, for $z=x$ or $z=y$
+\begin{equation}
+\bar{z} = \frac{\sum_{i=1}^N z_i \sigma_i^{-2}}{\sum_{i=1}^N \sigma_i^{-2}} 
+\quad \text{and} \quad
+\tilde{z} = \frac{\sum_{i=1}^N z_i x_i \sigma_i^{-2}}{\sum_{i=1}^N x_i \sigma_i^{-2}}
+\end{equation}
+Equations \ref{weighted_mean} and \ref{x_weighted_mean} are
+readily solved for $m$ and $b$.  
+
+\section{Generalized Linear Regression} \label{app:gls}
+
+If the errors are correlated as described by known covariance matrix
+$\mbf\Omega$, and $\lambda_i$ is the $i^\mathrm{th}$ eigenvalue of 
+$\mbf{\Omega}$ with associated eigenvector $\mbf{e}_i$,
+then the best-fit scale and offset can be estimated
+using generalized least-squares,
+\begin{equation}
+\chi^2 = \sum_{i=1}^N \left[ \mbf{e}_i \cdot \left( \mbf{y} -m\mbf{x} - b\mbf{1}\right) \right]^2 \lambda_i^{-1}
+%
+ = \sum_{i=1}^N \left( y_i^\prime -m x_i^\prime - b \alpha_i \right)^2 \lambda_i^{-1}.
+\end{equation}
+%
+Here, 
+$\mbf{y}=(y_1, y_2, ..., y_N)$ and $\mbf{x}=(x_1, x_2, ..., x_N)$
+are vectors containing the ordinate and abscissa values,
+$\mbf{1}$ is $N$-dimensional all-ones vector ($1_i=1$),
+$y_i^\prime = \mbf{e}_i \cdot \mbf{y}$ and 
+$x_i^\prime = \mbf{e}_i \cdot \mbf{x}$ are the projections of $\mbf{y}$
+and $\mbf{x}$ onto the $i^\mathrm{th}$ eigenvector,  and
+$\alpha_i = \mbf{e}_i \cdot \mbf{1}$ is the sum of the
+components of the $i^\mathrm{th}$ eigenvector.
+%
+The generalized least-squares equation reduces to weighted least
+squares when $\alpha_i = 1$ and $\lambda_i = \sigma_i^2$.
+%
+At the $\chi^2$ minimum, the partial derivatives,
+\begin{equation}
+\frac{\partial \chi^2}{\partial m}
+= -2 \sum_{i=1}^N \left( y_i^\prime -m x_i^\prime - b \alpha_i \right) x_i^\prime \lambda_i^{-1} = 0
+\end{equation}
+and
+\begin{equation}
+\frac{\partial \chi^2}{\partial b} 
+= -2 \sum_{i=1}^N \left( y_i^\prime -m x_i^\prime - b \alpha_i \right) \alpha_i \lambda_i^{-1} = 0,
+\end{equation}
+%
+lead to the following pair of equations,
+%
+\begin{eqnarray}
+\tilde{y}^\prime - m \tilde{x}^\prime & = & b \label{gls_x_weighted_mean} \\
+\bar{y}^\prime - m \bar{x}^\prime & = & b \label{gls_weighted_mean}
+\end{eqnarray}
+%
+where, for $z^\prime=x^\prime$ or $z^\prime=y^\prime$,
+\begin{equation}
+\bar{z}^\prime = \frac{\sum_{i=1}^N \alpha_i z_i^\prime \lambda_i^{-1}}{\sum_{i=1}^N \alpha_i^2 \lambda_i^{-1}} 
+= \frac{\Sigma(\alpha z)}{\Sigma(\alpha^2)}
+\quad \text{and} \quad
+\tilde{z}^\prime = \frac{\sum_{i=1}^N z_i^\prime x_i^\prime \lambda_i^{-1}}{\sum_{i=1}^N \alpha_i x_i^\prime \lambda_i^{-1}}
+= \frac{\Sigma(z x)}{\Sigma(\alpha x)}.
+\end{equation}
+Here,
+\begin{equation}
+\Sigma(v)=\sum_{i=1}^N v_i \lambda_i^{-1}
+\end{equation}
+provides convenient short-hand notation for each sum.
+%
+Equations \ref{gls_x_weighted_mean} and \ref{gls_weighted_mean}
+can be solved for the scale factor,
+\begin{equation}
+m= \frac{\tilde{y}^\prime - \bar{y}^\prime}
+        {\tilde{x}^\prime - \bar{x}^\prime} 
+= \frac{ \Sigma(y x) - \bar{y}^\prime \Sigma(\alpha x)}
+       { \Sigma(x^2) - \bar{x}^\prime \Sigma(\alpha x)},
+\end{equation}
+%
+which can then be plugged back into equation \ref{gls_weighted_mean}
+to solve for the offset $b$.
+The variances of $m$ and $b$ and the covariance between them are computed using the inverse
+relation between the covariance matrix ${\bf C}$ and
+the curvature matrix, $\mbf{\alpha}$, which is defined in
+terms of the second partial derivatives,
+%
+\[
+\alpha_{mm} = \frac{1}{2} \frac{\partial^2 \chi^2}{\partial^2 m} 
+            = \sum_{i=1}^N x_i^{\prime 2} \lambda_i^{-1},
+%
+\quad
+%
+\alpha_{mb} = \frac{1}{2} \frac{\partial^2 \chi^2}{\partial m \partial b}
+            = \sum_{i=1}^N \alpha_i x_i^\prime \lambda_i^{-1},
+%
+\quad \text{and} \quad
+%
+\alpha_{bb} = \frac{1}{2} \frac{\partial^2 \chi^2}{\partial^2 b}
+            = \sum_{i=1}^N \alpha_i^2 \lambda_i^{-1}.
+\]
+%
+Noting that the determinant of the curvature matrix
+\begin{equation}
+|\mbf{\alpha}| = \alpha_{mm}\alpha_{bb} - \alpha_{mb}^2
+    = \Sigma(x^2) \Sigma(\alpha^2) - \Sigma^2(\alpha x)
+\end{equation}
+%
+and that the covariance matrix
+\begin{equation}
+{\bf C} = 
+    \begin{pmatrix}
+        C_{mm} & C_{mb} \\
+        C_{mb} & C_{bb}
+    \end{pmatrix}
+= \mbf{\alpha}^{-1} = |\mbf{\alpha}|^{-1} 
+    \begin{pmatrix}
+        \alpha_{bb} & -\alpha_{mb} \\
+        -\alpha_{mb} & \alpha_{mm}
+    \end{pmatrix}
+\end{equation}
+%
+we have
+
+
+\begin{equation}
+\mathrm{Var}[m] = \alpha_{bb} |\mbf{\alpha}|^{-1} 
+= \left( \Sigma(x^2) - \Sigma(\alpha x) \bar{x}^\prime \right)^{-1}
+\label{eqn:var_m}
+\end{equation}
+
+\begin{equation}
+\mathrm{Cov}[m,b] = - \alpha_{mb} |\mbf{\alpha}|^{-1} 
+= - \bar{x}^\prime \, \mathrm{Var}[m]
+\label{covariance}
+\end{equation}
+
+\begin{equation}
+\mathrm{Var}[b] = \alpha_{mm} |\mbf{\alpha}|^{-1} 
+= \frac{\Sigma(x^2)}{\Sigma(\alpha^2)}\mathrm{Var}[m] 
+\end{equation}
+
+Equation \ref{covariance} shows that the covariance between
+$m$ and $b$ is zero when $\bar{x}^\prime$ is zero.  This is achieved by
+replacing all values of $x_i^\prime$ with $x_i^{\prime\prime}=x_i^\prime - \bar{x}^\prime$,
+such that
+
+\begin{equation}
+y^\prime = mx^\prime + b = m (x^{\prime\prime} + \bar{x}^\prime) + b = m x^{\prime\prime} + b^\prime
+\end{equation}
+where $b^\prime = b + m \bar{x}^\prime$.  Therefore, noting that $\mathrm{Cov}[m,b] = 0$,
+%
+\begin{equation}
+\mathrm{Var}[b^\prime] = \mathrm{Var}[b] + \bar{x}^{\prime 2} \mathrm{Var}[m]
+\label{eqn:var_b_prime}
+\end{equation}
+
+\end{document}
+
