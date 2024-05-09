@@ -227,12 +227,13 @@ void CompareWith::get_amps (vector<double>& amps, const Profile* profile)
     element /= rms;
 }
 
-void CompareWith::get_residual (vector<double>& amps,
-				const vector<double>& mamps) try
+void CompareWith::get_residual (vector<double>& amps, const vector<double>& mamps) try
 {
   chi.set_outlier_threshold (0.0);
 
-  DEBUG("CompareWith::get_residual chisq=" << chi.get (amps, mamps));
+  double chisq = chi.get (amps, mamps);
+
+  DEBUG("CompareWith::get_residual chisq=" << chisq);
 
 #if _DEBUG
 	
@@ -646,9 +647,9 @@ void CompareWith::setup (unsigned start_primary, unsigned nprimary)
       needs_setup = true;
 
       if (gmpd->gcs)
-	gcs = gmpd->gcs;
+        gcs = gmpd->gcs;
       else
-	gmpd->gcs = gcs = new GeneralizedChiSquared;
+        gmpd->gcs = gcs = new GeneralizedChiSquared;
     }
   }
   
@@ -674,6 +675,8 @@ void CompareWith::setup (unsigned start_primary, unsigned nprimary)
       throw Error (InvalidState, "CompareWith::setup", "no good data");
 
     get_amps (mamps, mean);
+
+    DEBUG("CompareWith::setup mean amps.size=" << mamps.size());
   }
   
   double var = 0.0;
@@ -691,24 +694,30 @@ void CompareWith::setup (unsigned start_primary, unsigned nprimary)
 
       Reference::To<const Profile> prof = data->get_Profile ();
 
+      DEBUG("CompareWith::setup prof=" << prof.ptr() << " nbin=" << prof->get_nbin());
       double weight = prof->get_weight();
       
       if (weight == 0.0)
-	continue;
+        continue;
 
-      vector<double> amps (prof->get_amps(),
-			   prof->get_amps() + prof->get_nbin());
+      vector<double> amps (prof->get_amps(), prof->get_amps() + prof->get_nbin());
+
+      DEBUG("CompareWith::setup amps.size=" << amps.size());
 
       if (model_residual)
       {
-	get_amps (amps, prof);
-	get_residual (amps, mamps);
+        get_amps (amps, prof);
+        get_residual (amps, mamps);
 
-	if (!temp)
-	  temp = prof->clone();
+        DEBUG("CompareWith::setup residual amps.size=" << amps.size());
 
-	temp->set_amps (amps);
-	prof = temp;
+        if (!temp)
+          temp = prof->clone();
+
+        temp->set_amps (amps);
+        prof = temp;
+
+        DEBUG("CompareWith::setup temp=" << temp.ptr() << " nbin=" << temp->get_nbin());
 
         var += 1.0;  // get_amps normalizes by robust rms
         norm += 1.0;
@@ -793,8 +802,7 @@ void CompareWith::setup (unsigned start_primary, unsigned nprimary)
     while (eff_rank+1 < rank && eval[eff_rank]/eval[eff_rank+1] < threshold)
       eff_rank ++;
 
-    cerr << "CompareWith::setup alternative effective rank=" 
-         << eff_rank << endl;
+    cerr << "CompareWith::setup alternative effective rank=" << eff_rank << endl;
   }
 
   if (eff_rank < 4)
@@ -829,12 +837,12 @@ void CompareWith::setup (unsigned start_primary, unsigned nprimary)
     for (unsigned irank=0; irank < eff_rank; irank++)
     {
       for (unsigned ibin=0; ibin < nbin; ibin++)
-	gcs->eigenvectors[irank][ibin] = evec[(irank+offset)*nbin+ibin];
+        gcs->eigenvectors[irank][ibin] = evec[(irank+offset)*nbin+ibin];
 
       /*
-	divide by var because both CompareWithSum and
-	CompareWithEachOther normalize each profile by the square root
-	of the robust_variance
+        divide by var because both CompareWithSum and
+        CompareWithEachOther normalize each profile by the square root
+        of the robust_variance
       */
       gcs->eigenvalues[irank] = eval[irank+offset] / var;
     }
@@ -942,7 +950,7 @@ void CompareWith::compute_mean (unsigned start_primary, unsigned nprimary)
 {
   mean = 0;
 
-  // DEBUG( "CompareWith::compute_mean start=" << start_primary << " n=" << nprimary);
+  DEBUG( "CompareWith::compute_mean start=" << start_primary << " n=" << nprimary);
 
   for (unsigned iprim=start_primary; iprim < start_primary+nprimary; iprim++)
   {
@@ -955,12 +963,12 @@ void CompareWith::compute_mean (unsigned start_primary, unsigned nprimary)
       Reference::To<const Profile> iprof = data->get_Profile ();
 
       if (iprof->get_weight() == 0.0)
-	continue;
+        continue;
 
       if (!mean)
-	mean = iprof->clone();
+        mean = iprof->clone();
       else
-	mean->average (iprof);
+        mean->average (iprof);
     }
   }
 }

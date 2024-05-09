@@ -177,7 +177,7 @@ double ChiSquared::get (const vector<double>& dat1, const vector<double>& dat2) 
 
         double residual = dat1[i] - scale.val * dat2[i] - offset.val;
         if ( outlier_threshold > 0 && sqr(residual) > cut )
-              {
+        {
           mask[i] = false;
           zapped ++;
         }
@@ -196,7 +196,9 @@ double ChiSquared::get (const vector<double>& dat1, const vector<double>& dat2) 
   
   double coeff = 0.0;
   residual.resize (ndat);
-    
+
+  // cerr << "ChiSquared::get residual.size=" << residual.size() << endl;
+
   for (unsigned i=0; i<ndat; i++)
   {
     residual[i] = dat1[i] - scale.val * dat2[i] - offset.val;
