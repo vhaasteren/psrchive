@@ -1,12 +1,12 @@
 /***************************************************************************
  *
- *   Copyright (C) 2021 by Willem van Straten
+ *   Copyright (C) 2021 - 2024 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
 
 #include "GeneralizedChiSquared.h"
-#include "ChiSquared.h"
+#include "LinearRegression.h"
 #include "UnaryStatistic.h"
 
 #include <algorithm>
@@ -30,7 +30,7 @@ void general_linear_fit (Estimate<double>& scale, Estimate<double>& offset,
   // principal components
   vector<double> pc1 (ndim, 0.0);
   vector<double> pc2 (ndim, 0.0);
-  vector<double> one (ndim, 0.0);
+  vector<double> alpha (ndim, 0.0);
   vector<double> wt (ndim, 0.0);
   
   for (unsigned idim=0; idim < ndim; idim++)
@@ -44,11 +44,14 @@ void general_linear_fit (Estimate<double>& scale, Estimate<double>& offset,
 
       pc1[idim] += evec[idim][i] * dat1[i];
       pc2[idim] += evec[idim][i] * dat2[i];
-      one[idim] += evec[idim][i];
+      alpha[idim] += evec[idim][i];
     }
   }
 
-  linear_fit_work (scale, offset, pc1, pc2, one, wt);
+  LinearRegression fit;
+  fit.generalized_least_squares (pc1, pc2, wt, alpha);
+  scale = fit.scale;
+  offset = fit.offset;
 }
   
 

@@ -6,7 +6,7 @@
  ***************************************************************************/
 
 #include "Pulsar/MeanArrivalTime.h"
-#include "ChiSquared.h"
+#include "LinearRegression.h"
 #include "Physical.h"
 
 using namespace std;
@@ -33,5 +33,8 @@ void MeanArrivalTime::fit ()
     yval[idat] = delay_sec[idat].val;
   }
 
-  weighted_linear_fit (fit_delta_DM, fit_delay, yval, lambda_sq, wt);
+  LinearRegression fit;
+  fit.weighted_least_squares (yval, lambda_sq, wt);
+  fit_delta_DM = fit.scale;
+  fit_delay = fit.offset;
 }
