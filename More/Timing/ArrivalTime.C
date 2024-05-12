@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *   Copyright (C) 2009 by Willem van Straten
+ *   Copyright (C) 2009 - 2024 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -8,6 +8,7 @@
 #include "Pulsar/ArrivalTime.h"
 #include "Pulsar/ProfileStandardShift.h"
 #include "Pulsar/PolnProfileShiftEstimator.h"
+#include "Pulsar/MeanArrivalTime.h"
 
 #include "Pulsar/Archive.h"
 #include "Pulsar/IntegrationExpert.h"
@@ -27,11 +28,11 @@ using namespace std;
 
 Pulsar::Option<std::string> 
 Pulsar::ArrivalTime::default_format (
-    "ArrivalTime::default_format", "Parkes",
-    "Default TOA line format",
-    "TOAs can be generated in a number of different formats.  Valid choices\n"
-    "are:  Parkes, Princeton, ITOA, Psrclock and Tempo2."
-    );
+  "ArrivalTime::default_format", "Parkes",
+  "Default TOA line format",
+  "TOAs can be generated in a number of different formats.  Valid choices\n"
+  "are:  Parkes, Princeton, ITOA, Psrclock and Tempo2."
+);
 
 Pulsar::ArrivalTime::ArrivalTime ()
 {
@@ -75,6 +76,18 @@ Pulsar::ShiftEstimator* Pulsar::ArrivalTime::get_shift_estimator () const
   return shift_estimator;
 }
 
+//! Set the algorithm used to estimate the average arrival time
+void Pulsar::ArrivalTime::set_mean_estimator (MeanArrivalTime* mat)
+{
+  mean_arrival_time = mat;
+}
+
+//! Get the algorithm used to estimate the phase shift
+Pulsar::MeanArrivalTime* Pulsar::ArrivalTime::get_mean_estimator () const
+{
+  return mean_arrival_time;
+}
+
 //! Set the algorithm used to estimate the flux density
 void Pulsar::ArrivalTime::set_flux_estimator (Flux* flux)
 {
@@ -94,7 +107,6 @@ void Pulsar::ArrivalTime::standard_update(unsigned ichan)
 
   if (shift_estimator)
   {
-
     ProfileStandardShift* shift;
     shift = dynamic_cast<ProfileStandardShift*> (shift_estimator.get());
 
@@ -144,7 +156,6 @@ void Pulsar::ArrivalTime::set_attributes (const std::vector<std::string>& attr)
       }
     }
   }
-
 }
 
 //! Set additional TOA line text
@@ -174,13 +185,15 @@ void Pulsar::ArrivalTime::get_toas (std::vector<Tempo::toa>& toas)
       cerr << "Pulsar::ArrivalTime::get_toas WARNING centre frequency standard= " << cf2 << " != observation=" << cf1 << endl;
   }
 
+  // Get a time adjustment from be_delay
+  backend = observation->get<Backend>();
+
   const unsigned nsub = observation->get_nsubint();
   for (unsigned isub=0; isub<nsub; isub++)
   {
     vector<Tempo::toa> new_toas;
 
     get_toas (isub, new_toas);
-
     dress_toas (isub, new_toas);
 
     for (unsigned i=0; i<new_toas.size(); i++)
@@ -188,19 +201,23 @@ void Pulsar::ArrivalTime::get_toas (std::vector<Tempo::toa>& toas)
   }
 }
 
-void Pulsar::ArrivalTime::get_toas (unsigned isub,
-				    std::vector<Tempo::toa>& toas)
+double Pulsar::ArrivalTime::get_reference_frequency(const Integration* subint, unsigned ichan) const
+{
+  if (subint->get_dedispersed())
+    return subint->get_centre_frequency();
+  else
+    return subint->get_centre_frequency(ichan);
+}
+
+void Pulsar::ArrivalTime::get_toas (unsigned isub, std::vector<Tempo::toa>& toas)
 {
   bool multichannel_standard = standard && (standard->get_nchan() > 1);
-
-  // Get a time adjustment from be_delay
-  const Backend *be = observation->get<Backend>();
 
   const Integration* subint = observation->get_Integration(isub);
 
   if (Archive::verbose > 3)
     cerr << "Pulsar::ArrivalTime::get_toas isub=" << isub 
-	 << " nchan=" << subint->get_nchan() << endl;
+        << " nchan=" << subint->get_nchan() << endl;
 
   for (unsigned ichan=0; ichan < subint->get_nchan(); ++ichan)
   {
@@ -209,11 +226,15 @@ void Pulsar::ArrivalTime::get_toas (unsigned isub,
 
     const Profile* profile = subint->get_Profile (0, ichan);
 
-    if ((skip_bad && (profile->get_weight() == 0))
-	|| (multichannel_standard 
-          && standard->get_Profile (0,0,ichan)->get_weight() == 0))
+    bool bad_standard = false;
+    if (multichannel_standard)
+      bad_standard = (standard->get_Profile (0,0,ichan)->get_weight() == 0);
+
+    bool bad_data = (skip_bad && (profile->get_weight() == 0));
+
+    if (bad_data || bad_standard)
       continue;
-    
+
     try
     {
       setup (subint, ichan);
@@ -221,22 +242,28 @@ void Pulsar::ArrivalTime::get_toas (unsigned isub,
       // Shift estimators return shift in fractional turns
       Estimate<double> shift = shift_estimator->get_shift ();
 
+      if (mean_arrival_time)
+      {
+        // topocentric pulsar spin period
+        double period = subint->get_folding_period();
+        Estimate<double> delay_seconds = shift * period;
+
+        // reference frequency
+        double freq_MHz = get_reference_frequency(subint, ichan);
+
+        mean_arrival_time->integrate (freq_MHz, delay_seconds);
+      }
+
       if (positive_shifts && shift.val < 0.0)
         shift.val += 1.0;
 
       Tempo::toa arrival_time = get_toa (shift, subint, ichan);
+
       arrival_time.set_reduced_chisq( shift_estimator->get_reduced_chisq () );
       arrival_time.set_StoN( shift_estimator->get_snr () );
 
       if (flux_estimator)
         arrival_time.set_flux(flux_estimator->get_flux (profile));
-
-      // Adjust TOA with be_delay value, if present.
-      // Positive be_delay means that the file timestamp is 
-      // early as compared to the time the signal 
-      // arrived at the samplers. So we add be_delay to the TOA here.
-      if (be)
-        arrival_time.set_arrival(arrival_time.get_arrival() + be->get_delay());
 
       toas.push_back( arrival_time );
 
@@ -259,6 +286,22 @@ void Pulsar::ArrivalTime::get_toas (unsigned isub,
 
       continue;
     }
+  } // for each frequency channel
+
+  if (mean_arrival_time)
+  {
+    Estimate<double> delay = mean_arrival_time->get_delay ();
+    Estimate<double> delta_DM = mean_arrival_time->get_delta_DM ();
+    double freq = mean_arrival_time->get_reference_frequency ();
+
+    cerr << "Pulsar::ArrivalTime::get_toas delta DM=" << delta_DM << endl;
+    
+    // topocentric folding period
+    double period = subint->get_folding_period();
+    Estimate<double> shift = delay / period;
+
+    Tempo::toa arrival_time = get_toa (shift, freq, subint);
+    toas.push_back( arrival_time );
   }
 }
 
@@ -287,40 +330,44 @@ void Pulsar::ArrivalTime::setup (const Integration* subint, unsigned ichan)
 	       "shift estimator is not understood");
 }
 
-void Pulsar::ArrivalTime::dress_toas (unsigned isub,
-				      std::vector<Tempo::toa>& toas)
+void Pulsar::ArrivalTime::dress_toas (unsigned isub, std::vector<Tempo::toa>& toas)
 {
   std::string nsite = observation->get_telescope();
   // Try to get the special site codes for
   // various Jodrell Bank backends.
   // Perhaps there should be a subroutine for this?
-  if (format == Tempo::toa::Tempo2){
-      if (nsite == "h" || nsite=="JB_MKII") {
-          const Backend* be = observation->get<Backend>();
-          if (be) {
-              if (be->get_name()=="Jod"){
-                  nsite="jbmk2dfb";
-              }
-              if (be->get_name()=="ROACH"){
-                  nsite="jbmk2roach";
-              }
-          }
+  if (format == Tempo::toa::Tempo2)
+  {
+    if (nsite == "h" || nsite=="JB_MKII")
+    {
+      if (backend)
+      {
+        if (backend->get_name()=="Jod")
+        {
+          nsite="jbmk2dfb";
+        }
+        if (backend->get_name()=="ROACH")
+        {
+          nsite="jbmk2roach";
+        }
       }
-      if (nsite == "8" || nsite=="Jodrell") {
-          const Backend* be = observation->get<Backend>();
-          if (be) {
-              if (be->get_name()=="Jod"){
-                  nsite="jbdfb";
-              }
-              if (be->get_name()=="ROACH"){
-                  nsite="jbroach";
-              }
-              if (be->get_name()=="COBRA2") {
-                  nsite="jb42";
-              }
-          }
+    }
+    if (nsite == "8" || nsite=="Jodrell")
+    {
+      if (backend) {
+        if (backend->get_name()=="Jod"){
+          nsite="jbdfb";
+        }
+        if (backend->get_name()=="ROACH"){
+          nsite="jbroach";
+        }
+        if (backend->get_name()=="COBRA2") {
+          nsite="jb42";
+        }
       }
-  } 
+    }
+  }
+
   std::string aux_txt;
 
   if (format == Tempo::toa::Parkes || format == Tempo::toa::Psrclock)
@@ -351,6 +398,13 @@ Tempo::toa Pulsar::ArrivalTime::get_toa (Estimate<double>& shift,
 					 const Pulsar::Integration* subint,
 					 unsigned ichan)
 {
+  return get_toa(shift,get_reference_frequency(subint,ichan),subint,ichan);
+}
+
+Tempo::toa Pulsar::ArrivalTime::get_toa (Estimate<double>& shift, double reference_frequency,
+					 const Pulsar::Integration* subint,
+					 unsigned ichan)
+{
   Tempo::toa toa (format);
 
   // phase shift in turns
@@ -368,11 +422,7 @@ Tempo::toa Pulsar::ArrivalTime::get_toa (Estimate<double>& shift,
   // arrival time error in microseconds
   toa.set_error (shift.get_error() * period * 1e6);
 
-  if (subint->get_dedispersed())
-    toa.set_frequency (subint->get_centre_frequency());
-  else
-    toa.set_frequency (subint->get_centre_frequency(ichan));
-
+  toa.set_frequency (reference_frequency);
   toa.set_channel (ichan);
 
   toa.set_dur(subint->get_duration());
@@ -382,13 +432,15 @@ Tempo::toa Pulsar::ArrivalTime::get_toa (Estimate<double>& shift,
   if (format == Tempo::toa::Parkes || format == Tempo::toa::Psrclock)
     toa.set_auxilliary_text( tostring(ichan) );
 
+  // Adjust TOA with be_delay value, if present.
+  // Positive be_delay means that the file timestamp is 
+  // early as compared to the time the signal 
+  // arrived at the samplers. So we add be_delay to the TOA here.
+  if (backend)
+    toa.set_arrival(toa.get_arrival() + backend->get_delay());
+
   return toa;
 }
-
-
-
-
-
 
 void Pulsar::ArrivalTime::set_format (const string& fmt)
 {

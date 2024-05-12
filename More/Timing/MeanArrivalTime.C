@@ -6,6 +6,8 @@
  ***************************************************************************/
 
 #include "Pulsar/MeanArrivalTime.h"
+#include "Pulsar/DispersionDelay.h"
+
 #include "LinearRegression.h"
 #include "Physical.h"
 
@@ -34,7 +36,11 @@ void MeanArrivalTime::fit ()
   }
 
   LinearRegression fit;
+  fit.subtract_weighted_mean_abscissa = true;
   fit.weighted_least_squares (yval, lambda_sq, wt);
-  fit_delta_DM = fit.scale;
+
+  DispersionDelay delay;
+  fit_delta_DM = delay.get_dispersion_measure(fit.scale);
   fit_delay = fit.offset;
+  reference_frequency = Pulsar::speed_of_light / (sqrt(fit.weighted_mean_abscissa) * 1e6); // MHz
 }

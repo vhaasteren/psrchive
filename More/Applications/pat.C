@@ -13,6 +13,7 @@
 
 #include "Pulsar/ArrivalTime.h"
 #include "Pulsar/MatrixTemplateMatching.h"
+#include "Pulsar/MeanArrivalTime.h"
 
 #include "Pulsar/PhaseGradShift.h"
 #include "Pulsar/SincInterpShift.h"
@@ -145,6 +146,7 @@ bool positive_shifts = false;
 unsigned ntest_uncertainty = 0;
 Pulsar::SmoothSinc* sinc = 0;
 Reference::To<ArrivalTime> arrival;
+Reference::To<MeanArrivalTime> mean_arrival_time;
 
 Archive* load_standard (const string& filename);
 
@@ -167,6 +169,8 @@ void usage ()
     "\n"
     "Fitting options:\n"
     "  -a stdfiles      Automatically select standard from specified group\n"
+    "  -P               Do not fscrunch the standard (frequency-dependent template)\n"
+    "  -I               Output frequency-averaged TOA and delta-DM (implies -P)\n"
     "  -D               Denoise standard \n"
     "  -e cfg1[,cfgN]   Estimator configuration option[s] \n"
     "  -E cfg           Estimator configuration options in 'cfg' text file \n"
@@ -177,10 +181,9 @@ void usage ()
     "                   (use of this option implies SIS) \n"
     "\n"
     "Matrix template matching options: \n"
+    "  -p               Enable matrix template matching \n"
     "  -c               Choose the maximum harmonic \n"
     "  -n harmonics     Use up to the specified number of harmonics\n"
-    "  -p               Enable matrix template matching \n"
-    "  -P               Do not fscrunch the standard \n"
     "\n"
     "Algorithm Selection:\n"
     "  -A name          Select shift algorithm [default: PGS] \n"
@@ -272,7 +275,7 @@ int main (int argc, char** argv) try
 #define PLOT_ARGS
 #endif
 
-  const char* args = "a:A:bcC:Dde:E:f:Fg:G:hj:J:K:m:M:n:pPqRrS:s:TuU:vVxX:z:" PLOT_ARGS;
+  const char* args = "a:A:bcC:Dde:E:f:Fg:G:hIj:J:K:m:M:n:pPqRrS:s:TuU:vVxX:z:" PLOT_ARGS;
 
   int gotc = 0;
 
@@ -359,6 +362,11 @@ int main (int argc, char** argv) try
     case 'h':
       usage ();
       return 0;
+
+    case 'I':
+      mean_arrival_time = new MeanArrivalTime;
+      full_freq = true;
+      break;
 
     case 'j':
       separate (optarg, jobs, ",");
@@ -506,6 +514,9 @@ int main (int argc, char** argv) try
 
     full_poln->set_choose_maximum_harmonic (choose_maximum_harmonic);
   }
+
+  if (full_freq && mean_arrival_time)
+    arrival->set_mean_estimator(mean_arrival_time);
 
   if (!stdFile.empty() && !std_multiple && !gaussian)
     stdarch = load_standard (stdFile);

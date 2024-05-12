@@ -28,15 +28,28 @@ namespace Pulsar {
     //! Best-fit phase delay at reference frequency
     Estimate<double> fit_delay;
     //! Best-fit delta-DM at reference frequency
-    Estimate<double> fit_delta_DM;   
+    Estimate<double> fit_delta_DM;
 
-    void fit ();
-    
+    //! Reference frequency
+    double reference_frequency = 0;
+
   public:
 
     //! Add a time delay estimate
     void integrate (double freq_MHz, Estimate<double> delay_seconds);
 
+    //! Compute the best-fit delay and delta-DM
+    void fit ();
+
+    //! Return the best-fit delay (in seconds) at the reference frequency
+    Estimate<double> get_delay () const { return fit_delay; }
+
+    //! Return the best-fit delta-DM (in \f$ {\rm pc\,cm}^{-3} \f$) at the reference frequency
+    Estimate<double> get_delta_DM () const { return fit_delta_DM; }
+
+    //! Return the reference frequency in MHz
+    /*! At this frequency, the covariance between delay and delta-DM is zero */
+    double get_reference_frequency () const { return reference_frequency; }
   };
 
 }
