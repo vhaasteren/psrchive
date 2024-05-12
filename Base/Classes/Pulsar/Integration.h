@@ -39,7 +39,7 @@ namespace Pulsar {
   public:
     
     //! flag controls the amount output to stderr by Integration methods
-    static bool verbose;
+    static unsigned verbose;
 
     //! Maximum centre frequency difference in Integration::mixable
     static double match_max_frequency_difference;

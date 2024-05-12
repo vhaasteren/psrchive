@@ -24,7 +24,7 @@
 
 using namespace std;
 
-bool Pulsar::Integration::verbose = false;
+unsigned Pulsar::Integration::verbose = 0;
 
 //! Return the number of extensions available
 unsigned Pulsar::Integration::get_nextension () const

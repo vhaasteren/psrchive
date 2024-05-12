@@ -1,27 +1,27 @@
 /***************************************************************************
  *
- *   Copyright (C) 2010-2011 by Willem van Straten
+ *   Copyright (C) 2010 - 2024 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
 
-#include "Pulsar/Editor.h"
+#include "Pulsar/ArchiveEditor.h"
 #include "Pulsar/ArchiveExtension.h"
 
 using namespace std;
 
-void Pulsar::Editor::add_extension (Archive* archive, const std::string& ext)
+void Pulsar::ArchiveEditor::add_extension (Archive* archive, const std::string& ext)
 {
   if (Archive::verbose > 1)
-    cerr << "Pulsar::Editor::add_extension " << ext << endl;
+    cerr << "Pulsar::ArchiveEditor::add_extension " << ext << endl;
 
   archive->add_extension( Archive::Extension::factory( ext ) );
 }
 
-void Pulsar::Editor::remove_extension (Archive* archive, const std::string& ext)
+void Pulsar::ArchiveEditor::remove_extension (Archive* archive, const std::string& ext)
 {
   if (Archive::verbose > 1)
-    cerr << "Pulsar::Editor::remove_extension " << ext << endl;
+    cerr << "Pulsar::ArchiveEditor::remove_extension " << ext << endl;
 
   unsigned next = archive->get_nextension();
 
@@ -32,7 +32,7 @@ void Pulsar::Editor::remove_extension (Archive* archive, const std::string& ext)
 }
 
 //! Get the identifier for this instance
-string Pulsar::Editor::get_identifier (const Archive* archive)
+string Pulsar::ArchiveEditor::get_identifier (const Archive* archive)
 {
   return archive->get_filename();
 }

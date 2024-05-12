@@ -7,11 +7,11 @@
 
 #include "Pulsar/Application.h"
 #include "Pulsar/ArchiveInterface.h"
-#include "Pulsar/Editor.h"
+#include "Pulsar/ArchiveEditor.h"
 #include "Pulsar/UnloadOptions.h"
 
 using namespace std;
-using Pulsar::Editor;
+using Pulsar::ArchiveEditor;
 
 //
 //! Converts between file formats
@@ -35,7 +35,7 @@ protected:
   void add_options (CommandLine::Menu&);
 
   //! Archive editor
-  Editor editor;
+  ArchiveEditor editor;
 
   //! The unloader
   Unload* unload;
@@ -100,10 +100,10 @@ void psrconv::add_options (CommandLine::Menu& menu)
   arg = menu.add (output_format, 'o', "format");
   arg->set_help ("name of the output file format");
 
-  arg = menu.add (&editor, &Editor::add_commands, 'c', "command[s]");
+  arg = menu.add (&editor, &ArchiveEditor::add_commands, 'c', "command[s]");
   arg->set_help ("one or more edit commands, separated by commas");
 
-  arg = menu.add (&editor, &Editor::add_extensions, 'a', "extension[s]");
+  arg = menu.add (&editor, &ArchiveEditor::add_extensions, 'a', "extension[s]");
   arg->set_help ("one or more extensions to be added, separated by commas");
 }
 
