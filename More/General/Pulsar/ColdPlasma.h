@@ -93,6 +93,10 @@ namespace Pulsar {
     virtual void set_Profile (const Profile* data)
     { corrector.set_frequency( data->get_centre_frequency () ); }
 
+    //! Set the frequency for which the correction will be computed
+    virtual void set_frequency (double frequency)
+    { corrector.set_frequency(frequency); }
+
     //! Execute the correction
     /* \post All data will be corrected to the reference frequency */
     void execute1 (Integration*);
@@ -254,7 +258,7 @@ try
   {
     if (Integration::verbose)
       std::cerr << "Pulsar::" + name + "::update absolute"
-	" measure=" << absolute_measure << std::endl;
+	                " measure=" << absolute_measure << std::endl;
 
     // the following corrects centre frequency to infinite frequency
     Corrector absolute;
@@ -279,8 +283,8 @@ try
 
     if (Integration::verbose)
       std::cerr << "Pulsar::" + name + "::update corrected"
-	" measure=" << corrected_measure << " lambda=" << lambda 
-		<< std::endl;
+	                " measure=" << corrected_measure << " lambda=" << lambda 
+		            << std::endl;
 
     // calculate the correction due to the new centre frequency, if any
     corrector.set_wavelength( lambda );

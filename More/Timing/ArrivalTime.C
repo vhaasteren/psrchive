@@ -8,7 +8,9 @@
 #include "Pulsar/ArrivalTime.h"
 #include "Pulsar/ProfileStandardShift.h"
 #include "Pulsar/PolnProfileShiftEstimator.h"
+
 #include "Pulsar/MeanArrivalTime.h"
+#include "Pulsar/Dispersion.h"
 
 #include "Pulsar/Archive.h"
 #include "Pulsar/IntegrationExpert.h"
@@ -209,6 +211,20 @@ double Pulsar::ArrivalTime::get_reference_frequency(const Integration* subint, u
     return subint->get_centre_frequency(ichan);
 }
 
+// Return the fractional part of value within the range [-0.5, 0.5]
+double fractional_phase (double value)
+{
+  value = std::fmod(value, 1.0);
+
+  if (value < -0.5)
+    return value + 1.0;
+
+  if (value > 0.5)
+    return value - 1.0;
+
+  return value;
+}
+
 void Pulsar::ArrivalTime::get_toas (unsigned isub, std::vector<Tempo::toa>& toas)
 {
   bool multichannel_standard = standard && (standard->get_nchan() > 1);
@@ -218,6 +234,23 @@ void Pulsar::ArrivalTime::get_toas (unsigned isub, std::vector<Tempo::toa>& toas
   if (Archive::verbose > 3)
     cerr << "Pulsar::ArrivalTime::get_toas isub=" << isub 
         << " nchan=" << subint->get_nchan() << endl;
+
+  Dispersion dispersion;
+
+  if (mean_arrival_time)
+  {
+    // to output a delta-DM, it is necessary to correct for the expected dispersive delay
+    dispersion.set(subint);
+
+    // note that pat ensures that the standard is dedispersed, but good to check
+    if (!standard->get_dedispersed())
+      throw Error(InvalidParam, "Pulsar::ArrivalTime::get_toas", "standard is not dedispersed (cannot estimate delta DM)");
+
+    if (observation->get_dedispersed())
+      throw Error(InvalidParam, "Pulsar::ArrivalTime::get_toas", "observation is dedispersed (cannot estimate delta DM)");
+
+    dispersion.set_reference_frequency(standard->get_centre_frequency());
+  }
 
   for (unsigned ichan=0; ichan < subint->get_nchan(); ++ichan)
   {
@@ -244,14 +277,18 @@ void Pulsar::ArrivalTime::get_toas (unsigned isub, std::vector<Tempo::toa>& toas
 
       if (mean_arrival_time)
       {
-        // topocentric pulsar spin period
+        double freq_MHz = get_reference_frequency(subint, ichan);
+        dispersion.set_frequency(freq_MHz);
+        double dispersive_shift = dispersion.get_shift();
+        shift.val = fractional_phase(shift.val - dispersive_shift);
+
+        cout << ichan << " SHIFT " << shift.val << " " << sqrt(shift.var) << endl;
         double period = subint->get_folding_period();
         Estimate<double> delay_seconds = shift * period;
 
-        // reference frequency
-        double freq_MHz = get_reference_frequency(subint, ichan);
-
         mean_arrival_time->integrate (freq_MHz, delay_seconds);
+
+        continue;
       }
 
       if (positive_shifts && shift.val < 0.0)
@@ -290,12 +327,13 @@ void Pulsar::ArrivalTime::get_toas (unsigned isub, std::vector<Tempo::toa>& toas
 
   if (mean_arrival_time)
   {
+    mean_arrival_time->fit();
     Estimate<double> delay = mean_arrival_time->get_delay ();
     Estimate<double> delta_DM = mean_arrival_time->get_delta_DM ();
     double freq = mean_arrival_time->get_reference_frequency ();
 
     cerr << "Pulsar::ArrivalTime::get_toas delta DM=" << delta_DM << endl;
-    
+
     // topocentric folding period
     double period = subint->get_folding_period();
     Estimate<double> shift = delay / period;

@@ -21,7 +21,7 @@ Pulsar::ExtensionInterpreter::ExtensionInterpreter ()
   add_command 
     ( &ExtensionInterpreter::remove,
       "remove", "remove named extension",
-      "usage: pred <file> \n"
+      "usage: remove <file> \n"
       "  string name  name of extension to remove \n" );
 
   add_command 
