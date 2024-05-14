@@ -110,10 +110,16 @@ void Pulsar::Dispersion::set (const Integration* data)
   ColdPlasma<DispersionDelay,Dedisperse>::set (data);
   folding_period = data->get_folding_period ();
 
+  if (Integration::verbose)
+    cerr << "Pulsar::Dispersion::set folding_period=" << folding_period << endl;
+
   if (barycentric_correction)
   {
     bary.set_Integration(data);
     earth_doppler = bary.get_Doppler();
+
+    if (Integration::verbose)
+      cerr << "Pulsar::Dispersion::set earth_doppler=" << earth_doppler << endl;
   }
 }
 
