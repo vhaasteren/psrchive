@@ -362,8 +362,7 @@ catch (Error& error)
 
 //! Correct the second argument as the first argument was corrected
 template<class C, class History>
-void Pulsar::ColdPlasma<C,History>::match (const Integration* reference,
-					   Integration* to_correct)
+void Pulsar::ColdPlasma<C,History>::match (const Integration* reference,vIntegration* to_correct)
 {
   const History* corrected = reference->template get<History>();
   if (!corrected)
@@ -388,14 +387,13 @@ void Pulsar::ColdPlasma<C,History>::match (const Integration* reference,
     \pre the delta attribute will have been properly set or reset
 */
 template<class C, class H>
-void Pulsar::ColdPlasma<C,H>::range (Integration* data,
-				     unsigned ichan, unsigned kchan) try
+void Pulsar::ColdPlasma<C,H>::range (Integration* data, unsigned ichan, unsigned kchan) try
 {
 
   if (Integration::verbose)
     std::cerr << "Pulsar::"+name+"::range "+val+"=" << get_measure()
-	 << " lambda_0=" << get_reference_wavelength() << " m" 
-         << " delta=" << delta << std::endl;
+        << " lambda_0=" << get_reference_wavelength() << " m" 
+        << " delta=" << delta << std::endl;
 
   if (get_measure() == 0 && delta == get_identity())
     return;
