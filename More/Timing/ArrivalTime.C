@@ -242,7 +242,7 @@ void Pulsar::ArrivalTime::get_toas (unsigned isub, std::vector<Tempo::toa>& toas
     // to output a delta-DM, it is necessary to correct for the expected dispersive delay
     dispersion.set(subint);
 
-    // note that pat ensures that the standard is dedispersed, but good to check
+    // double-check assumptions
     if (!standard->get_dedispersed())
       throw Error(InvalidParam, "Pulsar::ArrivalTime::get_toas", "standard is not dedispersed (cannot estimate delta DM)");
 

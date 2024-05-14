@@ -293,8 +293,7 @@ try
 
     if (Integration::verbose)
       std::cerr << "Pulsar::" + name + "::update corrected"
-	" measure=" << corrected_measure << " lambda=" << lambda 
-		<< std::endl;
+                  " measure=" << corrected_measure << " lambda=" << lambda << std::endl;
 
     // calculate the correction due to the new centre frequency, if any
     corrector.set_wavelength( lambda );
@@ -304,8 +303,7 @@ try
   }
 
   if (Integration::verbose)
-    std::cerr << "Pulsar::" + name + "::update effective_measure="
-	      << effective_measure << std::endl;
+    std::cerr << "Pulsar::" + name + "::update effective_measure=" << effective_measure << std::endl;
 
   // set the effective correction measure
   set_measure( effective_measure );
