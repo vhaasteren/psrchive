@@ -282,7 +282,8 @@ void Pulsar::ArrivalTime::get_toas (unsigned isub, std::vector<Tempo::toa>& toas
         double dispersive_shift = dispersion.get_shift();
         shift.val = fractional_phase(shift.val - dispersive_shift);
 
-        cout << ichan << " SHIFT " << shift.val << " " << sqrt(shift.var) << endl;
+        if (Archive::verbose > 1)
+          cout << ichan << " SHIFT " << shift.val << " " << sqrt(shift.var) << endl;
         double period = subint->get_folding_period();
         Estimate<double> delay_seconds = shift * period;
 
@@ -328,17 +329,23 @@ void Pulsar::ArrivalTime::get_toas (unsigned isub, std::vector<Tempo::toa>& toas
   if (mean_arrival_time)
   {
     mean_arrival_time->fit();
+
     Estimate<double> delay = mean_arrival_time->get_delay ();
     Estimate<double> delta_DM = mean_arrival_time->get_delta_DM ();
     double freq = mean_arrival_time->get_reference_frequency ();
 
-    cerr << "Pulsar::ArrivalTime::get_toas delta DM=" << delta_DM << endl;
+    mean_arrival_time->reset();
+
+    if (Archive::verbose > 2)
+      cerr << "Pulsar::ArrivalTime::get_toas delta DM=" << delta_DM << endl;
 
     // topocentric folding period
     double period = subint->get_folding_period();
     Estimate<double> shift = delay / period;
 
     Tempo::toa arrival_time = get_toa (shift, freq, subint);
+    arrival_time.set_dispersion_measure_estimate(delta_DM + dispersion.get_dispersion_measure());
+    
     toas.push_back( arrival_time );
   }
 }

@@ -499,6 +499,13 @@ int main (int argc, char** argv) try
     return -1;
   } 
   
+  if (mean_arrival_time)
+  {
+    cerr << "pat: setting output format to tempo2 IPTA" << endl;
+    outFormat = "tempo2";
+    outFormatFlags = "IPTA";
+  }
+
   if (!outFormat.empty()) arrival->set_format (outFormat);
   arrival->set_format_flags (outFormatFlags);
   arrival->set_attributes (commands);

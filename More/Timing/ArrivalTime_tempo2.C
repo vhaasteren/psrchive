@@ -131,6 +131,12 @@ std::string Pulsar::ArrivalTime::get_ipta_aux_txt (const Tempo::toa& toa)
     args += " -nch " + tostring(
         h->get_row(0)->get_nchan() / observation->get_nchan());
 
+  Estimate<double> dm_estimate = toa.get_dispersion_measure_estimate();
+  if (dm_estimate.var != 0)
+  {
+    args += " -pp_dm " + tostring(dm_estimate.get_value(),7);
+    args += " -pp_dme " + tostring(dm_estimate.get_error(),7);
+  }
 
   return args;
 

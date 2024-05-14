@@ -372,7 +372,7 @@ catch (Error& error)
 
 //! Correct the second argument as the first argument was corrected
 template<class C, class History>
-void Pulsar::ColdPlasma<C,History>::match (const Integration* reference,vIntegration* to_correct)
+void Pulsar::ColdPlasma<C,History>::match (const Integration* reference, Integration* to_correct)
 {
   const History* corrected = reference->template get<History>();
   if (!corrected)

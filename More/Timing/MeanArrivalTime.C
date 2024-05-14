@@ -21,7 +21,18 @@ void MeanArrivalTime::integrate (double freq_MHz, Estimate<double> delay_seconds
   delay_sec.push_back (delay_seconds);
   lambda_sq.push_back (lambda*lambda);
 }
-  
+
+//! Delete all data and reset all values to zero
+void MeanArrivalTime::reset ()
+{
+  delay_sec.clear();
+  lambda_sq.clear();
+
+  fit_delay = 0.0;
+  fit_delta_DM = 0.0;
+  reference_frequency = 0.0;
+}
+
 void MeanArrivalTime::fit ()
 {
   unsigned ndat = delay_sec.size();

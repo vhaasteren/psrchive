@@ -41,6 +41,9 @@ namespace Pulsar {
     //! Compute the best-fit delay and delta-DM
     void fit ();
 
+    //! Delete all data and reset all values to zero
+    void reset ();
+
     //! Return the best-fit delay (in seconds) at the reference frequency
     Estimate<double> get_delay () const { return fit_delay; }
 
