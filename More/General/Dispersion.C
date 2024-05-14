@@ -105,9 +105,9 @@ catch (Error& error) {
 }
 
 //! Set attributes in preparation for execute
-void Pulsar::Dispersion::set (const Integration* data)
+void Pulsar::Dispersion::update (const Integration* data)
 {
-  ColdPlasma<DispersionDelay,Dedisperse>::set (data);
+  ColdPlasma<DispersionDelay,Dedisperse>::update (data);
   folding_period = data->get_folding_period ();
 
   if (barycentric_correction)

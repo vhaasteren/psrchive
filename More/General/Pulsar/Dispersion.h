@@ -33,34 +33,34 @@ namespace Pulsar {
     Dispersion ();
 
     //! Return the dispersion measure due to the ISM
-    double get_correction_measure (const Integration*);
+    double get_correction_measure (const Integration*) override;
 
     //! Return the auxiliary dispersion measure (0 if corrected)
-    double get_absolute_measure (const Integration*);
+    double get_absolute_measure (const Integration*) override;
 
     //! Return true if the Integration has been dedispersed
-    bool get_corrected (const Integration* data);
+    bool get_corrected (const Integration* data) override;
 
     //! Return the effective dispersion measure that remains to be corrected
-    double get_effective_measure (const Integration*);
+    double get_effective_measure (const Integration*) override;
 
     //! Return zero delay
-    double get_identity () { return 0; }
+    double get_identity () override { return 0; }
 
     //! Combine delays
-    void combine (double& result, const double& add) { result += add; }
+    void combine (double& result, const double& add) override { result += add; }
 
     //! Setup all necessary attributes
-    void set (const Integration*);
+    void update (const Integration*) override;
 
     //! Phase rotate each profile by the correction
-    void apply (Integration*, unsigned channel);
+    void apply (Integration*, unsigned channel) override;
 
     //! Apply the current correction to all sub-integrations in an archive
-    void execute (Archive*);
+    void execute (Archive*) override;
 
     //! Undo the correction
-    void revert (Archive*);
+    void revert (Archive*) override;
 
     //! Set the dispersion measure
     void set_dispersion_measure (double dispersion_measure)
