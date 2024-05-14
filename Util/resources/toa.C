@@ -65,19 +65,19 @@ Tempo::toa& Tempo::toa::operator = (const toa & in_toa)
 
   telescope = in_toa.telescope;
   phs = in_toa.phs;
-  dmc = in_toa.dmc;
+
+  dispersion_measure = in_toa.dispersion_measure;
+  dispersion_measure_correction = in_toa.dispersion_measure_correction;
+  dispersion_measure_estimate = in_toa.dispersion_measure_estimate;
+
   observatory[0] = in_toa.observatory[0];
   observatory[1] = in_toa.observatory[1]; 
-  ston = in_toa.ston;
-  pa = in_toa.pa;
-  bw = in_toa.bw;
-  dur = in_toa.dur;
-  dm = in_toa.dm;
+  signal_to_noise = in_toa.signal_to_noise;
+  parallactic_angle = in_toa.parallactic_angle;
+  bandwidth = in_toa.bandwidth;
+  duration = in_toa.duration;
 
   flux = in_toa.flux;
-
-  ci = in_toa.ci;
-  di = in_toa.di;
   
   auxinfo = in_toa.auxinfo;
   
@@ -258,7 +258,7 @@ int Tempo::toa::Princeton_load (const char* instring)
   telescope = instring[0];
 
   int scanned = sscanf (instring+15, "%lf %s %f %f",
- 			&frequency, datestr, &error, &dmc);
+ 			&frequency, datestr, &error, &dispersion_measure_correction);
 
   if (scanned < 4) {
     // an invalid line was not commented out
@@ -289,7 +289,7 @@ int Tempo::toa::Princeton_unload (char* outstring) const
 
   sprintf (outstring, "%c %13.13s %8.3f %19.19s  %7.3f               %9.5f",
 	   telcode, auxinfo.c_str(), frequency, 
-	   arrival.printdays(19).c_str(), error, dmc);
+	   arrival.printdays(19).c_str(), error, dispersion_measure_correction);
   return 0;
 }
 
@@ -816,17 +816,15 @@ void Tempo::toa::init()
 
   telescope       = "0";
   phs             = 0.0;
-  dmc             = 0.0;
+  dispersion_measure_correction        = 0.0;
   observatory [0] = '\0';
 
-  ston = UNSET;
-  pa   = UNSET;
-  bw   = UNSET;
-  dur  = UNSET;
-  dm   = UNSET;
-
-  ci = 7;
-  di = 0;
+  signal_to_noise = UNSET;
+  parallactic_angle   = UNSET;
+  bandwidth   = UNSET;
+  duration  = UNSET;
+  dispersion_measure = UNSET;
+  dispersion_measure_estimate = 0.0;
 
   auxinfo.erase();
 

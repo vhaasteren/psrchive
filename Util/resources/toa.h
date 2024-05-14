@@ -65,39 +65,62 @@ namespace Tempo {
     // Fundamental TOA LINE as described here:
     // http://pulsar.princeton.edu/tempo/ref_man_sections/toa.txt
 
-    double frequency;      // Observing frequency (MHz)
-    MJD    arrival;        // TOA
-    float  error;          // TOA uncertainty in microseconds
-    float  reduced_chisq;  // The reduced chisq of the TOA estimator
+    //! Observing frequency (MHz)
+    double frequency = 0.0;
 
-    std::string telescope; // Observatory code
-    unsigned channel;      // Corresponding channel
-    unsigned subint;       // Corresponding subint
-    double phase_shift;    // Phase shift
+    //! Time of arrival, TOA
+    MJD arrival;
 
-    // Parkes Format specific
+    //! TOA uncertainty in microseconds
+    float error = 0.0;
 
-    float  phs;            // Phase offset (fraction of P0, added to TOA)
+    //! Goodness-of-fit (reduced chisq) reported by the phase shift estimator
+    float reduced_chisq = 0.0;
 
-    // Princeton and ITOA Format specfic
+    //! Phase shift (turns) computed by the phase shift estimator
+    double phase_shift = 0;
 
-    float  dmc;            // DM correction (pc cm^-3)
+    //! Observatory code
+    std::string telescope;
 
-    // ITOA Format specific
+    //! Frequency channel index in data file
+    unsigned channel = 0;
 
-    char   observatory[2]; // Observatory (two-letter code)
+    //! Sub-integration index in data file
+    unsigned subint = 0;
+
+    //! Phase offset (turns, added to TOA)
+    /*! Parkes format-specific */
+    float phs = 0;
+
+    //! Observatory (two-letter code)
+    char observatory[2];
     
-    // Psrclock / Rhythm extras
+    //! Typically the name of the data file
+    std::string auxinfo;
 
-    std::string auxinfo;   /* text passed to context specific data */
+    //! Signal-to-noise ratio estimate
+    float signal_to_noise = 0;
 
-    // Information about the parent archive
+    //! Parallactic angle ???
+    float parallactic_angle = 0;
 
-    float ston;
-    float pa;
-    float bw;
-    float dur;
-    float dm;
+    //! Bandwidth (MHz)
+    float bandwidth = 0;
+
+    //! Duration (s) aka integration length
+    float duration = 0;
+
+    //! Dispersion measure, DM (pc cm^-3)
+    double dispersion_measure = 0;
+
+    //! Dispersion measure correction (pc cm^-3)
+    /*! Parsed from Princeton format */
+    float dispersion_measure_correction;
+
+    //! Estimated dispersion measure (pc cm^-3)
+    Estimate<double> dispersion_measure_estimate;
+
     Estimate<float> flux;
 
     bool phase_info;
@@ -111,12 +134,6 @@ namespace Tempo {
 
     // residual for this toa as calculated by tempo
     residual resid;
-    
-    // colour index for use with pgplot
-    int ci;
-
-    // dot index for use with pgplot
-    int di;
     
     // Basic constructors and destructors
     toa (Format fmt = Psrclock);
@@ -134,19 +151,19 @@ namespace Tempo {
     
     // methods for setting/getting things (may eventually check validity)
     void set_format    (Format fmt)  { format = fmt; };
-    void set_StoN      (float sn)    { ston = sn; };
-    void set_pa        (float p)     { pa = p; };
-    void set_bw        (float b)     { bw = b; };
-    void set_dur       (float d)     { dur = d; };
-    void set_dm        (float d)     { dm = d; };
+    void set_StoN      (float sn)    { signal_to_noise = sn; };
+    void set_pa        (float p)     { parallactic_angle = p; };
+    void set_bw        (float b)     { bandwidth = b; };
+    void set_dur       (float d)     { duration = d; };
+    void set_dm        (float d)     { dispersion_measure = d; };
     void set_state     (State st)    { state = st; };
 
     void set_frequency (double freq) { frequency = freq; };
-    void set_arrival   (MJD arrived) { arrival = arrived; };
+    void set_arrival   (const MJD& arrived) { arrival = arrived; };
     void set_error     (float err)   { error = err; };
     void set_reduced_chisq (float x) { reduced_chisq = x; }
-    void set_flux      (Estimate<float> x) { flux = x; }
-
+    void set_flux      (const Estimate<float>& x) { flux = x; }
+    void set_dispersion_measure_estimate (const Estimate<double>& x) { dispersion_measure_estimate = x; }
     void set_telescope (const std::string& telcode);
     void set_auxilliary_text (const std::string& text) { auxinfo = text; };
     void set_channel   (unsigned chan)   { channel = chan; };
@@ -155,11 +172,11 @@ namespace Tempo {
     void set_phase_info  (bool info)    { phase_info = info; };
 
     Format get_format    () const { return format; };
-    float  get_StoN      () const { return ston; };
-    float  get_pa        () const { return pa; };
-    float  get_bw        () const { return bw; };
-    float  get_dur       () const { return dur; };
-    float  get_dm        () const { return dm; };
+    float  get_StoN      () const { return signal_to_noise; };
+    float  get_pa        () const { return parallactic_angle; };
+    float  get_bw        () const { return bandwidth; };
+    float  get_dur       () const { return duration; };
+    float  get_dm        () const { return dispersion_measure; };
     State  get_state     () const { return state; };
 
     double get_frequency () const { return frequency; };
@@ -167,6 +184,7 @@ namespace Tempo {
     float  get_error     () const { return error; };
     float  get_reduced_chisq () const { return reduced_chisq; }
     Estimate<float> get_flux () const { return flux; }
+    Estimate<double> get_dispersion_measure_estimate() const { return dispersion_measure_estimate; }
 
     std::string get_telescope () const { return telescope; };
     std::string get_auxilliary_text () const { return auxinfo; };
