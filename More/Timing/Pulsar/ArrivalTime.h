@@ -13,6 +13,7 @@
 
 #include "Pulsar/Config.h"
 #include "Pulsar/Algorithm.h"
+#include "Pulsar/Dispersion.h"
 #include "Estimate.h"
 #include "toa.h"
 
@@ -170,6 +171,9 @@ namespace Pulsar {
 
     Tempo::toa get_toa (Estimate<double>& shift, double reference_frequency,
 			const Pulsar::Integration*, unsigned ichan = 0);
+
+    Tempo::toa get_mean_arrival_time (const Integration*);
+    Dispersion dispersion;
 
   private:
 

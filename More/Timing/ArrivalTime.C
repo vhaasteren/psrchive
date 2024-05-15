@@ -10,7 +10,6 @@
 #include "Pulsar/PolnProfileShiftEstimator.h"
 
 #include "Pulsar/MeanArrivalTime.h"
-#include "Pulsar/Dispersion.h"
 
 #include "Pulsar/Archive.h"
 #include "Pulsar/IntegrationExpert.h"
@@ -225,6 +224,28 @@ double fractional_phase (double value)
   return value;
 }
 
+Tempo::toa Pulsar::ArrivalTime::get_mean_arrival_time (const Integration* subint)
+{
+  mean_arrival_time->fit();
+
+  Estimate<double> delay = mean_arrival_time->get_delay ();
+  Estimate<double> delta_DM = mean_arrival_time->get_delta_DM ();
+  double freq = mean_arrival_time->get_reference_frequency ();
+
+  mean_arrival_time->reset();
+
+  if (Archive::verbose > 2)
+    cerr << "Pulsar::ArrivalTime::get_toas delta DM=" << delta_DM << endl;
+
+  // topocentric folding period
+  double period = subint->get_folding_period();
+  Estimate<double> shift = delay / period;
+
+  Tempo::toa arrival_time = get_toa (shift, freq, subint);
+  arrival_time.set_dispersion_measure_estimate(delta_DM + dispersion.get_dispersion_measure());
+  return arrival_time;
+}
+
 void Pulsar::ArrivalTime::get_toas (unsigned isub, std::vector<Tempo::toa>& toas)
 {
   bool multichannel_standard = standard && (standard->get_nchan() > 1);
@@ -234,8 +255,6 @@ void Pulsar::ArrivalTime::get_toas (unsigned isub, std::vector<Tempo::toa>& toas
   if (Archive::verbose > 3)
     cerr << "Pulsar::ArrivalTime::get_toas isub=" << isub 
         << " nchan=" << subint->get_nchan() << endl;
-
-  Dispersion dispersion;
 
   if (mean_arrival_time)
   {
@@ -328,25 +347,7 @@ void Pulsar::ArrivalTime::get_toas (unsigned isub, std::vector<Tempo::toa>& toas
 
   if (mean_arrival_time)
   {
-    mean_arrival_time->fit();
-
-    Estimate<double> delay = mean_arrival_time->get_delay ();
-    Estimate<double> delta_DM = mean_arrival_time->get_delta_DM ();
-    double freq = mean_arrival_time->get_reference_frequency ();
-
-    mean_arrival_time->reset();
-
-    if (Archive::verbose > 2)
-      cerr << "Pulsar::ArrivalTime::get_toas delta DM=" << delta_DM << endl;
-
-    // topocentric folding period
-    double period = subint->get_folding_period();
-    Estimate<double> shift = delay / period;
-
-    Tempo::toa arrival_time = get_toa (shift, freq, subint);
-    arrival_time.set_dispersion_measure_estimate(delta_DM + dispersion.get_dispersion_measure());
-    
-    toas.push_back( arrival_time );
+    toas.push_back(get_mean_arrival_time(subint));
   }
 }
 
