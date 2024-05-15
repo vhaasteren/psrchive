@@ -21,7 +21,7 @@
   while the focal carriage moves East-West along railroad ties to
   track objects near transit. - https://en.wikipedia.org/wiki/Kraus-type */
 
-#define KRAUS_TYPE_USE_SPHERICAL_TRIGONOMETRY 0
+#define KRAUS_TYPE_USE_SPHERICAL_TRIGONOMETRY 1
 
 class KrausType : public Directional
 {

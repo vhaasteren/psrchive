@@ -23,7 +23,7 @@ double KrausType::get_vertical () const
 {
   double HA = get_hour_angle();
 
-  // cerr << "KrausType::get_vertical HA=" << HA << endl;
+  cerr << "KrausType::get_vertical HA=" << HA << endl;
 
   return asin( sin(declination) * sin(-HA) );
 }
