@@ -84,8 +84,8 @@ void Pulsar::MultiDataPlot<Type>::plot (const Archive* data)
   plots.push_back (the_plot);
   data_sets.push_back (data);
 
-  Plot* like = the_plot->get_constructor()->construct();
-  Type* new_plot = dynamic_cast<Type*> (like);
+  Reference::To<Plot> like = the_plot->get_constructor()->construct();
+  Type* new_plot = dynamic_cast<Type*> (like.ptr());
 
   if (!new_plot)
     throw Error (InvalidState, "Pulsar::MultiDataPlot<Type>::plot",

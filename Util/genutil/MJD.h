@@ -147,8 +147,8 @@ class MJD {
   // e.g. format = "%Y-%m-%d %H:%M:%S"
   char* datestr (char* dstr, int len, const char* format) const;
 
-  // more convenient interface
-  std::string datestr (const char* format) const;
+  // more convenient interface, with optional fractional seconds
+  std::string datestr (const char* format, unsigned fractional_second_digits = 0) const;
 
 #ifdef HAVE_MPI
   friend int mpiPack_size (const MJD&, MPI_Comm comm, int* size);
