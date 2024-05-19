@@ -11,8 +11,10 @@
 #ifndef __Pulsar_MeanArrivalTime_h
 #define __Pulsar_MeanArrivalTime_h
 
+#include "LinearRegression.h"
 #include "ReferenceAble.h"
 #include "Estimate.h"
+
 #include <vector>
 
 namespace Pulsar {
@@ -32,6 +34,9 @@ namespace Pulsar {
 
     //! Reference frequency
     double reference_frequency = 0;
+
+    //! Number of sub-bands for which to compute delays
+    unsigned num_subbands = 1;
 
   public:
 
@@ -53,6 +58,19 @@ namespace Pulsar {
     //! Return the reference frequency in MHz
     /*! At this frequency, the covariance between delay and delta-DM is zero */
     double get_reference_frequency () const { return reference_frequency; }
+
+    //! Set the number of sub-bands for which to compute delays
+    void set_num_subbands(unsigned n) { num_subbands = n; }
+
+    //! Return delays for each sub-band
+    /*! Each pair is an estimated delay and reference frequency */
+    std::vector<std::pair<Estimate<double>,double>> get_subband_delays();
+
+  private:
+
+    //! Fits a line to delay versus wavelength squared
+    LinearRegression linear_fit;
+
   };
 
 }

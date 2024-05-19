@@ -75,7 +75,7 @@ namespace Pulsar {
     //! Get the dispersion measure
     double get_measure () const;
 
-    // given and estimate of the slope \f$ dt / d lambda^2 \f$ in \f$ s m^{-2} \f$, return the DM
+    // given an estimate of the slope \f$ dt / d lambda^2 \f$ in \f$ s m^{-2} \f$, return the DM
     Estimate<double> get_dispersion_measure(const Estimate<double>& slope) const;
 
   protected:

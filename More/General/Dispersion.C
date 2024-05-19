@@ -123,20 +123,26 @@ void Pulsar::Dispersion::update (const Integration* data)
   }
 }
 
-//! Get the phase shift
+//! Get the dispersive delay in seconds
+double Pulsar::Dispersion::get_delay () const
+{
+  // corrector is of type DispersionDelay
+  // it is a member of the ColdPlasma template base class
+  double delay = delta + corrector.evaluate();
+  return delay / earth_doppler;
+}
+
+//! Get the phase shift in turns
 double Pulsar::Dispersion::get_shift () const
 {
   if (folding_period <= 0)
-    throw Error (InvalidState, "Pulsar::Dispersion::get_shift",
-		 "folding period unknown");
+    throw Error (InvalidState, "Pulsar::Dispersion::get_shift", "folding period unknown");
 
-  // corrector is of type DispersionDelay
-  // it is a member of the ColdPlasma template base class
-  double shift = delta + corrector.evaluate();
+  double delay = get_delay();
 
   if (Archive::verbose > 2)
-    cerr << "Pulsar::Dispersion::get_shift delay=" << shift 
-	 << " period=" << folding_period << endl;
+    cerr << "Pulsar::Dispersion::get_shift delay=" << delay 
+         << " period=" << folding_period << endl;
 
-  return shift / earth_doppler / folding_period;
+  return delay / folding_period;
 }

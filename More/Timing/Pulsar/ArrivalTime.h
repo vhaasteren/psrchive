@@ -172,7 +172,8 @@ namespace Pulsar {
     Tempo::toa get_toa (Estimate<double>& shift, double reference_frequency,
 			const Pulsar::Integration*, unsigned ichan = 0);
 
-    Tempo::toa get_mean_arrival_time (const Integration*);
+    //! Adds to the vector of toas
+    void get_subband_toas (const Integration* subint, std::vector<Tempo::toa>& toas);
     Dispersion dispersion;
 
   private:

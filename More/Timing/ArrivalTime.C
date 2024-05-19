@@ -224,26 +224,37 @@ double fractional_phase (double value)
   return value;
 }
 
-Tempo::toa Pulsar::ArrivalTime::get_mean_arrival_time (const Integration* subint)
+void Pulsar::ArrivalTime::get_subband_toas (const Integration* subint, std::vector<Tempo::toa>& toas)
 {
   mean_arrival_time->fit();
 
-  Estimate<double> delay = mean_arrival_time->get_delay ();
   Estimate<double> delta_DM = mean_arrival_time->get_delta_DM ();
-  double freq = mean_arrival_time->get_reference_frequency ();
-
-  mean_arrival_time->reset();
+  Estimate<double> estimated_DM = delta_DM + dispersion.get_dispersion_measure();
 
   if (Archive::verbose > 2)
-    cerr << "Pulsar::ArrivalTime::get_toas delta DM=" << delta_DM << endl;
+    cerr << "Pulsar::ArrivalTime::get_subband_toas delta DM=" << delta_DM << endl;
 
   // topocentric folding period
   double period = subint->get_folding_period();
-  Estimate<double> shift = delay / period;
 
-  Tempo::toa arrival_time = get_toa (shift, freq, subint);
-  arrival_time.set_dispersion_measure_estimate(delta_DM + dispersion.get_dispersion_measure());
-  return arrival_time;
+  auto delays = mean_arrival_time->get_subband_delays();
+  
+  std::vector<Tempo::toa> result;
+  for (auto el: delays)
+  {
+    Estimate<double> delay = el.first;
+    double freq_MHz = el.second;
+
+    dispersion.set_frequency(freq_MHz);
+    delay += dispersion.get_delay();
+
+    Estimate<double> shift = delay / period;
+    Tempo::toa arrival_time = get_toa (shift, freq_MHz, subint);
+    arrival_time.set_dispersion_measure_estimate(estimated_DM);
+    toas.push_back(arrival_time);
+  }
+
+  mean_arrival_time->reset();
 }
 
 void Pulsar::ArrivalTime::get_toas (unsigned isub, std::vector<Tempo::toa>& toas)
@@ -258,6 +269,9 @@ void Pulsar::ArrivalTime::get_toas (unsigned isub, std::vector<Tempo::toa>& toas
 
   if (mean_arrival_time)
   {
+    if (!standard)
+      throw Error(InvalidState, "Pulsar::ArrivalTime::get_toas", "no standard (cannot estimate delta DM)");
+
     // to output a delta-DM, it is necessary to correct for the expected dispersive delay
     dispersion.set(subint);
 
@@ -347,7 +361,7 @@ void Pulsar::ArrivalTime::get_toas (unsigned isub, std::vector<Tempo::toa>& toas
 
   if (mean_arrival_time)
   {
-    toas.push_back(get_mean_arrival_time(subint));
+    get_subband_toas(subint,toas);
   }
 }
 

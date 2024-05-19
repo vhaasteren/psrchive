@@ -70,7 +70,10 @@ namespace Pulsar {
     double get_dispersion_measure () const
     { return get_measure (); }
 
-    //! Get the phase shift
+    //! Get the dispersive delay in seconds
+    double get_delay () const;
+
+    //! Get the dispersive phase shift in turns
     double get_shift () const;
 
   protected:

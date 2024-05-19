@@ -170,7 +170,7 @@ void usage ()
     "Fitting options:\n"
     "  -a stdfiles      Automatically select standard from specified group\n"
     "  -P               Do not fscrunch the standard (frequency-dependent template)\n"
-    "  -I               Output frequency-averaged TOA and delta-DM (implies -P)\n"
+    "  -I nsubband      Output nsubband TOAs with delta-DM (implies -P)\n"
     "  -D               Denoise standard \n"
     "  -e cfg1[,cfgN]   Estimator configuration option[s] \n"
     "  -E cfg           Estimator configuration options in 'cfg' text file \n"
@@ -275,7 +275,7 @@ int main (int argc, char** argv) try
 #define PLOT_ARGS
 #endif
 
-  const char* args = "a:A:bcC:Dde:E:f:Fg:G:hIj:J:K:m:M:n:pPqRrS:s:TuU:vVxX:z:" PLOT_ARGS;
+  const char* args = "a:A:bcC:Dde:E:f:Fg:G:hI:j:J:K:m:M:n:pPqRrS:s:TuU:vVxX:z:" PLOT_ARGS;
 
   int gotc = 0;
 
@@ -365,6 +365,7 @@ int main (int argc, char** argv) try
 
     case 'I':
       mean_arrival_time = new MeanArrivalTime;
+      mean_arrival_time->set_num_subbands(atoi(optarg));
       full_freq = true;
       break;
 
