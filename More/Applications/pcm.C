@@ -1946,7 +1946,7 @@ SystemCalibrator* pcm::matrix_template_matching (const string& stdname)
 
   for (unsigned ical=0; ical < filenames.size(); ical++)
   {
-    Archive* cal = Archive::load (filenames[ical]);
+    Reference::To<Archive> cal = Archive::load (filenames[ical]);
     standard_options->process (cal);
 
     model->add_observation( cal );

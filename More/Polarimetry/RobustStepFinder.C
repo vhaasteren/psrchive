@@ -7,7 +7,7 @@
 
 #include "Pulsar/RobustStepFinder.h"
 #include "Pulsar/VariableBackend.h"
-#include "UnaryStatistic.h"
+#include "statutil.h"
 
 #include <cassert>
 

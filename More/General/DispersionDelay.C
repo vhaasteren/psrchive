@@ -53,7 +53,6 @@ double Pulsar::DispersionDelay::get_reference_frequency () const
   return 1e-6 * Pulsar::speed_of_light / reference_wavelength;
 }
 
-
 //! Set the frequency in MHz
 void Pulsar::DispersionDelay::set_frequency (double MHz)
 {
@@ -91,12 +90,24 @@ double Pulsar::DispersionDelay::get_wavelength () const
   return wavelength;
 }
 
+// speed of light in metres per microsecond
+const double c_prime = Pulsar::speed_of_light * 1e-6;
+
+/*
+  Convert DM = K D = K dt / d\nu^{-2}, where \nu is in MHz
+  to DM = K' dt / d\lambda^2, where \lambda is in metres
+*/
+const double K_prime = Pulsar::dispersion_constant * c_prime * c_prime;
+
 double Pulsar::DispersionDelay::evaluate () const
 {
-  // wavelength is expressed in light microseconds ...
-  double lus_0 = reference_wavelength * 1e6 / speed_of_light;
-  double lus = wavelength * 1e6 / speed_of_light;
+  double lambda_0 = reference_wavelength;
+  double lambda = wavelength;
 
-  // ... in this typical equation
-  return (dispersion_measure/2.41e-4) * (lus*lus - lus_0*lus_0);
+  return (dispersion_measure/K_prime) * (lambda*lambda - lambda_0*lambda_0);
+}
+
+Estimate<double> Pulsar::DispersionDelay::get_dispersion_measure(const Estimate<double>& slope) const
+{
+  return slope * K_prime;
 }

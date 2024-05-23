@@ -74,7 +74,8 @@ bool Pulsar::Dispersion::get_corrected (const Integration* data)
 {
   if (Archive::verbose > 2)
     cerr << "Pulsar::Dispersion::get_corrected dedispersed=" 
-	 << data->get_dedispersed() << endl;
+	       << data->get_dedispersed() << endl;
+
   return data->get_dedispersed();
 }
 
@@ -96,13 +97,6 @@ void Pulsar::Dispersion::revert (Archive* arch)
 
 void Pulsar::Dispersion::apply (Integration* data, unsigned ichan) try
 {
-  folding_period = data->get_folding_period();
-  if (barycentric_correction)
-  {
-    bary.set_Integration(data);
-    earth_doppler = bary.get_Doppler();
-  }
-
   for (unsigned ipol=0; ipol < data->get_npol(); ipol++)
     data->get_Profile(ipol,ichan) -> rotate_phase( get_shift() );
 }
@@ -111,26 +105,44 @@ catch (Error& error) {
 }
 
 //! Set attributes in preparation for execute
-void Pulsar::Dispersion::set (const Integration* data)
+void Pulsar::Dispersion::update (const Integration* data)
 {
-  ColdPlasma<DispersionDelay,Dedisperse>::set (data);
+  ColdPlasma<DispersionDelay,Dedisperse>::update (data);
   folding_period = data->get_folding_period ();
+
+  if (Integration::verbose)
+    cerr << "Pulsar::Dispersion::set folding_period=" << folding_period << endl;
+
+  if (barycentric_correction)
+  {
+    bary.set_Integration(data);
+    earth_doppler = bary.get_Doppler();
+
+    if (Integration::verbose)
+      cerr << "Pulsar::Dispersion::set earth_doppler=" << earth_doppler << endl;
+  }
 }
 
-//! Get the phase shift
+//! Get the dispersive delay in seconds
+double Pulsar::Dispersion::get_delay () const
+{
+  // corrector is of type DispersionDelay
+  // it is a member of the ColdPlasma template base class
+  double delay = delta + corrector.evaluate();
+  return delay / earth_doppler;
+}
+
+//! Get the phase shift in turns
 double Pulsar::Dispersion::get_shift () const
 {
   if (folding_period <= 0)
-    throw Error (InvalidState, "Pulsar::Dispersion::get_shift",
-		 "folding period unknown");
+    throw Error (InvalidState, "Pulsar::Dispersion::get_shift", "folding period unknown");
 
-  // corrector is of type DispersionDelay
-  // it is a member of the ColdPlasma template base class
-  double shift = delta + corrector.evaluate();
+  double delay = get_delay();
 
   if (Archive::verbose > 2)
-    cerr << "Pulsar::Dispersion::get_shift delay=" << shift 
-	 << " period=" << folding_period << endl;
+    cerr << "Pulsar::Dispersion::get_shift delay=" << delay 
+         << " period=" << folding_period << endl;
 
-  return shift / earth_doppler / folding_period;
+  return delay / folding_period;
 }

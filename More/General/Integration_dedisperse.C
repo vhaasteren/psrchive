@@ -29,8 +29,7 @@ catch (Error& error)
   throw error += "Pulsar::Integration::dedisperse";
 }
 
-void Pulsar::Integration::dedisperse (unsigned ichan, unsigned kchan,
-				      double reference_frequency)
+void Pulsar::Integration::dedisperse (unsigned ichan, unsigned kchan, double reference_frequency)
 try
 {
   Dispersion xform;

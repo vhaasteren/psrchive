@@ -1,12 +1,12 @@
 /***************************************************************************
  *
- *   Copyright (C) 2021 by Willem van Straten
+ *   Copyright (C) 2021 - 2024 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
 
 #include "GeneralizedChiSquared.h"
-#include "ChiSquared.h"
+#include "LinearRegression.h"
 #include "UnaryStatistic.h"
 
 #include <algorithm>
@@ -24,30 +24,34 @@ void general_linear_fit (Estimate<double>& scale, Estimate<double>& offset,
 			 const vector<double>& dat2,
 			 const vector<bool>* mask)
 {
-  unsigned ndim = evec.size();
+  const unsigned ndim = evec.size();
   assert (ndim == eval.size());
 
   // principal components
   vector<double> pc1 (ndim, 0.0);
   vector<double> pc2 (ndim, 0.0);
-  vector<double> one (ndim, 0.0);
+  vector<double> alpha (ndim, 0.0);
   vector<double> wt (ndim, 0.0);
   
   for (unsigned idim=0; idim < ndim; idim++)
   {
+    wt[idim] = 1.0/eval[idim];
+
     for (unsigned i=0; i<dat1.size(); i++)
     {
       if (mask && !(*mask)[i])
-	continue;
+        continue;
 
       pc1[idim] += evec[idim][i] * dat1[i];
       pc2[idim] += evec[idim][i] * dat2[i];
-      one[idim] += evec[idim][i];
-      wt[idim] = 1.0/eval[idim];
+      alpha[idim] += evec[idim][i];
     }
   }
 
-  linear_fit_work (scale, offset, pc1, pc2, one, wt);
+  LinearRegression fit;
+  fit.generalized_least_squares (pc1, pc2, wt, alpha);
+  scale = fit.scale;
+  offset = fit.offset;
 }
   
 
@@ -111,7 +115,7 @@ double GeneralizedChiSquared::get (const vector<double>& dat1,
       iterations ++;
       
       if (outlier_threshold == 0.0)
-	break;
+        break;
       
       double sigma = 2.0 * outlier_threshold;
       double var = 1 + sqr(scale.val);
@@ -121,27 +125,27 @@ double GeneralizedChiSquared::get (const vector<double>& dat1,
       
       for (unsigned i=0; i<ndat; i++)
       {
-	if (!mask[i])
-	  continue;
+        if (!mask[i])
+          continue;
 
-	double residual = 0.0;
-	double norm = 0.0;
-	
-	for (unsigned idim=0; idim<ndim; idim++)
-	{
-	  double pc1 = eigenvectors[idim][i] * dat1[i];
-	  double pc2 = eigenvectors[idim][i] * dat2[i];
-	  double sum = eigenvectors[idim][i];
-	  norm += sum * sum;
-	  
-	  residual += sqr(pc1 - scale.val * pc2 - offset.val * sum) / eigenvalues[i];
-	}
-	
-	if ( residual > cut * norm )
+        double residual = 0.0;
+        double norm = 0.0;
+        
+        for (unsigned idim=0; idim<ndim; idim++)
         {
-	  mask[i] = false;
-	  zapped ++;
-	}
+          double pc1 = eigenvectors[idim][i] * dat1[i];
+          double pc2 = eigenvectors[idim][i] * dat2[i];
+          double sum = eigenvectors[idim][i];
+          norm += sum * sum;
+          
+          residual += sqr(pc1 - scale.val * pc2 - offset.val * sum) / eigenvalues[i];
+        }
+        
+        if ( residual > cut * norm )
+        {
+          mask[i] = false;
+          zapped ++;
+        }
       }
       
       total_zapped += zapped;
@@ -150,8 +154,8 @@ double GeneralizedChiSquared::get (const vector<double>& dat1,
 
     if (total_zapped)
       cerr << "gchi ndat=" << ndat << " zapped=" << total_zapped
-	   << " iterations=" << iterations
-	   << " scale=" << scale << " offset=" << offset << endl;
+          << " iterations=" << iterations
+          << " scale=" << scale << " offset=" << offset << endl;
 
   }
 

@@ -13,17 +13,20 @@
 
 #include "Pulsar/Config.h"
 #include "Pulsar/Algorithm.h"
+#include "Pulsar/Dispersion.h"
 #include "Estimate.h"
 #include "toa.h"
 
 namespace Pulsar {
 
   class ProfileShiftEstimator;
+  class MeanArrivalTime;
   class ShiftEstimator;
   class Archive;
   class Integration;
   class Profile;
   class Flux;
+  class Backend;
 
   //! Manages arrival time estimation
   /*! 
@@ -57,6 +60,12 @@ namespace Pulsar {
     //! Get the algorithm used to estimate the phase shift
     ShiftEstimator* get_shift_estimator () const;
 
+    //! Set the algorithm used to estimate the average arrival time
+    void set_mean_estimator (MeanArrivalTime*);
+
+    //! Get the algorithm used to estimate the phase shift
+    MeanArrivalTime* get_mean_estimator () const;
+
     //! Set the format of the output time-of-arrival estimates
     void set_format (Tempo::toa::Format);
 
@@ -77,6 +86,9 @@ namespace Pulsar {
 
     //! Output only arrival times that are greater than reference time
     void set_positive_shifts (bool flag) { positive_shifts = flag; }
+
+    //! Get the reference frequency for the specified channel
+    double get_reference_frequency (const Integration* subint, unsigned ichan) const;
 
     //! Add to the vector of time-of-arrival estimates
     void get_toas (std::vector<Tempo::toa>&);
@@ -104,12 +116,17 @@ namespace Pulsar {
     //! The standard to which observations are fit
     Reference::To<const Archive> standard;
 
+    //! Any backend delay correction, if known
+    Reference::To<const Backend> backend;
+
     //! The residual pulse profiles (transformed observation minus standard)
     Reference::To<Archive> residual;
     
     Reference::To<ShiftEstimator> shift_estimator;
 
     Reference::To<Flux> flux_estimator;
+
+    Reference::To<MeanArrivalTime> mean_arrival_time;
 
     //! default TOA output format
     static Option<std::string> default_format;
@@ -151,6 +168,13 @@ namespace Pulsar {
 
     Tempo::toa get_toa (Estimate<double>& shift,
 			const Pulsar::Integration*, unsigned ichan);
+
+    Tempo::toa get_toa (Estimate<double>& shift, double reference_frequency,
+			const Pulsar::Integration*, unsigned ichan = 0);
+
+    //! Adds to the vector of toas
+    void get_subband_toas (const Integration* subint, std::vector<Tempo::toa>& toas);
+    Dispersion dispersion;
 
   private:
 

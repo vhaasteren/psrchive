@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *   Copyright (C) 2021 by Willem van Straten
+ *   Copyright (C) 2021 - 2024 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -10,7 +10,7 @@
 #include "Pulsar/Archive.h"
 #include "Pulsar/PolnCalibratorExtension.h"
 
-#include "ChiSquared.h"
+#include "LinearRegression.h"
 #include "Physical.h"
 #include "strutil.h"
 
@@ -115,7 +115,10 @@ void pcmrm::finalize ()
     yval[idat] = psi[idat].val;
   }
 
-  weighted_linear_fit (fit_rm, fit_psi0, yval, lambda_sq, wt);
+  LinearRegression fit;
+  fit.weighted_least_squares (yval, lambda_sq, wt);
+  fit_rm = fit.scale;
+  fit_psi0 = fit.offset;
 
   MJD epoch;
 

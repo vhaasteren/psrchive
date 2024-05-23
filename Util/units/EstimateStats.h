@@ -12,6 +12,7 @@
 #define __EstimateStats_h
 
 #include "Estimate.h"
+#include "Error.h"
 #include <vector>
 #include <algorithm>
 
@@ -58,8 +59,7 @@ void weighted_quartiles (const std::vector< Estimate<T,U> >& vals,
   unsigned nval = vals.size();
   
   if (vals.size () < 3)
-    throw Error (InvalidState, "weighted_quartiles",
-		 "ndat=%u < 3", nval);
+    throw Error (InvalidState, "weighted_quartiles", "ndat=%u < 3", nval);
 
   // remove all esimates with zero variance (flagged as bad)
   std::vector< Estimate<T,U> > cleaned ( nval );

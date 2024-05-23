@@ -1,7 +1,7 @@
 //-*-C++-*-
 /***************************************************************************
  *
- *   Copyright (C) 2021 by Willem van Straten
+ *   Copyright (C) 2021 - 2024 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -12,7 +12,6 @@
 #define __Util_stat_ChiSquared_h
 
 #include "BinaryStatistic.h"
-#include "Estimate.h"
 
 namespace BinaryStatistics
 {
@@ -41,25 +40,5 @@ namespace BinaryStatistics
     ChiSquared* clone () const { return new ChiSquared; }
   };
 }
-
-// ordinary least squares
-void linear_fit (Estimate<double>& scale, Estimate<double>& offset,
-		 const std::vector<double>& yval,
-		 const std::vector<double>& xval,
-		 const std::vector<bool>* mask = 0);
-
-// weighted least squares 
-void weighted_linear_fit (Estimate<double>& scale, Estimate<double>& offset,
-                          const std::vector<double>& yval,
-                          const std::vector<double>& xval,
-                          const std::vector<double>& wt);
-
-// used by both ordinary and weighted
-void linear_fit_work (Estimate<double>& scale, Estimate<double>& offset,
-		      const std::vector<double>& dat1,
-		      const std::vector<double>& dat2,
-		      const std::vector<double>& one,
-		      const std::vector<double>& wt,
-		      bool robust_offset = false);
 
 #endif

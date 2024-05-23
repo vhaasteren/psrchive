@@ -1314,35 +1314,37 @@ double do_maxmthd (double minrm, double maxrm, unsigned rmsteps,
 
     unsigned iter = 1;
     unsigned not_improving = 0;
-    while (not_improving < 25) {
+    while (not_improving < 25)
+    {
       if (verbose)
-	cerr << "iteration " << iter << endl;
+        cerr << "iteration " << iter << endl;
 
       float nchisq = fit.iter (data_x, data_y, gm);
 
       if (verbose)
-	cerr << "     chisq = " << nchisq << endl;
+        cerr << "     chisq = " << nchisq << endl;
 
-      if (nchisq < chisq) {
-	float diffchisq = chisq - nchisq;
-	chisq = nchisq;
-	not_improving = 0;
-	if (diffchisq/chisq < threshold && diffchisq > 0) {
-	  if (verbose)
-	    cerr << "No big diff in chisq = " << diffchisq << endl;
-	  break;
-	}
+      if (nchisq < chisq)
+      {
+        float diffchisq = chisq - nchisq;
+        chisq = nchisq;
+        not_improving = 0;
+        if (diffchisq/chisq < threshold && diffchisq > 0)
+        {
+          if (verbose)
+            cerr << "No big diff in chisq = " << diffchisq << endl;
+          break;
+        }
       }
       else
-	not_improving ++;
+        not_improving ++;
 
       iter ++;
     }
 
     double free_parms = data_x.size() + gm.get_nparam();
 
-    cerr << "Chi-squared = " << chisq << " / " << free_parms << " = "
-	 << chisq / free_parms << endl;
+    cerr << "Chi-squared = " << chisq << " / " << free_parms << " = " << chisq / free_parms << endl;
 
     double width = fabs(gm.get_width());
     cerr << "Width="<< width <<" Height="<< gm.get_height() << endl;
