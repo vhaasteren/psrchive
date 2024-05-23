@@ -676,6 +676,9 @@ ostream& operator << (ostream& ostr, const MJD& mjd)
 
   double ddays = mjd.in_days();
 
+  if (!myfinite(ddays))
+    return ostr << ddays << endl;
+
   if (precision < std::numeric_limits<double>::digits10)
     return ostr << ddays;
   else
