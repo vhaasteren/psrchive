@@ -11,14 +11,9 @@
 #include "escape.h"
 #include "substitute.h"
 #include "evaluate.h"
+#include "debug.h"
 
 #include <cpgplot.h>
-
-#if 0
-#define DEBUG(x) cerr << x << endl
-#else
-#define DEBUG(X)
-#endif
 
 using namespace std;
 
