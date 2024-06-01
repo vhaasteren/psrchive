@@ -84,14 +84,12 @@ void* Reference::HeapTracked::operator new (size_t size, void* ptr)
 void Reference::HeapTracked::operator delete (void* location, void* ptr)
 {
   DEBUG("Reference::HeapTracked::operator placement delete void*=" << location);
-
   ::operator delete (location, ptr);
 }
 
 void Reference::HeapTracked::operator delete (void* location)
 {
   DEBUG("Reference::HeapTracked::operator delete void*=" << location);
-
   ::operator delete (location);
 }
 

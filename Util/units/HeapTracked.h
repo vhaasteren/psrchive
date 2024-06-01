@@ -79,6 +79,7 @@ namespace Reference {
   private:
 
     friend class Able;
+    friend class Bin;
 
     //! State of this instance
     mutable char __heap_state;

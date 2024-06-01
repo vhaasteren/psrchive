@@ -53,6 +53,12 @@ namespace Reference {
     //! Member dereferencing operator
     Type* operator -> () const { return get(); }
     
+    //! Enable tests like ref == nullptr
+    bool operator == (const void* ptr) const;
+
+    //! Enable tests like ref != nullptr
+    bool operator != (const void* ptr) const;
+
     //! Cast to Type* operator
     operator Type* () const { return get(); }
 
@@ -83,6 +89,29 @@ namespace Reference {
     Able::Handle* the_handle;
 
   };
+}
+
+template<class Type, bool active>
+bool Reference::To<Type,active>::operator == (const void* ptr) const
+{
+  DEBUG("Reference::To<"+name()+">::operator ==");
+
+  if (!ptr)
+    return !the_handle || the_handle->pointer == nullptr;
+  else
+    return the_handle && the_handle->pointer == ptr;
+}
+
+
+template<class Type, bool active>
+bool Reference::To<Type,active>::operator != (const void* ptr) const
+{
+  DEBUG("Reference::To<"+name()+">::operator !=");
+
+  if (!ptr)
+    return the_handle && the_handle->pointer != nullptr;
+  else
+    return !the_handle || the_handle->pointer != ptr;
 }
 
 template<class Type, bool active>
@@ -268,6 +297,12 @@ bool operator == (const Reference::To<Type1,active1>& ref1,
 {
   DEBUG("operator == (Reference::To<Type>&, Reference::To<Type2>&)");
 
+  if (!ref1)
+    return !ref2;
+
+  if (!ref2)
+    return false;
+
   return ref1.ptr() == ref2.ptr();
 }
 
@@ -277,6 +312,12 @@ bool operator != (const Reference::To<Type1,active1>& ref1,
                   const Reference::To<Type2,active2>& ref2)
 {
   DEBUG("operator != (Reference::To<Type>&, Reference::To<Type2>&)");
+
+  if (!ref1)
+    return ref2;
+
+  if (!ref2)
+    return true;
 
   return ref1.ptr() != ref2.ptr();
 }
@@ -288,6 +329,9 @@ bool operator == (const Reference::To<Type,active>& ref, const Type2* instance)
 {
   DEBUG("operator == (Reference::To<Type>&, Type*)");
 
+  if (instance == nullptr)
+    return !ref;
+
   return ref.ptr() == instance;
 }
 
@@ -296,6 +340,9 @@ template<class Type, bool active, class Type2>
 bool operator == (const Type2* instance, const Reference::To<Type,active>& ref)
 {
   DEBUG("operator == (T2*, Reference::To<T1>&)");
+
+  if (instance == nullptr)
+    return !ref;
 
   return ref.ptr() == instance;
 }

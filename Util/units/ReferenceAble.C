@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *   Copyright (C) 2004 - 2023 by Willem van Straten
+ *   Copyright (C) 2004 - 2024 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -106,6 +106,49 @@ Reference::Able& Reference::Able::operator = (const Able& other)
   return *this;
 }
 
+namespace Reference
+{
+  class Bin
+  {
+    std::vector<Able*> bin;
+    public:
+      void add (Able* ptr)
+      { 
+        DEBUG("Reference::Bin::add ptr=" << ptr);
+
+        LOCK_REFERENCE
+
+        if (ptr->__is_on_heap())
+        {
+          ptr->__set_deleted ();
+          if (std::find(bin.begin(), bin.end(), ptr) == bin.end())
+            bin.push_back( ptr );
+        }
+        UNLOCK_REFERENCE
+      }
+
+      void clear(const Able* ptr)
+      {
+        DEBUG("Bin::clear size=" << bin.size());
+        std::vector<Able*> tmp = bin;
+        bin.clear();
+
+        for (unsigned i=0; i<tmp.size(); i++)
+        {
+          assert (tmp[i] != ptr);
+          {
+            DEBUG("Reference::Bin delete ptr=" << tmp[i]);
+            delete tmp[i];
+          }
+        }
+        DEBUG("Bin::clear done");
+
+      }
+  };
+
+  static Bin bin;
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 /*! Declared const in order to enable Reference::To<const T> */
@@ -118,6 +161,9 @@ Reference::Able::__reference (bool active) const
 
   if (!__reference_handle)
   {
+    // Clear the bin only when it is certain that nothing is getting deleted
+    bin.clear(this);
+
     /*
       optimization: calling __is_on_heap when first referenced reduces the
       size of the pending heap address list.
@@ -146,37 +192,6 @@ Reference::Able::__reference (bool active) const
   return __reference_handle;
 }
 
-namespace Reference
-{
-  class Bin
-  {
-    std::vector<Able*> bin;
-    public:
-      void add (Able* ptr)
-      { 
-        DEBUG("Reference::Bin add ptr=" << ptr);
-        LOCK_REFERENCE
-        if (std::find(bin.begin(), bin.end(), ptr) == bin.end())
-          bin.push_back( ptr );
-        UNLOCK_REFERENCE
-      }
-
-      void clear()
-      {
-        std::vector<Able*> tmp = bin;
-        bin.clear();
-
-        for (unsigned i=0; i<tmp.size(); i++)
-        {
-          DEBUG("Reference::Bin delete ptr=" << tmp[i]);
-          delete tmp[i];
-        }
-      }
-  };
-
-  static Bin bin;
-}
-
 //////////////////////////////////////////////////////////////////////////
 // desctructor
 Reference::Able::~Able ()
@@ -194,9 +209,8 @@ Reference::Able::~Able ()
   if (__is_on_heap())
   {
     __set_deleted ();
-    bin.clear();
   }
-  
+
   UNLOCK_REFERENCE
 
   DEBUG("Reference::Able dtor this=" << this << " reference_count=" << __reference_count << " instances=" << instance_count);
@@ -256,11 +270,10 @@ void Reference::Able::Handle::decrement (bool active, bool auto_delete)
 
   DEBUG("Reference::Able::Handle::decrement this=" << this << " handle_count=" << handle_count);
 
-  if (pointer && auto_delete && pointer->__is_on_heap() && pointer->__reference_count == 0)
+  if (pointer && auto_delete && pointer->__is_on_heap() && pointer->__reference_count == 0 && handle_count == 0)
   {
     DEBUG("Reference::Able::Handle::decrement this=" << this << " garbage pointer=" << pointer);
     bin.add(pointer);
-    pointer->__set_deleted ();
   }
 
   // delete the handle

@@ -5,7 +5,7 @@
  *
  ***************************************************************************/
 
-#define _DEBUG 1
+// #define _DEBUG 1
 
 #include <iostream>
 #include <cassert>
@@ -16,12 +16,26 @@ using namespace std;
 
 class Manager;
 
+class NestedPolicy: public Reference::Able
+{
+public:
+
+  NestedPolicy (Manager* manager) { my_manager = manager; }
+
+  ~NestedPolicy () { cerr << "NestedPolicy destruct" << endl; }
+  Reference::To<Manager, false> my_manager;
+};
+
 class ManageAble: public Reference::Able {
 
 public:
 
   ~ManageAble () { cerr << "ManageAble destruct" << endl; }
+  void set_manager(Manager* manager) { my_manager = manager; policy = new NestedPolicy(manager); }
+
+protected:
   Reference::To<Manager, false> my_manager;
+  Reference::To<NestedPolicy> policy;
   
 };
 
@@ -35,7 +49,7 @@ public:
   void manage (ManageAble* manage_this) 
   {
     cerr << "Manager::manage set ManageAble::my_manager" << endl;
-    manage_this->my_manager = this;
+    manage_this->set_manager (this);
     cerr << "Manager::manage my_managed.push_back" << endl;
     my_managed.push_back (manage_this);
     cerr << "Manager::manage return" << endl;
@@ -73,13 +87,31 @@ int main (int argc, char** argv)
   assert(Manager::instance_count == 1);
 
   cerr << endl << "test_circular_reference new ManageAble" << endl << endl;
-  ManageAble* managable = new ManageAble;
+  ManageAble* managable1 = new ManageAble;
+
+  // this weak reference should not keep the ManageAble instance alive when manager is destroyed
+  Reference::To<ManageAble,false> managable2 = managable1;
 
   cerr << endl << "test_circular_reference Manager::manage" << endl << endl;
-  manager_ptr->manage(managable);
+  manager_ptr->manage(managable1);
+  manager_ptr->manage(managable2);
 
   cerr << endl << "test_circular_reference delete ManageAble" << endl << endl;
-  delete managable;
+  delete managable1;
+
+  // the Manager instance is currently in the Reference::Bin, awaiting destruction
+  assert(Manager::instance_count == 1);
+
+  cerr << endl << "test_circular_reference test for nullptr" << endl << endl;
+
+  // the weak reference is invalidated
+  assert(!managable2);
+
+  cerr << endl << "test_circular_reference indirectly clear the bin" << endl << endl;
+
+  // any assignment to a Reference::To will clear the bin
+  managable2 = new ManageAble;
+
   assert(Manager::instance_count == 0);
 
   cerr << "Success!" << endl;
