@@ -113,7 +113,7 @@ namespace Reference
     std::vector<Able*> bin;
     public:
 
-      ~Bin() { cerr << "Bin dtor clear" << endl; bin.clear(); }
+      ~Bin() { DEBUG("Reference::Bin dtor clear"); bin.clear(); }
 
       void add (Able* ptr)
       { 
