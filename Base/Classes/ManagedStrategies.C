@@ -25,6 +25,12 @@ ManagedStrategies::ManagedStrategies (const ManagedStrategies& that) : container
   DEBUG("ManagedStrategies copy ctor this=" << this << " container=" << (void*) container.ptr());
 }
 
+ManagedStrategies::ManagedStrategies (const ManagedStrategies* that) : container(that->container)
+{
+  DEBUG("ManagedStrategies copy ctor this=" << this << " container=" << (void*) container.ptr());
+  to_clone = true;
+}
+
 ManagedStrategies::~ManagedStrategies ()
 {
   DEBUG("ManagedStrategies dtor this=" << this << " container=" << (void*) container.ptr());
@@ -38,7 +44,7 @@ Integration* ManagedStrategies::get_container()
 
 ManagedStrategies* ManagedStrategies::clone () const
 {
-  return new ManagedStrategies (*this);
+  return new ManagedStrategies (this);
 }
 
 ProfileWeightFunction* ManagedStrategies::baseline () const

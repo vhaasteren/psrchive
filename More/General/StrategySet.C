@@ -133,7 +133,12 @@ Profile::Strategies* Profile::get_strategy() const
     if (managed)
     {
       DEBUG("Profile::get_strategy this=" << this << " managed");
-      strategy = managed->get_container()->get_strategy();
+      auto tmp = managed->get_container()->get_strategy();
+
+      if (managed->to_be_cloned())
+        tmp = tmp->clone();
+
+      strategy = tmp;
     }
   }
   return strategy;
