@@ -31,8 +31,7 @@ namespace Pulsar {
 
   public:
 
-    Expert (Archive* inst) : IntegrationManager::Expert (inst)
-    { instance = inst; }
+    Expert (Archive* inst) : IntegrationManager::Expert (inst), instance(inst) { }
 
     //! Set the number of pulsar phase bins
     void set_nbin (unsigned numbins)

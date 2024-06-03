@@ -31,12 +31,18 @@ class ManageAble: public Reference::Able {
 public:
 
   ~ManageAble () { cerr << "ManageAble destruct" << endl; }
-  void set_manager(Manager* manager) { my_manager = manager; policy = new NestedPolicy(manager); }
+  void set_manager(Manager* manager)
+  {
+    if (my_manager.is_equal_to(manager))
+      return;
+
+    my_manager = manager; 
+    policy = new NestedPolicy(manager);
+  }
 
 protected:
   Reference::To<Manager, false> my_manager;
   Reference::To<NestedPolicy> policy;
-  
 };
 
 class Manager: public Reference::Able {
@@ -95,6 +101,7 @@ int main (int argc, char** argv)
   cerr << endl << "test_circular_reference Manager::manage" << endl << endl;
   manager_ptr->manage(managable1);
   manager_ptr->manage(managable2);
+  manager_ptr->manage(new ManageAble);
 
   cerr << endl << "test_circular_reference delete ManageAble" << endl << endl;
   delete managable1;

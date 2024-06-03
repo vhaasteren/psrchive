@@ -15,15 +15,13 @@
 using namespace Pulsar;
 using namespace std;
 
-ManagedStrategies::ManagedStrategies (Integration* c)
+ManagedStrategies::ManagedStrategies (Integration* c) : container(c)
 {
   DEBUG("ManagedStrategies ctor this=" << this << " container=" << (void*) c);
-  container = c;
 }
 
-ManagedStrategies::ManagedStrategies (const ManagedStrategies& that)
+ManagedStrategies::ManagedStrategies (const ManagedStrategies& that) : container(that.container)
 {
-  container = that.container;
   DEBUG("ManagedStrategies copy ctor this=" << this << " container=" << (void*) container.ptr());
 }
 

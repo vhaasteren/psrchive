@@ -337,5 +337,6 @@ void Calibration::ReceptionModel::Solver::add_acceptance_condition
 
 void Calibration::ReceptionModel::Solver::set_equation (ReceptionModel* m)
 {
-  equation = m;
+  equation.set(m);
 }
+

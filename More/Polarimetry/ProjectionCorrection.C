@@ -33,17 +33,17 @@ Pulsar::ProjectionCorrection::~ProjectionCorrection ()
 //! Return true if the archive needs to be corrected
 void Pulsar::ProjectionCorrection::set_archive (const Archive* _archive)
 {
-  archive = _archive;
+  archive.set(_archive);
 
   if (!archive)
     return;
 
-  receiver = archive->get<Receiver>();
+  receiver.set(archive->get<Receiver>());
   if (!receiver)
     throw Error (InvalidState, "Pulsar::ProjectionCorrection::set_archive",
 		 "no Receiver extension available");
 
-  telescope = archive->get<Telescope>();
+  telescope.set(archive->get<Telescope>());
   if (!telescope)
     throw Error (InvalidState, "Pulsar::ProjectionCorrection::set_archive",
 		 "no Telescope extension available");
@@ -99,8 +99,8 @@ bool equal_pi (const Angle& a, const Angle& b, float tolerance = 0.01)
 //! Return true if the archive needs to be corrected
 bool Pulsar::ProjectionCorrection::required (unsigned isub) const try
 {
-  integration = archive->get_Integration (isub);
-  pointing = integration->get<Pointing>();
+  integration.set(archive->get_Integration (isub));
+  pointing.set(integration->get<Pointing>());
 
   if (pointing && Archive::verbose > 2)
     cerr << "Pulsar::ProjectionCorrection::required has Pointing" << endl;

@@ -23,7 +23,7 @@ void VariableTransformationManager::set_archive (const Archive* _archive)
   if (!archive || archive != _archive)
     built = false;
 
-  archive = _archive;
+  archive.set(_archive);
 }
 
 //! Set the sub-integration for which a tranformation will be computed

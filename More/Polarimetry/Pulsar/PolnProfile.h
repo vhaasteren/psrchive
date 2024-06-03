@@ -182,10 +182,8 @@ namespace Pulsar {
     //! The phase-resolved four-dimensional Stokes covariance matrix
     Reference::To<StokesCovariance> covariance;
 
-    //! Throw an exception if want_state != state or want_ibin >= nbin
-    void check (const char* method, 
-		Signal::State want_state,
-		unsigned want_ibin) const;
+    //! Throw an exception if want != state or ibin >= nbin
+    void check (const char* method, Signal::State want, unsigned ibin) const;
 
     //! Efficiently forms the inplace sum and difference of two profiles
     void sum_difference (Profile* sum, Profile* difference);
@@ -194,8 +192,7 @@ namespace Pulsar {
     void init ();
 
     //! Does the work for get_polarized and get_linear
-    void get_rss( Profile* rss, unsigned jpol, unsigned kpol,
-		  BaselineEstimator* baseline_estimator = 0 ) const;
+    void get_rss (Profile* rss, unsigned jpol, unsigned kpol, BaselineEstimator* baseline = 0) const;
 
   };
 

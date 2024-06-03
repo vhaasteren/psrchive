@@ -319,7 +319,7 @@ void Pulsar::PhaseWeight::set_Profile (const Profile* _profile) const
   cerr << "Pulsar::PhaseWeight::set_Profile this=" << this << " profile=" << _profile << endl;
 #endif
 
-  profile = _profile;
+  profile.set(_profile);
   built = false;
   median_computed = false;
   median_diff_computed = false;

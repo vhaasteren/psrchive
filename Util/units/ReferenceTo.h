@@ -59,8 +59,15 @@ namespace Reference {
     //! Enable tests like ref != nullptr
     bool operator != (const void* ptr) const;
 
+    //! Work around "warning: ISO C++ says that these are ambiguous
+    /*! even though the worst conversion for the first is better than the worst conversion for the second" */
+    bool is_equal_to (const void* ptr) const;
+
     //! Cast to Type* operator
     operator Type* () const { return get(); }
+
+    //! Set the pointer
+    void set (Type*);
 
     //! Return the pointer
     Type* get () const;
@@ -95,23 +102,23 @@ template<class Type, bool active>
 bool Reference::To<Type,active>::operator == (const void* ptr) const
 {
   DEBUG("Reference::To<"+name()+">::operator ==");
-
-  if (!ptr)
-    return !the_handle || the_handle->pointer == nullptr;
-  else
-    return the_handle && the_handle->pointer == ptr;
+  return is_equal_to(ptr);
 }
-
 
 template<class Type, bool active>
 bool Reference::To<Type,active>::operator != (const void* ptr) const
 {
   DEBUG("Reference::To<"+name()+">::operator !=");
+  return !is_equal_to(ptr);
+}
 
+template<class Type, bool active>
+bool Reference::To<Type,active>::is_equal_to (const void* ptr) const
+{
   if (!ptr)
-    return the_handle && the_handle->pointer != nullptr;
+    return !the_handle || the_handle->pointer == nullptr;
   else
-    return !the_handle || the_handle->pointer != ptr;
+    return the_handle && the_handle->pointer == ptr;
 }
 
 template<class Type, bool active>
@@ -220,15 +227,21 @@ Reference::To<Type,active>&
 Reference::To<Type,active>::operator = (Type* ref_pointer)
 {
   DEBUG("Reference::To<"+name()+">::operator = (Type*=" << (void*)ref_pointer <<")");
+  set (ref_pointer);
+  return *this;
+}
+
+// operator = assignment operator
+template<class Type, bool active>
+void Reference::To<Type,active>::set (Type* ref_pointer)
+{
+  DEBUG("Reference::To<"+name()+">::set (Type*=" << (void*)ref_pointer <<")");
 
   if (the_handle && the_handle->pointer == ref_pointer)
-    return *this;
+    return;
 
   unhook ();
-
   hook (ref_pointer);
-
-  return *this;
 }
 
 template<class Type, bool active>
@@ -328,11 +341,7 @@ template<class Type, bool active, class Type2>
 bool operator == (const Reference::To<Type,active>& ref, const Type2* instance)
 {
   DEBUG("operator == (Reference::To<Type>&, Type*)");
-
-  if (instance == nullptr)
-    return !ref;
-
-  return ref.ptr() == instance;
+  return ref.is_equal_to(instance);
 }
 
 //! return true if Reference::To refers to instance
@@ -340,11 +349,7 @@ template<class Type, bool active, class Type2>
 bool operator == (const Type2* instance, const Reference::To<Type,active>& ref)
 {
   DEBUG("operator == (T2*, Reference::To<T1>&)");
-
-  if (instance == nullptr)
-    return !ref;
-
-  return ref.ptr() == instance;
+  return ref.is_equal_to(instance);
 }
 
 template<typename C, typename P, bool A>

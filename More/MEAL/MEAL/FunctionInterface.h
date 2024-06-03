@@ -47,8 +47,8 @@ namespace MEAL
 
     public:
 
-    Parameter (ParameterPolicy* policy, unsigned i)
-    { parameter_policy = policy, index = i; }
+    Parameter (ParameterPolicy* policy, unsigned i) : parameter_policy(policy)
+    { index = i; }
 
     // Text interface to a Parameter instance
     class Interface : public TextInterface::To<Parameter>

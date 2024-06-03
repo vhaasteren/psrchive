@@ -185,8 +185,8 @@ Pulsar::get_Stokes (const Integration* data, Index chan)
 
   try
   {
-    if (Profile::verbose) cerr << "Pulsar::get_Stokes "
-      "(" << chan << ")" << endl;
+    if (Profile::verbose) 
+      cerr << "Pulsar::get_Stokes (" << chan << ")" << endl;
 
     Reference::To<const Integration> integration = data;
     Reference::To<Integration> integration_clone;

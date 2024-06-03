@@ -47,7 +47,7 @@ void Pulsar::PolnProfileStats::set_avoid_zero_determinant (bool flag)
 //! Set the PolnProfile from which statistics will be derived
 void Pulsar::PolnProfileStats::set_profile (const PolnProfile* _profile) try
 {
-  profile = _profile;
+  profile.set(_profile);
 
 #if _DEBUG
   cerr << "Pulsar::PolnProfileStats::set_profile this=" << this
@@ -70,7 +70,7 @@ void Pulsar::PolnProfileStats::select_profile (const PolnProfile* _profile) try
        << " PolnProfile=" << _profile << endl;
 #endif
 
-  profile = _profile;
+  profile.set(_profile);
   regions_set = false;
   build ();
   if (_profile)

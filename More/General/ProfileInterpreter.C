@@ -9,6 +9,7 @@
 #include "Pulsar/ArchiveTemplates.h"
 #include "Pulsar/Archive.h"
 #include "Pulsar/Integration.h"
+#include "Pulsar/Statistics.h"
 
 #include "Pulsar/RemoveBaseline.h"
 #include "Pulsar/PolnProfileStats.h"
@@ -128,9 +129,6 @@ string Pulsar::ProfileInterpreter::baseline (const string& args) try
 catch (Error& error) {
   return response (error);
 }
-
-// defined in More/General/standard_interface.C
-std::string process (TextInterface::Parser* interface, const std::string& txt);
 
 string Pulsar::ProfileInterpreter::scale (const string& args) try
 {

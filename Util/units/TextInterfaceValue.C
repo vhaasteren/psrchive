@@ -14,7 +14,10 @@ TextInterface::Value::Value() {}
 
 TextInterface::Value::~Value() {}
 
-void TextInterface::Value::set_parent (Parser* p) { parent = p; }
+void TextInterface::Value::set_parent (Parser* p)
+{
+  parent.set(p);
+}
 
 void TextInterface::Value::reset_modifiers () const { tostring_precision = 0; }
 

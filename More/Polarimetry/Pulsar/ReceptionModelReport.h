@@ -31,7 +31,7 @@ namespace Calibration
     Report (const std::string& name) { filename = name; }
 
     //! Set the measurement equation on which to report
-    void set_model (ReceptionModel* _model) { model = _model; }
+    void set_model (ReceptionModel* _model) { model.set(_model); }
 
     //! Set the name of the file to which the report will be written
     void set_filename (const std::string& _name) { filename = _name; }

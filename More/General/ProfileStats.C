@@ -112,7 +112,7 @@ void Pulsar::ProfileStats::set_profile (const Profile* _profile)
     cerr << "Pulsar::ProfileStats::set_profile this=" << this
          << " profile=" << _profile << " regions_set=" << regions_set << endl;
 
-  profile = _profile;
+  profile.set(_profile);
   built = false;
 }
 
@@ -127,7 +127,7 @@ void Pulsar::ProfileStats::select_profile (const Profile* set_profile) try
   regions_set = false;
 
   if (set_profile)
-    profile = set_profile;
+    profile.set(set_profile);
 
   build ();
 

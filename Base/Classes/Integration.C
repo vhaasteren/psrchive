@@ -280,7 +280,7 @@ void Pulsar::Integration::adopt (const Archive* archive)
     cerr << "Pulsar::Integration::adopt new parent" << endl;
 
   orphaned = 0;
-  parent = archive;
+  parent.set(archive);
 }
 
 void Pulsar::Integration::range_check (unsigned ipol, unsigned ichan) const

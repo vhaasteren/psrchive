@@ -112,6 +112,9 @@ namespace Reference
   {
     std::vector<Able*> bin;
     public:
+
+      ~Bin() { cerr << "Bin dtor clear" << endl; bin.clear(); }
+
       void add (Able* ptr)
       { 
         DEBUG("Reference::Bin::add ptr=" << ptr);
@@ -204,6 +207,7 @@ Reference::Able::~Able ()
   {
     DEBUG("Reference::Able dtor this=" << this << " handle_count=" << __reference_handle->handle_count);
     __reference_handle->pointer = 0;
+    assert (__reference_handle->handle_count > 0);
   }
 
   if (__is_on_heap())
@@ -235,18 +239,11 @@ void Reference::Able::__dereference (bool auto_delete) const
     assert (__heap_state != 0x02);
     __heap_state = 0x02;
 
-    if (__reference_handle)
-    {
-      __reference_handle->pointer = 0;
-      assert (__reference_handle->handle_count > 0);
-    }
-
     delete this;
     return;
   }
 
   DEBUG("Reference::Able::__dereference this=" << this << " exit");
-
 }
 
 void Reference::Able::Handle::decrement (bool active, bool auto_delete)
@@ -265,22 +262,24 @@ void Reference::Able::Handle::decrement (bool active, bool auto_delete)
   // there should never be a handle without any references to it
   assert (handle_count > 0);
 
-  // decrease the total reference count (both active and passive)
-  handle_count --;
-
-  DEBUG("Reference::Able::Handle::decrement this=" << this << " handle_count=" << handle_count);
-
-  if (pointer && auto_delete && pointer->__is_on_heap() && pointer->__reference_count == 0 && handle_count == 0)
+  if (pointer && auto_delete && pointer->__is_on_heap() && pointer->__reference_count == 0)
   {
     DEBUG("Reference::Able::Handle::decrement this=" << this << " garbage pointer=" << pointer);
     bin.add(pointer);
   }
+
+  DEBUG("Reference::Able::Handle::decrement this=" << this << " handle_count=" << handle_count);
+
+  // decrease the total reference count (both active and passive) to this handle
+  handle_count --;
 
   // delete the handle
   if (handle_count == 0)
   {
     if (pointer)
     {
+      assert (pointer->__reference_count == 0);
+
       DEBUG("Reference::Able::Handle::decrement this=" << this << " pointer=" << pointer);
       // this instance is about to be deleted, ensure that Reference::Able object no longer points to it
       pointer->__reference_handle = 0;
