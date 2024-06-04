@@ -23,7 +23,10 @@ double KrausType::get_vertical () const
 {
   double HA = get_hour_angle();
 
-  cerr << "KrausType::get_vertical HA=" << HA << endl;
+  static bool print = true;
+  if (print)
+    cerr << "KrausType::get_vertical using spherical trigonometry" << endl;
+  print = false;
 
   return asin( sin(declination) * sin(-HA) );
 }
