@@ -211,6 +211,7 @@ void Calibration::ReceptionModel::Solver::solve () try
 {
   if (verbose)
     cerr << "Calibration::ReceptionModel::Solver::solve this=" << this << endl;
+
   count_infit ();
   count_constraint ();
 

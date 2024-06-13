@@ -102,6 +102,8 @@ namespace Pulsar
 	    const std::string& description = "none",
 	    const std::string& detailed_description = "none" );
 
+    ~Option() { std::cerr << "Option<T> dtor name=" << this->get_key() << std::endl; }
+
     //! Set equal to T operator
     T& operator = (const T& t)
     { Configuration::Parameter<T>::set_value(t); return *this; }
