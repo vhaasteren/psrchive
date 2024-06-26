@@ -25,15 +25,9 @@ namespace Reference {
   template<class Type, bool active = true> class To {
 
   public:
-
-    //! Returns true if reference is null
-    bool operator ! () const;
-    
-    //! Returns true if reference is other than null
-    operator bool () const;
     
     //! Default constructor
-    To (Type* ptr = 0);
+    constexpr To () = default;
     
     //! Copy constructor
     To (const To&);
@@ -44,7 +38,10 @@ namespace Reference {
     //! Assignment operator
     To& operator = (const To&);
 
-    //! Assignment operator
+    //! Construct from pointer
+    To (Type* ptr);
+
+    //! Assign from pointer
     To& operator = (Type *);
     
     //! Object dereferencing operator
@@ -65,6 +62,12 @@ namespace Reference {
 
     //! Cast to Type* operator
     operator Type* () const { return get(); }
+
+    //! Returns true if reference is null
+    bool operator ! () const;
+    
+    //! Returns true if reference is other than null
+    operator bool () const;
 
     //! Set the pointer
     void set (Type*);
@@ -93,7 +96,7 @@ namespace Reference {
     void unhook (bool auto_delete = true);
 
     //! The handle to the object
-    Able::Handle* the_handle;
+    Able::Handle* the_handle = nullptr;
 
   };
 }
