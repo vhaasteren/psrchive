@@ -26,6 +26,8 @@ void usage ()
     "  -A rad        Compute maximum RM so that delta-Psi<rad across channel \n"
     "  -i nchan      Subdivide the band (fscrunch-x2) until \"nchan\" channels are left (incorporates systematics) \n"
     "  -j ntimes     Subdivide the pulse profile (bscrunch-x2) ntimes (incorporates systematics) \n"
+    "  -s            Integrate L^2 instead of L \n"
+    "  -l cutoff     Fraction of peak at which to cut-off data fit to Gaussian (default: 0.5) \n"
     "  -u max        Set the upper bound on the default maximum RM \n"
     "  -U rm/dm      Set upper bound on default maximum RM = DM * rm/dm \n"
     "\n"
@@ -177,6 +179,7 @@ static bool auto_maxmthd = false;
 static float auto_maxrm_dm = 0.0;
 static float auto_maxrm = 1500.0;
 static float auto_minrm = 0.0;
+static float auto_cutoff = 0.5;
 
 static float auto_step_rad = 0.0;
 static float auto_max_rad = 1.0;
@@ -253,7 +256,7 @@ int main (int argc, char** argv)
   // estimate an unique RM for each component in the model
   Reference::To<Pulsar::ComponentModel> component_model;
 
-  const char* args = "a:A:b:B:c:C:DeF:hi:j:JK:Lm:M:p:P:rR:sS:T:tu:U:vVw:WYz:";
+  const char* args = "a:A:b:B:c:C:DeF:hi:j:JK:Ll:m:M:p:P:rR:sS:T:tu:U:vVw:WYz:";
 
   int gotc = 0;
 
@@ -371,20 +374,24 @@ int main (int argc, char** argv)
       log_results = true;
       break;
 
+    case 'l':
+      auto_cutoff = atof(optarg);
+      break;
+
     case 'm':
       maxmthd = true;
-      if (sscanf(optarg, "%f,%f,%ud", &minrm, &maxrm, &rmsteps) != 3) {
+      if (sscanf(optarg, "%f,%f,%ud", &minrm, &maxrm, &rmsteps) != 3)
+      {
         cerr << "Invalid paramaters!" << endl;
         return -1;
       }
-      if ((maxrm < minrm) || (rmsteps < 2)) {
+      if ((maxrm < minrm) || (rmsteps < 2))
+      {
         cerr << "Invalid paramaters!" << endl;
         return -1;
       }
       
       rmstep = fabs(maxrm-minrm)/float(rmsteps);
-
-      
       break;
 
     case 'M':
@@ -1273,11 +1280,11 @@ double do_maxmthd (double minrm, double maxrm, unsigned rmsteps, Reference::To<P
 
   // fit data only to the first set of minima
   unsigned index_min = index;
-  while (index_min > 0 && (fluxes[index_min] > fluxes[index_min-1]))
+  while (index_min > 0 && (fluxes[index_min] > auto_cutoff * max))
     index_min --;
 
   unsigned index_max = index;
-  while (index_max +1 < rmsteps && (fluxes[index_max] > fluxes[index_max+1]))
+  while (index_max +1 < rmsteps && (fluxes[index_max] > auto_cutoff * max))
     index_max ++;
 
   double bestrm = rms[index];
