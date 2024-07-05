@@ -12,6 +12,9 @@
 #include <iostream>
 using namespace std;
 
+static float auto_cutoff = 0.5;
+static float selection_threshold = 3.0;
+
 void usage ()
 {
   cout <<
@@ -27,7 +30,7 @@ void usage ()
     "  -i nchan      Subdivide the band (fscrunch-x2) until \"nchan\" channels are left (incorporates systematics) \n"
     "  -j ntimes     Subdivide the pulse profile (bscrunch-x2) ntimes (incorporates systematics) \n"
     "  -s            Integrate L^2 instead of L \n"
-    "  -l cutoff     Fraction of peak at which to cut-off data fit to Gaussian (default: 0.5) \n"
+    "  -l cutoff     Fraction of peak at which to cut off data fit to Gaussian (default: " << auto_cutoff << ") \n"
     "  -u max        Set the upper bound on the default maximum RM \n"
     "  -U rm/dm      Set upper bound on default maximum RM = DM * rm/dm \n"
     "\n"
@@ -35,7 +38,7 @@ void usage ()
     "\n"
     "  -r            Refine the RM using two halves of band (enables this mode) \n"
     "  -W            Divide the band in two equal wavelength-squared intervals \n"
-    "  -T sigma_L    Set the threshold used to select bins (default: 3 sigma) \n"
+    "  -T sigma_L    Set the threshold used to select bins (default: " << selection_threshold << " sigma) \n"
     "  -P paas.m     Perform RM refinement for each profile component in model \n"
     "  -b [+/-][i-k] Include/exclude phase bins i through k (inclusive) \n"
     "\n"
@@ -179,13 +182,11 @@ static bool auto_maxmthd = false;
 static float auto_maxrm_dm = 0.0;
 static float auto_maxrm = 1500.0;
 static float auto_minrm = 0.0;
-static float auto_cutoff = 0.5;
 
 static float auto_step_rad = 0.0;
 static float auto_max_rad = 1.0;
 
 static unsigned auto_minsteps = 10;
-static float selection_threshold = -1;
 static unsigned max_iterations = 10;
 
 Estimate<double> best_search_rm;
@@ -1278,13 +1279,18 @@ double do_maxmthd (double minrm, double maxrm, unsigned rmsteps, Reference::To<P
   
   float max = fluxes[index];
 
+  auto imin = min_element(fluxes.begin(), fluxes.end());
+  float min = *imin;
+
   // fit data only to the first set of minima
   unsigned index_min = index;
-  while (index_min > 0 && (fluxes[index_min] > auto_cutoff * max))
+  while (index_min > 0
+        && (((fluxes[index_min] - min) > auto_cutoff * max) || (fluxes[index_min] > fluxes[index_min-1])))
     index_min --;
 
   unsigned index_max = index;
-  while (index_max +1 < rmsteps && (fluxes[index_max] > auto_cutoff * max))
+  while (index_max +1 < rmsteps 
+        && (((fluxes[index_max] - min) > auto_cutoff * max) || (fluxes[index_max] > fluxes[index_max+1])))
     index_max ++;
 
   double bestrm = rms[index];
@@ -1295,8 +1301,8 @@ double do_maxmthd (double minrm, double maxrm, unsigned rmsteps, Reference::To<P
   MEAL::Gaussian gm;
 
   gm.set_centre (bestrm);
-  gm.set_width  (rms[index_max] - rms[index_min]);
-  gm.set_height (max);
+  gm.set_width  ((rms[index_max] - rms[index_min]) / 6.0);
+  gm.set_height (max - min);
 
   cerr << "initial peak index=" << index 
        << "  (" << index_min << "->" << index_max << ") or\n"
@@ -1311,7 +1317,7 @@ double do_maxmthd (double minrm, double maxrm, unsigned rmsteps, Reference::To<P
 
   for (unsigned j = index_min; j < index_max; j++) {
     data_x.push_back ( argument.get_Value(rms[j]) );
-    data_y.push_back( Estimate<double>(fluxes[j],err[j]) );
+    data_y.push_back( Estimate<double>(fluxes[j],err[j]) - min );
   }
 
   if (data_x.size() == 0) {
@@ -1329,35 +1335,36 @@ double do_maxmthd (double minrm, double maxrm, unsigned rmsteps, Reference::To<P
 
     unsigned iter = 1;
     unsigned not_improving = 0;
-    while (not_improving < 25) {
+    while (not_improving < 25)
+    {
       if (verbose)
-	cerr << "iteration " << iter << endl;
+        cerr << "iteration " << iter << endl;
 
       float nchisq = fit.iter (data_x, data_y, gm);
 
       if (verbose)
-	cerr << "     chisq = " << nchisq << endl;
+        cerr << "     chisq = " << nchisq << endl;
 
-      if (nchisq < chisq) {
-	float diffchisq = chisq - nchisq;
-	chisq = nchisq;
-	not_improving = 0;
-	if (diffchisq/chisq < threshold && diffchisq > 0) {
-	  if (verbose)
-	    cerr << "No big diff in chisq = " << diffchisq << endl;
-	  break;
-	}
+      if (nchisq < chisq)
+      {
+        float diffchisq = chisq - nchisq;
+        chisq = nchisq;
+        not_improving = 0;
+        if (diffchisq/chisq < threshold && diffchisq > 0) {
+          if (verbose)
+            cerr << "No big diff in chisq = " << diffchisq << endl;
+          break;
+        }
       }
       else
-	not_improving ++;
+        not_improving ++;
 
       iter ++;
     }
 
     double free_parms = data_x.size() + gm.get_nparam();
 
-    cerr << "Chi-squared = " << chisq << " / " << free_parms << " = "
-	 << chisq / free_parms << endl;
+    cerr << "Chi-squared = " << chisq << " / " << free_parms << " = " << chisq / free_parms << endl;
 
     double width = fabs(gm.get_width());
     cerr << "Width="<< width <<" Height="<< gm.get_height() << endl;
@@ -1416,7 +1423,7 @@ double do_maxmthd (double minrm, double maxrm, unsigned rmsteps, Reference::To<P
 
     for (unsigned k = 1; k < rms.size(); k++) {
       gm.set_abscissa(rms[k]);
-      cpgdraw(rms[k],gm.evaluate());
+      cpgdraw(rms[k],gm.evaluate() + min);
     }
 
     cpgsci(1);
@@ -1432,12 +1439,8 @@ void do_refine (Reference::To<Pulsar::Archive> data,
 		PhaseWeight* onpulse_weights)
 {
   Pulsar::DeltaRM delta_rm;
-
-  if (selection_threshold != -1)
-  {
-    cerr << "rmfit: do_refine set threshold = " << selection_threshold << endl;
-    delta_rm.set_threshold (selection_threshold);
-  }
+  cerr << "rmfit: do_refine set threshold = " << selection_threshold << endl;
+  delta_rm.set_threshold (selection_threshold);
 
   if (wavelength_squared_spacing)
     delta_rm.set_policy (new FrequencyIntegrate::WavelengthSquaredSpaced);

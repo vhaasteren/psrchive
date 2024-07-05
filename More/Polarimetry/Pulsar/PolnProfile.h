@@ -202,8 +202,7 @@ namespace Pulsar {
                               BaselineEstimator* baseline_estimator = 0) const;
 
     //! Does the work for get_root_sum_squared, get_polarized_squared and get_linear_squared
-    void get_sum_squared(Profile* rss, unsigned jpol, unsigned kpol,
-                         BaselineEstimator* baseline_estimator = 0) const;
+    void get_sum_squared(Profile* rss, unsigned jpol, unsigned kpol) const;
   };
 
 }

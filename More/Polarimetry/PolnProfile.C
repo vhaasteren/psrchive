@@ -690,7 +690,10 @@ void Pulsar::PolnProfile::get_root_sum_squared
 ( Profile* rss, unsigned jpol, unsigned kpol,
   BaselineEstimator* baseline_estimator) const
 {
-  get_sum_squared (rss, jpol, kpol, baseline_estimator);
+  get_sum_squared (rss, jpol, kpol);
+
+  if (!pav_backward_compatibility)
+    remove_baseline (rss, baseline_estimator);
 
   float* amps = rss->get_amps();
   unsigned nbin = rss->get_nbin();
@@ -721,8 +724,7 @@ void Pulsar::PolnProfile::get_root_sum_squared
 
  */
 void Pulsar::PolnProfile::get_sum_squared
-( Profile* sumsq, unsigned start_pol, unsigned end_pol,
-  BaselineEstimator* baseline_estimator) const
+  (Profile* sumsq, unsigned start_pol, unsigned end_pol) const
 {
   if (state != Signal::Stokes)
     throw Error (InvalidState, "Pulsar::PolnProfile::get_sqrt_sumsq",
@@ -741,9 +743,6 @@ void Pulsar::PolnProfile::get_sum_squared
     for (unsigned ibin=0; ibin<nbin; ibin++)
       amps[ibin] += a[ibin]*a[ibin];
   }
-
-  if (!pav_backward_compatibility)
-    remove_baseline (sumsq, baseline_estimator);
 }
 
 void Pulsar::PolnProfile::get_polarized (Profile* polarized) const try
@@ -776,8 +775,7 @@ catch (Error& error) {
 
 void Pulsar::PolnProfile::get_linear_squared (Profile* Lsq) const try
 {
-  ExponentialBaseline estimator;
-  get_sum_squared (Lsq, 1,2, &estimator);
+  get_sum_squared (Lsq, 1,2);
 }
 catch (Error& error)
 {
