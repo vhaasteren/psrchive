@@ -192,6 +192,9 @@ static vector<unsigned> exclude_bins;
 
 static bool wavelength_squared_spacing = false;
 
+// use the sum of L^2 instead of sum of L
+static bool squared = false;
+
 int main (int argc, char** argv)
 {
   poln_stats = new Pulsar::PolnProfileStats;
@@ -250,7 +253,7 @@ int main (int argc, char** argv)
   // estimate an unique RM for each component in the model
   Reference::To<Pulsar::ComponentModel> component_model;
 
-  const char* args = "a:A:b:B:c:C:DeF:hi:j:JK:Lm:M:p:P:rR:S:T:tu:U:vVw:WYz:";
+  const char* args = "a:A:b:B:c:C:DeF:hi:j:JK:Lm:M:p:P:rR:sS:T:tu:U:vVw:WYz:";
 
   int gotc = 0;
 
@@ -268,42 +271,42 @@ int main (int argc, char** argv)
 
     case 'b':
       switch (optarg[0])
-	{
-	case '-':
-	  exclude_range = optarg + 1;
-	  cerr << "rmfit: will exclude " << exclude_range << endl;
-	  break;
-	case '+':
-	  include_range = optarg + 1;
-	  cerr << "rmfit: will include " << include_range << endl;
-	  break;
-	default:
-	  cerr << "rmfit: invalid bin inclusion/exclusion string "
-	    "'" << optarg << "'" << endl;
-	  return 0;
-	}
+      {
+      case '-':
+        exclude_range = optarg + 1;
+        cerr << "rmfit: will exclude " << exclude_range << endl;
+        break;
+      case '+':
+        include_range = optarg + 1;
+        cerr << "rmfit: will include " << include_range << endl;
+        break;
+      default:
+        cerr << "rmfit: invalid bin inclusion/exclusion string "
+          "'" << optarg << "'" << endl;
+        return 0;
+      }
       break;
 
     case 'B':
       bscrunchme = true;
       if (sscanf(optarg, "%d", &bscr) != 1) {
-	cerr << "That is not a valid scrunch factor!" << endl;
-	return -1;
+        cerr << "That is not a valid scrunch factor!" << endl;
+        return -1;
       }
       break;
 
     case 'c':
       {
-	TextInterface::Parser* interface = poln_stats->get_interface();
-	cerr << interface->process (optarg) << endl;
-	break;
+        TextInterface::Parser* interface = poln_stats->get_interface();
+        cerr << interface->process (optarg) << endl;
+        break;
       }
 
     case 'p':
       singlebin = true;
       if (sscanf(optarg, "%f,%f", &x1, &x2) != 2) {
-	cerr << "That is not a valid phase window!" << endl;
-	return -1;
+        cerr << "That is not a valid phase window!" << endl;
+        return -1;
       }
 
       break;
@@ -319,8 +322,8 @@ int main (int argc, char** argv)
     case 'F':
       fscrunchme = true;
       if (sscanf(optarg, "%d", &fscr) != 1) {
-	cerr << "That is not a valid scrunch factor!" << endl;
-	return -1;
+        cerr << "That is not a valid scrunch factor!" << endl;
+        return -1;
       }
       break;
 
@@ -335,12 +338,12 @@ int main (int argc, char** argv)
       fscr = 2;
       fscr_init = 16;
       if (sscanf(optarg, "%d", &nchannels) != 1) {
-	cerr << "That is not a valid number of channels!" << endl;
-	return -1;
+        cerr << "That is not a valid number of channels!" << endl;
+        return -1;
       }
       if (nchannels < 8) {
-	cerr << "Very few channels; it will compromise the statistics!" << endl;
-	return -1;
+        cerr << "Very few channels; it will compromise the statistics!" << endl;
+        return -1;
       }
 
       break;
@@ -350,12 +353,12 @@ int main (int argc, char** argv)
       bscrunchme = true;
       bscr=2;
       if (sscanf(optarg, "%u", &nbscr) != 1) {
-	cerr << "That is not a valid number of scrunches!" << endl;
-	return -1;
+        cerr << "That is not a valid number of scrunches!" << endl;
+        return -1;
       }
       if (nbscr > 8) {
-	cerr << "Too many bscrunch times; it will compromise the statistics!" << endl;
-	return -1;
+        cerr << "Too many bscrunch times; it will compromise the statistics!" << endl;
+        return -1;
       }
 
       break;
@@ -371,12 +374,12 @@ int main (int argc, char** argv)
     case 'm':
       maxmthd = true;
       if (sscanf(optarg, "%f,%f,%ud", &minrm, &maxrm, &rmsteps) != 3) {
-	cerr << "Invalid paramaters!" << endl;
-	return -1;
+        cerr << "Invalid paramaters!" << endl;
+        return -1;
       }
       if ((maxrm < minrm) || (rmsteps < 2)) {
-	cerr << "Invalid paramaters!" << endl;
-	return -1;
+        cerr << "Invalid paramaters!" << endl;
+        return -1;
       }
       
       rmstep = fabs(maxrm-minrm)/float(rmsteps);
@@ -394,8 +397,8 @@ int main (int argc, char** argv)
 
     case 'C':
       if (sscanf(optarg, "%f", &channel_weight_threshold) != 1) {
-	cerr << "That is not a valid channel weight threshold!" << endl;
-	return -1;
+        cerr << "That is not a valid channel weight threshold!" << endl;
+        return -1;
       }
       break;
 
@@ -405,6 +408,8 @@ int main (int argc, char** argv)
       break;
 
     case 'S': nsigma = atof(optarg); break;
+
+    case 's': squared = true; break;
 
     case 't':
       maxmthd = true;
@@ -450,8 +455,8 @@ int main (int argc, char** argv)
     case 'w':
       window = true;
       if (sscanf(optarg, "%f,%f", &x1, &x2) != 2) {
-	cerr << "That is not a valid phase window!" << endl;
-	return -1;
+        cerr << "That is not a valid phase window!" << endl;
+        return -1;
       }
       break;
 
@@ -463,18 +468,18 @@ int main (int argc, char** argv)
       plotv = true;
       if (fin)
       {
-	 fin.close();
-	 system("rm -f QUVflux.out");
+        fin.close();
+        system("rm -f QUVflux.out");
       }
       
       break;
 
     case 'z': 
       {
-	vector<string> words = stringdecimate(optarg," \t");
-	for( unsigned i=0; i<words.size(); i++)
-	  zap_chans.push_back( fromstring<unsigned>(words[i]) );
-	break;
+        vector<string> words = stringdecimate(optarg," \t");
+        for( unsigned i=0; i<words.size(); i++)
+          zap_chans.push_back( fromstring<unsigned>(words[i]) );
+        break;
       }
 
 
@@ -1070,8 +1075,7 @@ Reference::To<Pulsar::Archive> get_data(string filename)
   return data;
 }
 
-double do_maxmthd (double minrm, double maxrm, unsigned rmsteps,
-		   Reference::To<Pulsar::Archive> data)
+double do_maxmthd (double minrm, double maxrm, unsigned rmsteps, Reference::To<Pulsar::Archive> data)
 {
   if (auto_maxmthd)
   {
@@ -1193,8 +1197,12 @@ double do_maxmthd (double minrm, double maxrm, unsigned rmsteps,
     profile = useful->get_Integration(0)->new_PolnProfile(0);
     
     poln_stats->set_profile( profile );
-    Estimate<float> rval = poln_stats->get_total_linear ();
-    
+    Estimate<float> rval;
+    if (squared)
+      rval = poln_stats->get_total_linear_squared ();
+    else
+      rval = poln_stats->get_total_linear ();
+
     fluxes[step] = rval.get_value();
     err[step] = rval.get_error();
     rms[step] = rm;
