@@ -213,5 +213,7 @@ LDADD = $(top_builddir)/More/libpsrmore.la \
 
 include $(top_srcdir)/config/Makefile.include
 
-AM_CPPFLAGS += @PGPLOT_CFLAGS@ @CFITSIO_CFLAGS@ @GSL_CFLAGS@ @PSRXML_CFLAGS@ @CULA_CFLAGS@ @HEALPIX_CFLAGS@
+AM_CPPFLAGS += @PGPLOT_CFLAGS@ @CFITSIO_CFLAGS@ @GSL_CFLAGS@ \
+	       @PSRXML_CFLAGS@ @CULA_CFLAGS@ @HEALPIX_CFLAGS@ \
+	       @ARMADILLO_CFLAGS@
 

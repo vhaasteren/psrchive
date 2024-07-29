@@ -12,7 +12,9 @@
 #define __UnaryStatistic_h
 
 #include "Identifiable.h"
+
 #include <algorithm>
+#include <cmath>
 
 //! Commmon statistics that can be derived from a single array of floats
 class UnaryStatistic : public Identifiable
@@ -46,12 +48,13 @@ void central_moments (std::vector<double> data, std::vector<double>& mu);
 //! worker function for outlier detection
 /*! pass a pointer to vector<float> as the second argument
   to retain the power spectral density used in this calculation */
-double robust_variance (const std::vector<double>& data,
-			std::vector<float>* psd = 0);
+double robust_variance (const std::vector<double>& data, std::vector<float>* psd = 0);
 
 template<typename T>
 T median (std::vector<T> data)
 {
+  if (data.size() == 0)
+    return nan("");
   unsigned mid = data.size() / 2;
   std::nth_element( data.begin(), data.begin()+mid, data.end() );
   return data[mid];
