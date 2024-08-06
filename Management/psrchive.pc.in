@@ -4,6 +4,7 @@ libdir=@libdir@
 includedir=@includedir@
 aclocal=@datadir@/aclocal
 html=@datadir@/html
+datarootdir:=@datarootdir@
 psrplot_libs=-L@libdir@ -lpsrplot @PGPLOT_CFLAGS@ @PGPLOT_LIBS@
 
 Name: @PACKAGE_NAME@

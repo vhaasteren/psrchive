@@ -208,7 +208,8 @@ test_PhaseRange_SOURCES		= test_PhaseRange.C
 
 LDADD = libgenutil.la \
 	$(top_builddir)/Util/units/libunits.la \
-	$(top_builddir)/Util/third/libthird.la
+	$(top_builddir)/Util/third/libthird.la \
+	$(top_builddir)/Util/epsic/src/util/libutil.la
 
 include $(top_srcdir)/config/Makefile.include
 
