@@ -83,7 +83,7 @@ libgenutil_la_SOURCES = \
 	completion.C \
 	compressed_io.C \
 	coord_parse.c \
-	copy.C \ 
+	copy.C \
 	CrossValidatedSmoothing.C \
 	Directional.C \
 	DirectoryLock.C \
