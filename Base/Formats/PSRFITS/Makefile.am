@@ -63,5 +63,5 @@ include $(top_srcdir)/config/Makefile.include
 AM_CPPFLAGS += @CFITSIO_CFLAGS@ @MPI_CFLAGS@ @TEMPO2_CFLAGS@
 
 LDADD = libpsrfits.la $(top_builddir)/Util/libpsrutil.la \
-	$(top_builddir)/Util/epsic/src/libepsic.la @CFITSIO_LIBS@
+	$(top_builddir)/Util/epsic/src/util/libutil.la @CFITSIO_LIBS@
 
