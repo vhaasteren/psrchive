@@ -12,7 +12,7 @@ _psrchive_la_LDFLAGS = -module -avoid-version -no-undefined
 _psrchive_la_LIBADD = $(top_builddir)/More/libpsrmore.la \
                       $(top_builddir)/Base/libpsrbase.la \
                       $(top_builddir)/Util/libpsrutil.la \
-                      $(top_builddir)/Util/epsic/src/libepsic.la \
+                      $(top_builddir)/Util/epsic/src/util/libutil.la \
                       @PYTHON_LDFLAGS@ 
 
 SWIG_FLAGS = -Wall -python -I$(top_builddir)/local_include -I$(top_builddir)

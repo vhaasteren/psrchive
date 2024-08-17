@@ -286,7 +286,7 @@ LDADD = libPolarimetry.la \
 	$(top_builddir)/More/MEAL/libMEAL.la \
 	$(top_builddir)/Base/libpsrbase.la \
 	$(top_builddir)/Util/libpsrutil.la \
-	$(top_builddir)/Util/epsic/src/libepsic.la 
+	$(top_builddir)/Util/epsic/src/util/libutil.la 
 
 
 include $(top_srcdir)/config/Makefile.include
