@@ -7,7 +7,7 @@
 
 #include "ChiSquared.h"
 #include "UnaryStatistic.h"
-#include "myfinite.h"
+#include "true_math.h"
 
 #include <algorithm>
 #include <numeric>
@@ -88,7 +88,7 @@ void linear_fit_work (Estimate<double>& scale, Estimate<double>& offset,
 
   offset.var /= var_2; // denominator
 
-  if ( ! myfinite(scale.val) )
+  if ( ! true_math::finite(scale.val) )
   {
     ofstream out ("linear_fit_work.dat");
     for (unsigned idim=0; idim < ndim; idim++)
@@ -97,7 +97,7 @@ void linear_fit_work (Estimate<double>& scale, Estimate<double>& offset,
     throw Error (InvalidState, "linear_fit_work", "non-finite scale=%lf count=%u norm=%lf", scale.val, count, norm);
   }
 
-  if ( ! myfinite(scale.var) )
+  if ( ! true_math::finite(scale.var) )
     throw Error (InvalidState, "linear_fit_work", "non-finite scale var=%lf", scale.var);
 
   if (robust_offset)
@@ -120,10 +120,10 @@ void linear_fit_work (Estimate<double>& scale, Estimate<double>& offset,
   else
     offset.val = mu_1 - scale.val * mu_2;
 
-  if ( ! myfinite(offset.val) )
+  if ( ! true_math::finite(offset.val) )
     throw Error (InvalidState, "linear_fit_work", "non-finite offset=%lf", offset.val);
 
-  if ( ! myfinite(offset.var) )
+  if ( ! true_math::finite(offset.var) )
     throw Error (InvalidState, "linear_fit_work", "non-finite offset var=%lf", offset.var);
 
   // cerr << "scale=" << scale << " offset=" << offset << endl;
@@ -201,7 +201,7 @@ double ChiSquared::get (const vector<double>& dat1, const vector<double>& dat2) 
   {
     residual[i] = dat1[i] - scale.val * dat2[i] - offset.val;
 
-    if ( ! myfinite(residual[i]) )
+    if ( ! true_math::finite(residual[i]) )
       throw Error (InvalidState, "ChiSquared::get", "non-finite residual[%u]=%f", i, residual[i]);
 
     coeff += sqr(residual[i]);

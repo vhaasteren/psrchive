@@ -36,7 +36,7 @@
 #include "median_smooth.h"
 #include "strutil.h"
 #include "debug.h"
-#include "myfinite.h"
+#include "true_math.h"
 
 #ifdef sun
 #include <ieeefp.h>
@@ -545,7 +545,7 @@ void Pulsar::PolnCalibrator::build_response ()
       // sanity check of model parameters
       unsigned nparam = transformation[ichan]->get_nparam();
       for (unsigned iparam=0; iparam < nparam; iparam++)
-        if ( !myfinite(transformation[ichan]->get_param(iparam)) )
+        if ( !true_math::finite(transformation[ichan]->get_param(iparam)) )
 	{
 	  if (verbose > 2)
 	    cerr << "Pulsar::PolnCalibrator::build ichan=" << ichan
@@ -557,7 +557,7 @@ void Pulsar::PolnCalibrator::build_response ()
 
       double normdet = norm(det( transformation[ichan]->evaluate() ));
 
-      if ( !myfinite(normdet) )
+      if ( !true_math::finite(normdet) )
       {
 	if (verbose > 2)
 	  cerr << "Pulsar::PolnCalibrator::build ichan=" << ichan <<
