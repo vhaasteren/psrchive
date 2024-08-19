@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([PSRCHIVE],[2024-07-25],[psrchive-developers@lists.sourceforge.net])
+AC_INIT([PSRCHIVE],[2024-08-18],[psrchive-developers@lists.sourceforge.net])
 
 # Dependencies
 PKG_PROG_PKG_CONFIG
@@ -238,14 +238,10 @@ CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"
 if test x"$enable_lean" == xyes; then
 
 AM_CONDITIONAL(HAVE_PGPLOT, [test 1 = 0])
-AM_CONDITIONAL(HAVE_QT, [test 1 = 0])
-AM_CONDITIONAL(HAVE_QTDRIV, [test 1 = 0])
 
 else
 
 SWIN_LIB_PGPLOT
-BNV_HAVE_QT
-SWIN_LIB_QTDRIV
 
 fi  # enable_lean
 
@@ -289,7 +285,6 @@ AC_CONFIG_FILES([
 		Util/fft/Makefile
 		Util/fft/install_bench
 		Util/genutil/Makefile
-		Util/qtutil/Makefile
 		Util/fitsutil/Makefile
 		Util/tempo/Makefile
 		Util/tempo2/Makefile
@@ -328,8 +323,6 @@ AC_CONFIG_FILES([
 		More/Applications/Makefile
 		More/Applications/njkk08/Makefile
 		More/Simulation/Makefile
-		More/rhythm/Makefile
-		More/psrgui/Makefile
 		More/python/Makefile
 		Management/Makefile
 		Management/psrchive

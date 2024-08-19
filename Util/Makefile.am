@@ -8,7 +8,7 @@ libpsrutil_la_SOURCES =
 libpsrutil_la_LIBADD = third/libthird.la units/libunits.la fft/libpsrfft.la \
 			genutil/libgenutil.la stat/libstat.la \
 			tempo/libtempo.la \
-			epsic/src/libepsic.la @FLIBS@
+			epsic/src/util/libutil.la @FLIBS@
 
 if HAVE_CFITSIO
   SUBDIRS += fitsutil
@@ -18,11 +18,6 @@ endif
 if HAVE_TEMPO2
   SUBDIRS += tempo2
   libpsrutil_la_LIBADD += tempo2/libtempo_2.la
-endif
-
-if HAVE_QT
-  SUBDIRS += qtutil
-  libpsrutil_la_LIBADD += qtutil/libqtutil.la
 endif
 
 SUBDIRS += resources
