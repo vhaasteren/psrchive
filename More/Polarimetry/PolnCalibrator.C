@@ -11,6 +11,7 @@
 
 #include "Pulsar/PolnCalibrator.h"
 #include "Pulsar/PolnCalibratorExtension.h"
+#include "Pulsar/PolnCalibratorExtensionUtils.h"
 
 #ifdef HAVE_SPLINTER
 #include "Pulsar/CalibrationInterpolator.h"
@@ -450,7 +451,7 @@ void Pulsar::PolnCalibrator::calculate_transformation () try
 
   for (unsigned i=0; i < nchan; i++)
   {
-    transformation[i] = new_transformation (poln_extension, i);
+    transformation[i] = Calibration::new_transformation (poln_extension, i);
     if (poln_extension->get_has_covariance())
       poln_extension->get_transformation(i)->get_covariance(covariance[i]);
   }
