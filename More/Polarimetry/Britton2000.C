@@ -118,7 +118,7 @@ void Calibration::Britton2000::equal_ellipticities ()
 
   if (verbose)
     cerr << "Calibration::Britton2000::equal_ellipticities name="
-	 << feed->get_param_name (delta_chi_index) << endl;
+        << feed->get_param_name (delta_chi_index) << endl;
   
   feed->set_param (delta_chi_index, 0.0);
   feed->set_infit (delta_chi_index, false);
@@ -128,7 +128,7 @@ void Calibration::Britton2000::equal_orientations ()
 {
   if (verbose)
     cerr << "Calibration::Britton2000::equal_orientations name="
-	 << feed->get_param_name (delta_theta_index) << endl;
+        << feed->get_param_name (delta_theta_index) << endl;
 
   feed->set_param (delta_theta_index, 0.0);
   feed->set_infit (delta_theta_index, false);
@@ -139,7 +139,7 @@ void Calibration::Britton2000::set_constant_orientation (bool flag)
 {
   if (verbose)
     cerr << "Calibration::Britton2000::set_constant_orientation name="
-	 << feed->get_param_name (sigma_theta_index) << endl;
+        << feed->get_param_name (sigma_theta_index) << endl;
   feed->set_infit (sigma_theta_index, !flag);
 }
 
@@ -150,7 +150,7 @@ bool Calibration::Britton2000::get_constant_orientation () const
 
 Estimate<double> Calibration::Britton2000::get_orientation () const
 {
-  return get_Estimate(sigma_theta_index);
+  return feed->get_Estimate(sigma_theta_index);
 }
 
 void Calibration::Britton2000::offset_orientation (double delta_rad)
