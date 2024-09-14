@@ -63,7 +63,7 @@ namespace TextInterface
       {
         message += interface->get_interface_name() + "\t"
           + interface->get_interface_description() + "\n"
-          + interface->help (true, false, "   ") + "\n";
+          + interface->help (true, false, "   ");
       }
       else if (interface->get_interface_name() == name)
       {

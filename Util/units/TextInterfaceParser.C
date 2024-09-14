@@ -248,9 +248,9 @@ string TextInterface::Parser::get_name_value (string& name) const try
 catch (Error& error)
 {
   if (error.get_code() == InvalidPointer)
-    return "nullptr";
+    return "-";
   else
-    return "error";
+    throw error;
 }
 
 //! Set the value of the value
