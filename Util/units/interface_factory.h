@@ -14,6 +14,7 @@
 #include "separate.h"
 
 // #define _DEBUG 1
+#include "debug.h"
 
 namespace TextInterface
 {
@@ -38,9 +39,7 @@ namespace TextInterface
   {
     std::string name = stringtok (name_parse, ":");
 
-#ifdef _DEBUG
-    std::cerr << "TextInterface::factory name=" << name << std::endl;
-#endif
+    DEBUG("TextInterface::factory name=" << name);
 
     if (name == "0")
       return 0;
@@ -51,9 +50,9 @@ namespace TextInterface
     
     if (name == "help")
       message +=
-	"\n\n"
-	"Options:"
-	"\n\n";
+        "\n\n"
+        "Options:"
+        "\n\n";
     
     for (auto ptr=ptrs.begin(); ptr != ptrs.end(); ptr++)
     {
@@ -79,21 +78,20 @@ namespace TextInterface
     }
 
     if (name == "help")
+    {
+      DEBUG("TextInterface::factory throwing HelpMessage = " << message);
       throw Error (HelpMessage, std::string(), message);
-    
+    }
+
     if (!result)
       throw Error (InvalidState, std::string(),
 		   "no instance named '" + name + "'");
     
-#ifdef _DEBUG
-    std::cerr << "TextInterface::factory options=" << name_parse << std::endl;
-#endif
+    DEBUG("TextInterface::factory options=" << name_parse);
 
     while (braced(name_parse))
     {
-#ifdef _DEBUG
-      std::cerr << "TextInterface::factory removing brackets" << std::endl;
-#endif
+      DEBUG("TextInterface::factory removing brackets");
       name_parse.erase (name_parse.begin());
       name_parse.erase (name_parse.end()-1);
     }
@@ -104,10 +102,7 @@ namespace TextInterface
     standard_separation (options, name_parse);
     for (unsigned i=0; i<options.size(); i++)
     {
-#ifdef _DEBUG
-      std::cerr << "TextInterface::factory option["<<i<<"]="
-		<< options[i] << std::endl;
-#endif
+      DEBUG("TextInterface::factory option["<<i<<"]=" << options[i]);
       
       interface->process (options[i]);
     }
