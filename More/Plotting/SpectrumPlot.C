@@ -54,6 +54,7 @@ void Pulsar::SpectrumPlot::get_spectra (const Archive* data)
   {
     stats = new ProfileStats;
     parser = stats->get_interface ();
+    parser->set_prefix_name(false);
   }
 
   Reference::To<const Integration> subint;
