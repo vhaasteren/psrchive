@@ -1569,6 +1569,8 @@ void do_refine (Pulsar::DeltaRM& delta_rm,
       double dRM = new_RM - data->get_rotation_measure();
       double auxRM = aux->get_rotation_measure();
       aux->set_rotation_measure(auxRM + dRM);
+
+      cerr << "rmfit: set_auxrm header RM=" << data->get_rotation_measure() << " new RM=" << new_RM << " int[" << isubint << "]:aux:rm=" << auxRM << " new aux:rm=" << auxRM+dRM << endl;
     }
     else
     {

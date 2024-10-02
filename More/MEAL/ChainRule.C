@@ -19,12 +19,16 @@ void MEAL::covariance ( MEAL::Scalar* function, unsigned index,
 
   for (unsigned i=0; i<covar.size(); i++)
   {
-    if( covar[index][i] != 0.0 )
-      throw Error (InvalidState, "MEAL::covariance", "unexpected non-zero covariance between " + function->get_param_name(index) + " and " + function->get_param_name(i));
-
-    if (i == index) {
+    if (i == index)
+    {
       covar[i][i] = function->estimate().get_variance();
       continue;
+    }
+
+    if( covar[index][i] != 0.0 )
+    {
+      throw Error (InvalidState, "MEAL::covariance",
+              "unexpected non-zero covariance between iparam=%u and jparam=%u", index, i);
     }
 
     double covariance = 0;
