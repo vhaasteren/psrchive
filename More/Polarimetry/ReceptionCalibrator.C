@@ -371,8 +371,13 @@ void ReceptionCalibrator::add_pulsar
   standard_data->set_profile( integration->new_PolnProfile (ichan) );
 
   for (unsigned istate=0; istate < pulsar_estimate.size(); istate++)
-    add_data (measurements, pulsar_estimate.at(istate).at(ichan),
-	      integration->get_epoch(), ichan);
+  {
+    if (ichan >= pulsar_estimate[istate].size())
+      throw Error (InvalidParam, "ReceptionCalibrator::add_pulsar",
+                  "ichan=%u >= pulsar[%u].size=%u", ichan, istate, pulsar_estimate[istate].size());
+
+    add_data (measurements, pulsar_estimate[istate][ichan], integration->get_epoch(), ichan);
+  }
 }
 
 

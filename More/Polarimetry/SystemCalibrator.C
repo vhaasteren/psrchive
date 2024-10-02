@@ -451,8 +451,7 @@ void SystemCalibrator::add_pulsar (const Archive* data) try
     add_pulsar( data, isub );
 
   if (get_data_fail)
-    cerr << "\t" << get_data_fail << " failures in " << get_data_call
-	 << " data points" << endl;
+    cerr << "\t" << get_data_fail << " failures in " << get_data_call << " data points" << endl;
 }
 catch (Error& error)
 {
@@ -558,6 +557,19 @@ void SystemCalibrator::add_pulsar (const Archive* data, unsigned isub) try
     faraday_rotation->set_subint (isub);
   }
 
+  Reference::To<Faraday> ism_faraday;
+  if ( correct_interstellar_Faraday_rotation &&
+       ( data->get_rotation_measure() != 0.0 ) )
+  {
+    cerr << " correcting interstellar Faraday rotation - RM=" << data->get_rotation_measure () << endl;
+
+    ism_faraday = new Faraday;
+    ism_faraday->set_rotation_measure( data->get_rotation_measure() );
+
+    // correct interstellar Faraday rotation wrt centre frequency
+    ism_faraday->set_reference_frequency( data->get_centre_frequency() );
+  }
+  
   // an identifier for this set of data
   string identifier = data->get_filename() + " " + tostring(isub);
 
@@ -612,8 +624,7 @@ void SystemCalibrator::add_pulsar (const Archive* data, unsigned isub) try
     try
     {
       if (verbose > 2)
-        cerr << "SystemCalibrator::add_pulsar call add_pulsar ichan="
-	           << ichan << endl;
+        cerr << "SystemCalibrator::add_pulsar call add_pulsar ichan=" << ichan << endl;
   
       add_pulsar (measurements, integration, ichan);
     }
@@ -621,15 +632,21 @@ void SystemCalibrator::add_pulsar (const Archive* data, unsigned isub) try
     {
       if (verbose > 2 || error.get_code() != InvalidParam)
         cerr << "SystemCalibrator::add_pulsar ichan=" << ichan
-             << "error" << error << endl;
+             << " error=" << error << endl;
+    }
+    catch (std::exception& error)
+    {
+      if (verbose > 2)
+        cerr << "SystemCalibrator::add_pulsar ichan=" << ichan
+             << " exception=" << error.what() << endl;
     }
 
     pulsar_data.back().push_back (measurements);
   }
   catch (Error& error)
   {
-    cerr << "SystemCalibrator::add_pulsar ichan=" << ichan 
-         << " error" << error << endl;
+    cerr << "SystemCalibrator::add_pulsar ichan="
+        << ichan << " error\n" << error.get_message() << endl;
   }
 
   if (verbose > 2)

@@ -6,7 +6,6 @@
  ***************************************************************************/
 
 #include "MEAL/ChainRule.h"
-#include <cassert>
 
 using namespace std;
 
@@ -20,7 +19,8 @@ void MEAL::covariance ( MEAL::Scalar* function, unsigned index,
 
   for (unsigned i=0; i<covar.size(); i++)
   {
-    assert( covar[index][i] == 0.0 );
+    if( covar[index][i] != 0.0 )
+      throw Error (InvalidState, "MEAL::covariance", "unexpected non-zero covariance between " + function->get_param_name(index) + " and " + function->get_param_name(i));
 
     if (i == index) {
       covar[i][i] = function->estimate().get_variance();
