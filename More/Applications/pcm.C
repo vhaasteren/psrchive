@@ -536,7 +536,7 @@ void add_step (char code, const MJD& mjd)
     diff_phase_steps.push_back (mjd);;
     return;
   }
-  throw Error (InvalidParam, "set_time_variation",
+  throw Error (InvalidParam, "add_step",
                "unrecognized PAR code = %c", code);
 }
 
