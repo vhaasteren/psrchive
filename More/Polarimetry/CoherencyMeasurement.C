@@ -46,11 +46,11 @@ void CoherencyMeasurement::set_stokes
 
   for (unsigned ipol=0; ipol<4; ipol++)
   {
-    if (!myfinite(stokes[ipol].val))
+    if (!true_math::finite(stokes[ipol].val))
       throw Error (InvalidState, "CoherencyMeasurement::set_stokes",
                    "non-finite stokes[%d].val=", stokes[ipol].val);
 
-    if (!myfinite(stokes[ipol].var))
+    if (!true_math::finite(stokes[ipol].var))
       throw Error (InvalidState, "CoherencyMeasurement::set_stokes",
                    "non-finite stokes[%d].var=", stokes[ipol].var);
 

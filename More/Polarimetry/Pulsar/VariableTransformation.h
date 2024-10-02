@@ -11,11 +11,11 @@
 #ifndef __CalibrationVariableTransformation_H
 #define __CalibrationVariableTransformation_H
 
+#include "MEAL/Complex2.h"
 #include "MEAL/Nvariate.h"
 #include "MEAL/ProductRule.h"
 #include "MEAL/ChainRule.h"
 #include "MEAL/Value.h"
-#include "MEAL/Complex2.h"
 
 #include "Estimate.h"
 #include "Stokes.h"

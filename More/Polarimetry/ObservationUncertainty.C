@@ -26,7 +26,7 @@ double ObservationUncertainty::get_weighted_norm
     difference += sqr(stokes[ipol].real()) * inv_variance[ipol].real();
     difference += sqr(stokes[ipol].imag()) * inv_variance[ipol].imag();
   }
-  assert (myfinite(difference));
+  assert (true_math::finite(difference));
   return difference;
 }
 
@@ -44,7 +44,7 @@ Jones<double> ObservationUncertainty::get_weighted_conjugate
       complex<double>( inv_variance[ipol].real() * stokes[ipol].real(),
 		      -inv_variance[ipol].imag() * stokes[ipol].imag() );
 
-    if (!myfinite(stokes[ipol]))
+    if (!true_math::finite(stokes[ipol]))
     {
       cerr << "ObservationUncertainty::get_weighted_conjugate non-finite result\n"
         " input=" << matrix << endl <<
@@ -75,7 +75,7 @@ ObservationUncertainty::get_weighted_components
       complex<double>( sqrt(inv_variance[ipol].real()) * stokes[ipol].real(),
 		       sqrt(inv_variance[ipol].imag()) * stokes[ipol].imag() );
 
-    assert (myfinite(stokes[ipol]));
+    assert (true_math::finite(stokes[ipol]));
   }
 
   return stokes;
@@ -90,8 +90,8 @@ void ObservationUncertainty::set_variance
     double inv_re = 1.0 / variance[ipol].real();
     double inv_im = 1.0 / variance[ipol].imag();
 
-    assert (myfinite(inv_re));
-    assert (myfinite(inv_im));
+    assert (true_math::finite(inv_re));
+    assert (true_math::finite(inv_im));
 
     inv_variance[ipol] = complex<double>( inv_re, inv_im );
   }
@@ -104,7 +104,7 @@ void ObservationUncertainty::set_variance
   for (unsigned ipol=0; ipol < 4; ipol++)
   {
     double inv_var = 1.0 / variance[ipol];
-    assert (myfinite(inv_var));
+    assert (true_math::finite(inv_var));
 
     inv_variance[ipol] = complex<double>( inv_var, inv_var );
   }
@@ -175,8 +175,8 @@ void ObservationUncertainty::add (const Uncertainty* other)
     double inv_re = 1.0 / var.real();
     double inv_im = 1.0 / var.imag();
 
-    assert (myfinite(inv_re));
-    assert (myfinite(inv_im));
+    assert (true_math::finite(inv_re));
+    assert (true_math::finite(inv_im));
     
     inv_variance[ipol] = complex<double>( inv_re, inv_im );
   }

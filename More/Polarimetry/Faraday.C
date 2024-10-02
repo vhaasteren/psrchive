@@ -104,7 +104,7 @@ double Calibration::Faraday::get_reference_wavelength () const
 //! Set the wavelength in metres
 void Calibration::Faraday::set_wavelength (double metres)
 {
-  if (!myfinite(metres))
+  if (!true_math::finite(metres))
     throw Error (InvalidState, "Calibration::Faraday::set_wavelength",
                  "non-finite wavelength");
 
@@ -138,13 +138,13 @@ double Calibration::Faraday::get_rotation () const
   double rot = rotation_measure * (lambda*lambda - lambda_0*lambda_0);
 
 #ifndef _DEBUG
-  if (verbose || !myfinite(rot))
+  if (verbose || !true_math::finite(rot))
 #endif
     cerr << "Calibration::Faraday::get_rotation lambda_0=" 
 	 << reference_wavelength
 	 << " lambda=" << wavelength << " (metres)" << endl;
 
-  if (!myfinite(rot))
+  if (!true_math::finite(rot))
     throw Error (InvalidState, "Calibration::Faraday::get_rotation",
                  "non-finite result");
 
