@@ -1,13 +1,13 @@
 
 noinst_LTLIBRARIES = libpsrfits.la
 
-include_HEADERS = Pulsar/FITSArchive.h Pulsar/FITSSKLoader.h
+include_HEADERS = Pulsar/FITSArchive.h Pulsar/FITSSKLoader.h Pulsar/ProfileColumn.h
 
 dist_data_DATA = psrheader.fits
 
 libpsrfits_la_SOURCES = setup_io.C setup_profiles.h \
 	CalibratorExtensionIO.h FITSArchive.C  FITSSKLoader.C \
-	ProfileColumn.C Pulsar/ProfileColumn.h \
+	ProfileColumn.C \
 	unload_Plasma.C load_Plasma.C \
 	unload_FITSHdrExtension.C unload_ObsExtension.C \
 	unload_ObsDescription.C load_ObsDescription.C \
@@ -63,5 +63,5 @@ include $(top_srcdir)/config/Makefile.include
 AM_CPPFLAGS += @CFITSIO_CFLAGS@ @TEMPO2_CFLAGS@
 
 LDADD = libpsrfits.la $(top_builddir)/Util/libpsrutil.la \
-	$(top_builddir)/Util/epsic/src/libepsic.la @CFITSIO_LIBS@
+	$(top_builddir)/Util/epsic/src/util/libutil.la @CFITSIO_LIBS@
 

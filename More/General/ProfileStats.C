@@ -8,6 +8,7 @@
 #include "Pulsar/ProfileStats.h"
 #include "Pulsar/StrategySet.h"
 #include "Pulsar/Profile.h"
+#include "Pulsar/Integration.h"
 
 #include "Pulsar/PeakConsecutive.h"
 #include "Pulsar/GaussianBaseline.h"
@@ -261,7 +262,7 @@ Pulsar::ProfileStats::get_total (bool subtract_baseline) const try
   {
 #if _DEBUG
     cerr << "Pulsar::ProfileStats::get_total this=" << this
-	 << " regions_set=" << regions_set << " calling build" << endl;
+        << " regions_set=" << regions_set << " calling build" << endl;
 #endif
     build ();
   }
@@ -284,7 +285,7 @@ Pulsar::ProfileStats::get_total (bool subtract_baseline) const try
   if (Profile::verbose)
     cerr << "Pulsar::ProfileStats::get_total"
          << "\nt on nbin=" << navg << " tot=" << total 
-	 << "\nt off mean=" << offmean << " var=" << variance << endl;
+         << "\nt off mean=" << offmean << " var=" << variance << endl;
 
   return Estimate<double> (total - offmean * navg, variance * navg);
 }
@@ -552,6 +553,17 @@ Phase::Value Pulsar::ProfileStats::get_pulse_width () const
 TextInterface::Parser* Pulsar::ProfileStats::get_pulse_width_interface ()
 {
   return width_estimator->get_interface();
+}
+
+//! Set the Integration from which additional metadata can be obtained
+void Pulsar::ProfileStats::set_integration (const Integration* subint)
+{
+  integration = subint;
+}
+
+Pulsar::Integration* Pulsar::ProfileStats::get_Integration() const
+{
+  return const_cast<Integration*>(integration.get());
 }
 
 #include "Pulsar/ProfileStatsInterface.h"

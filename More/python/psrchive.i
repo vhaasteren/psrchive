@@ -25,6 +25,7 @@
 #include "load_factory.h"
 
 #include "Pulsar/Dispersion.h"
+#include "Pulsar/FaradayRotation.h"
 #include "Pulsar/IntegrationBarycentre.h"
 
 #include "Pulsar/Interpreter.h"
@@ -149,6 +150,7 @@ void pointer_tracker_remove(Reference::Able *ptr) {
 %ignore Pulsar::FrontendCorrection::get_transformation(unsigned);
 %ignore Pulsar::FrontendCorrection::get_basis();
 %ignore Pulsar::FrontendCorrection::get_projection(unsigned);
+%ignore Pulsar::FaradayRotation::get_identity();
 
 // Also does not use the assignment operator
 %ignore Pulsar::Archive::operator=(const Archive&);
@@ -261,6 +263,7 @@ void pointer_tracker_remove(Reference::Able *ptr) {
 %include "Pulsar/TextParameters.h"
 %include "Pulsar/ArrivalTime.h"
 %include "Pulsar/ProfileShiftFit.h"
+%include "Pulsar/FaradayRotation.h"
 
 %include "Pulsar/BackendCorrection.h"
 %include "Pulsar/FrontendCorrection.h"
@@ -906,6 +909,20 @@ def rotate_phase(self,phase): return self._rotate_phase_swig(phase)
         }
         return (PyObject*) arr;
     }
+}
 
+%extend Pulsar::FaradayRotation
+{
+    // SWIG doesn't seem to wrap methods of ColdPlasma template base class
+    //! Set the reference wavelength in metres
+    void set_reference_wavelength (double metres)
+    {
+        self->Pulsar::ColdPlasma<Calibration::Faraday,Pulsar::DeFaraday>::set_reference_wavelength(metres);
+    }
 
+    //! Get the reference wavelength
+    double get_reference_wavelength () const
+    {
+        return self->Pulsar::ColdPlasma<Calibration::Faraday,Pulsar::DeFaraday>::get_reference_wavelength();
+    }
 }

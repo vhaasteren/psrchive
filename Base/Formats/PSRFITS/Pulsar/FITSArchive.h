@@ -122,10 +122,10 @@ namespace Pulsar
     static void unload (fitsfile*, const Passband*);
     
     //! Unload DigitiserStatistics to the DIG_STAT HDU
-    static void unload (fitsfile*, const DigitiserStatistics*);
+    void unload (fitsfile*, const DigitiserStatistics*) const;
     
     //! Unload DigitiserCounts to DIG_CNTS HDU
-    static void unload (fitsfile*, const DigitiserCounts*);
+    void unload (fitsfile*, const DigitiserCounts*) const;
     
     //! Unload PolnCalibratorExtension to the FEEDPAR HDU
     static void unload (fitsfile*, const PolnCalibratorExtension*);

@@ -76,7 +76,6 @@ libgenutil_la_SOURCES = \
 	Barycentre.C \
 	BatchQueue.C \
 	BootstrapUncertainty.C \
-	BoxMuller.C \
 	Cartesian.C \
 	CommandLine.C \
 	CommandParser.C \
@@ -210,7 +209,7 @@ test_PhaseRange_SOURCES		= test_PhaseRange.C
 LDADD = libgenutil.la \
 	$(top_builddir)/Util/units/libunits.la \
 	$(top_builddir)/Util/third/libthird.la \
-	$(top_builddir)/Util/epsic/src/libepsic.la
+	$(top_builddir)/Util/epsic/src/util/libutil.la
 
 include $(top_srcdir)/config/Makefile.include
 

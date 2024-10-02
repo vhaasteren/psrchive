@@ -39,6 +39,7 @@ nobase_include_HEADERS = \
 	Pulsar/FourthMomentInterpreter.h \
 	Pulsar/FourthMomentStats.h \
 	Pulsar/FrontendCorrection.h \
+	Pulsar/HasOrientation.h \
 	Pulsar/HybridCalibrator.h \
 	Pulsar/InputDataReport.h \
 	Pulsar/Instrument.h \
@@ -66,6 +67,7 @@ nobase_include_HEADERS = \
 	Pulsar/Polarization.h \
 	Pulsar/PolnCalibrator.h \
 	Pulsar/PolnCalibratorInfo.h \
+	Pulsar/PolnCalibratorExtensionUtils.h \
 	Pulsar/PolnCalExtFreqIntegrate.h \
 	Pulsar/PolnProfile.h \
 	Pulsar/PolnProfileFit.h \
@@ -194,7 +196,7 @@ libPolarimetry_la_SOURCES = \
 	Polarization.C \
 	Polar_solve.C \
 	PolnCalibrator.C \
-	PolnCalibratorExt.C \
+	PolnCalibratorExtensionUtils.C \
 	PolnCalibratorInfo.C \
 	PolnCalExtFreqIntegrate.C \
 	PolnProfile.C \
@@ -317,8 +319,7 @@ LDADD = libPolarimetry.la \
 	$(top_builddir)/More/MEAL/libMEAL.la \
 	$(top_builddir)/Base/libpsrbase.la \
 	$(top_builddir)/Util/libpsrutil.la \
-	$(top_builddir)/Util/epsic/src/libepsic.la \
-	@YAMLCPP_LIBS@
+	$(top_builddir)/Util/epsic/src/util/libutil.la 
 
 libPolarimetry_la_LIBADD = iri2001/libiri.la @GSL_LIBS@ @YAMLCPP_LIBS@
 

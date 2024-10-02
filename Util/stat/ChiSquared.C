@@ -9,7 +9,7 @@
 #include "LinearRegression.h"
 
 #include "statutil.h"
-#include "myfinite.h"
+#include "true_math.h"
 
 #include <algorithm>
 #include <numeric>
@@ -96,7 +96,7 @@ double ChiSquared::get (const vector<double>& dat1, const vector<double>& dat2) 
   {
     residual[i] = dat1[i] - scale.val * dat2[i] - offset.val;
 
-    if ( ! myfinite(residual[i]) )
+    if ( ! true_math::finite(residual[i]) )
       throw Error (InvalidState, "ChiSquared::get", "non-finite residual[%u]=%f", i, residual[i]);
 
     coeff += sqr(residual[i]);
