@@ -278,11 +278,6 @@ void Reference::Able::Handle::decrement (bool active, bool auto_delete)
     bin.add(pointer);
   }
 
-  DEBUG("Reference::Able::Handle::decrement this=" << this << " handle_count=" << handle_count);
-
-  // decrease the total reference count (both active and passive) to this handle
-  handle_count --;
-
   // delete the handle
   if (handle_count == 0)
   {

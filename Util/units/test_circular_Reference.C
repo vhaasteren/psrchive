@@ -131,7 +131,7 @@ int main (int argc, char** argv)
   assert(Manager::instance_count == 1);
 
   cerr << endl << "test_circular_reference new ManageAble" << endl << endl;
-  managable = new ManageAble;
+  ManageAble* managable = new ManageAble;
 
   cerr << endl << "test_circular_reference Manager::manage" << endl << endl;
   manager_ptr->manage(managable);
@@ -141,6 +141,9 @@ int main (int argc, char** argv)
 
   cerr << endl << "test_circular_reference delete ManageAble" << endl << endl;
   delete managable;
+
+  // any assignment to a Reference::To will clear the bin
+  managable2 = new ManageAble;
 
   // managable_copy should not keep the Manager alive
   assert(Manager::instance_count == 0);
