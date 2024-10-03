@@ -751,16 +751,16 @@ void pcm::add_calibrator_database (const string& arg)
 void pcm::set_model (const string& filename)
 {
   try
-    {
-      response = Pulsar::load_transformation (filename);
-      cerr << "pcm: response model loaded from " << filename << endl;
-      return;
-    }
+  {
+    response = Pulsar::load_transformation (filename);
+    cerr << "pcm: response model loaded from " << filename << endl;
+    return;
+  }
   catch (Error& error)
-    {
-      if (verbose)
-	cerr << "pcm: error" << error << endl;
-    }
+  {
+    if (verbose)
+      cerr << "pcm: error" << error << endl;
+  }
 
   model_type = Pulsar::Calibrator::Type::factory (filename);
 }
