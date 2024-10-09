@@ -60,6 +60,9 @@ namespace Factory {
 
     }
 
+    if (!instance)
+      throw Error (InvalidParam, "Factory::load", "nothing constructed from '" + filename + "'");
+
     return instance;
  
   }
