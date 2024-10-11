@@ -42,7 +42,7 @@ namespace Pulsar {
     void set_standard (const Archive*);
 
     //! unload the best-fit Jones matrix model parameters for each sub-integration
-    void set_unload_matrix_model(bool flag=true) { unload_matrix_model = true; }
+    void set_unload_matrix_model(bool flag=true) { unload_matrix_model = flag; }
 
   protected:
 
