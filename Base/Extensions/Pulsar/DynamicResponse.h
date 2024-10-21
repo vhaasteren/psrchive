@@ -15,6 +15,7 @@
 #include "Pulsar/Profile.h"
 
 #include <vector> 
+#include <complex>
 
 namespace Pulsar {
 
@@ -81,10 +82,10 @@ namespace Pulsar {
     void resize_data ();
     
     //! Get the response matrix data
-    std::vector<double>& get_data () { return response; }
+    std::vector<std::complex<double>>& get_data () { return response; }
     
     //! Get the response matrix data
-    const std::vector<double>& get_data () const { return response; }
+    const std::vector<std::complex<double>>& get_data () const { return response; }
     
   protected:
 
@@ -102,7 +103,7 @@ namespace Pulsar {
     //! The maximum frequency in MHz
     double maximum_frequency = 0;
 
-    std::vector<double> response;            
+    std::vector<std::complex<double>> response;            
   };
 
 }

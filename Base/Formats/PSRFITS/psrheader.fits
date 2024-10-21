@@ -598,7 +598,7 @@ MINEPOCH=                    * / [MJD] Minimum epoch of dynamic response (D)
 MAXEPOCH=                    * / [MJD] Maximum epoch of dynamic response (D)
 #
 TTYPE#  = DATA                 / Elements of the covariance matrix
-TFORM#  = E                    / M*(M+1)/2 floats, where M=NBIN*NPOL
+TFORM#  = M                    / NPOL*NCHAN*NTIME double precision complex
 END
 #
 ###############################################################################
