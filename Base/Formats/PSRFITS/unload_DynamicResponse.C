@@ -42,12 +42,12 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr, const DynamicResponse* respons
     return;
   }
 
-  if (ndat != nchan * ntime * npol * 2)
-  {
-    if (verbose > 2)
-      cerr << "Pulsar::FITSArchive::unload DynamicResponse - invalid data dimensions" << endl;
-    return;
-  }
+  unsigned expected_ndat = nchan * ntime * npol;
+
+  if (ndat != expected_ndat)
+    throw Error (InvalidState, "Pulsar::FITSArchive::unload DynamicResponse",
+                "invalid data dimensions: ndat=%u does not equal %u = nchan*ntime*npol=%u*%u*%u",
+                ndat, expected_ndat, nchan, ntime, npol);
 
   // Move and Clear existing rows in DYN_RESP 
   psrfits_move_hdu (fptr, "DYN_RESP");
@@ -68,8 +68,7 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr, const DynamicResponse* respons
   double max_epoch = response->get_maximum_epoch().in_days();
   psrfits_update_key (fptr, "MAXEPOCH", max_epoch);
 
-  unsigned reim = 2; // data are complex-valued
-  vector<unsigned> dimensions = { npol, nchan, ntime, reim };
+  vector<unsigned> dimensions = { npol, nchan, ntime };
   psrfits_write_col (fptr, "DATA", 1, response->get_data(), dimensions);
 
   if (verbose > 2)       
