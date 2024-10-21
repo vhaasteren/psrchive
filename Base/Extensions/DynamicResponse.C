@@ -82,5 +82,7 @@ unsigned DynamicResponse::get_ntime () const
 
 void DynamicResponse::resize_data ()
 {
-  response.resize ( nchan * ntime * npol );
+  // data are complex-valued
+  constexpr unsigned reim = 2;
+  response.resize ( nchan * ntime * npol * reim );
 }

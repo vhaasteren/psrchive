@@ -23,19 +23,34 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr, const DynamicResponse* respons
   if (verbose > 2)
     cerr << "FITSArchive::unload DynamicResponse entered" << endl;
     
-  // Move and Clear existing rows in DYN_RESP 
-  psrfits_move_hdu (fptr, "DYN_RESP");
-
-  if (verbose > 2) 
-    cerr << "FITSArchive::unload DynamicResponse"
-      " nchan=" << response->get_nchan() <<
-      " ntime=" << response->get_ntime() <<
-      " npol=" << response->get_npol() <<
-      " ndat=" << response->get_data().size() << endl;
-
   unsigned nchan = response->get_nchan();
   unsigned ntime = response->get_ntime();
   unsigned npol = response->get_npol();
+  unsigned ndat = response->get_data().size();
+
+  if (verbose > 2) 
+    cerr << "FITSArchive::unload DynamicResponse"
+      " nchan=" << nchan <<
+      " ntime=" << ntime <<
+      " npol=" << npol <<
+      " ndat=" << ndat << endl;
+
+  if (ndat == 0)
+  {
+    if (verbose > 2)
+      cerr << "Pulsar::FITSArchive::unload DynamicResponse - no data" << endl;
+    return;
+  }
+
+  if (ndat != nchan * ntime * npol * 2)
+  {
+    if (verbose > 2)
+      cerr << "Pulsar::FITSArchive::unload DynamicResponse - invalid data dimensions" << endl;
+    return;
+  }
+
+  // Move and Clear existing rows in DYN_RESP 
+  psrfits_move_hdu (fptr, "DYN_RESP");
 
   psrfits_update_key (fptr, "NCHAN", response->get_nchan());
   psrfits_update_key (fptr, "NTIME", response->get_ntime());
@@ -53,7 +68,8 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr, const DynamicResponse* respons
   double max_epoch = response->get_maximum_epoch().in_days();
   psrfits_update_key (fptr, "MAXEPOCH", max_epoch);
 
-  vector<unsigned> dimensions = { npol, nchan, ntime };
+  unsigned reim = 2; // data are complex-valued
+  vector<unsigned> dimensions = { npol, nchan, ntime, reim };
   psrfits_write_col (fptr, "DATA", 1, response->get_data(), dimensions);
 
   if (verbose > 2)       
