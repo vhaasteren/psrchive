@@ -44,6 +44,7 @@
 #include "polyco.h"
 #include "toa.h"
 
+#include "Pulsar/DynamicResponse.h"
 #include "Pulsar/ManualPolnCalibrator.h"
 
 #include "Pulsar/CalibratorExtension.h"
@@ -58,7 +59,6 @@
 #include "Pulsar/PeakConsecutive.h"
 
 #include "Pulsar/ArchiveStatistic.h"
-
 #if HAVE_CFITSIO
 #include <fitsio.h>
 #endif
@@ -81,10 +81,13 @@ using Pulsar::Predictor;
 // Language independent exception handler
 %include exception.i       
 %include std_string.i
-
+%include std_complex.i
 %include std_vector.i
+
 namespace std {
   %template(StringVector) vector<string>;
+  %template(DoubleVector) vector<double>;
+  %template(ComplexDoubleVector) vector<complex<double>>;
 }
 
 using namespace std;
@@ -281,6 +284,8 @@ void pointer_tracker_remove(Reference::Able *ptr) {
 %include "Pulsar/PeakConsecutive.h"
 %include "Pulsar/ITRFExtension.h"
 %include "Pulsar/ManualPolnCalibrator.h"
+%include "Pulsar/DynamicResponse.h"
+
 %include "Angle.h"
 %include "sky_coord.h"
 %include "MJD.h"
@@ -833,6 +838,12 @@ def rotate_phase(self,phase): return self._rotate_phase_swig(phase)
     // Return a copy of the predictor
     Pulsar::Predictor* get_predictor() {
       return self->get_model()->clone();
+    }
+
+    // Return the DynamicResponse Extension
+    Pulsar::DynamicResponse* get_dynamic_response()
+    {
+      return self->get<Pulsar::DynamicResponse>();
     }
 }
 
