@@ -1,7 +1,7 @@
 
 noinst_LTLIBRARIES = libpsrfits.la
 
-include_HEADERS = Pulsar/FITSArchive.h Pulsar/FITSSKLoader.h Pulsar/ProfileColumn.h
+nobase_include_HEADERS = Pulsar/FITSArchive.h Pulsar/FITSSKLoader.h Pulsar/ProfileColumn.h
 
 dist_data_DATA = psrheader.fits
 
