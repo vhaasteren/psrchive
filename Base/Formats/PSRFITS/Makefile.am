@@ -1,7 +1,7 @@
 
 noinst_LTLIBRARIES = libpsrfits.la
 
-include_HEADERS = Pulsar/FITSArchive.h Pulsar/FITSSKLoader.h Pulsar/ProfileColumn.h
+nobase_include_HEADERS = Pulsar/FITSArchive.h Pulsar/FITSSKLoader.h Pulsar/ProfileColumn.h
 
 dist_data_DATA = psrheader.fits
 
@@ -41,7 +41,8 @@ libpsrfits_la_SOURCES = setup_io.C setup_profiles.h \
 	P236_reference_epoch_correction.C \
 	refmjd_rounding_correction.C \
 	fitsio_psrephem.C fitsio_polyco.C fitsio_tempo.h \
-        unload_CrossCovarianceMatrix.C load_CrossCovarianceMatrix.C
+    unload_CrossCovarianceMatrix.C load_CrossCovarianceMatrix.C \
+	unload_DynamicResponse.C load_DynamicResponse.C 
 
 if HAVE_TEMPO2
 libpsrfits_la_SOURCES += unload_T2Predictor.C load_T2Predictor.C

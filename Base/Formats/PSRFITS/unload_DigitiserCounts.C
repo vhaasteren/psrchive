@@ -210,7 +210,7 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr, const DigitiserCounts* const_e
 }
 catch (Error &error)
 {
-  if (verbose)
+  if (verbose > 2)
     cerr << "Pulsar::FITSArchive::unload DigitiserCounts exception thrown " << error << " - deleting DIG_CNTS HDU" << endl;
   delete_hdu (fptr, "DIG_CNTS");
 }

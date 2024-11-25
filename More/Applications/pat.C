@@ -172,18 +172,20 @@ void usage ()
     "  -P               Do not fscrunch the standard (frequency-dependent template)\n"
     "  -I nsubband      Output nsubband TOAs with delta-DM (implies -P)\n"
     "  -D               Denoise standard \n"
+    "  -d               Output only positively delayed arrival times \n"
     "  -e cfg1[,cfgN]   Estimator configuration option[s] \n"
     "  -E cfg           Estimator configuration options in 'cfg' text file \n"
     "  -g datafile      Gaussian model fitting \n"
+    "  -P               Enable frequency-dependent template matching \n"
     "  -s stdfile       Location of standard profile \n"
-    "  -d               Output only positively delayed arrival times \n"
     "  -S period        Zap harmonics due to periodic spikes in profile \n"
     "                   (use of this option implies SIS) \n"
     "\n"
     "Matrix template matching options: \n"
     "  -p               Enable matrix template matching \n"
     "  -c               Choose the maximum harmonic \n"
-    "  -n harmonics     Use up to the specified number of harmonics\n"
+    "  -n harmonics     Use up to the specified number of harmonics \n"
+    "  -o               Output best-fit matrix model parameters \n"
     "\n"
     "Algorithm Selection:\n"
     "  -A name          Select shift algorithm [default: PGS] \n"
@@ -233,6 +235,8 @@ int main (int argc, char** argv) try
 
   // the matrix template matching algorithm and related flags
   Pulsar::MatrixTemplateMatching* full_poln = 0;
+  bool output_matrix_model_parameters = false;
+
   bool choose_maximum_harmonic = false;
   unsigned maximum_harmonic = 0;
 
@@ -275,7 +279,7 @@ int main (int argc, char** argv) try
 #define PLOT_ARGS
 #endif
 
-  const char* args = "a:A:bcC:Dde:E:f:Fg:G:hI:j:J:K:m:M:n:pPqRrS:s:TuU:vVxX:z:" PLOT_ARGS;
+  const char* args = "a:A:bcC:Dde:E:f:Fg:G:hI:j:J:K:m:M:n:opPqRrS:s:TuU:vVxX:z:" PLOT_ARGS;
 
   int gotc = 0;
 
@@ -392,6 +396,10 @@ int main (int argc, char** argv) try
 
     case 'n':
       maximum_harmonic = atoi(optarg);
+      break;
+
+    case 'o':
+      output_matrix_model_parameters = true;
       break;
 
     case 'P':
@@ -521,6 +529,7 @@ int main (int argc, char** argv) try
       full_poln->set_maximum_harmonic (maximum_harmonic);
 
     full_poln->set_choose_maximum_harmonic (choose_maximum_harmonic);
+    full_poln->set_unload_matrix_model(output_matrix_model_parameters);
   }
 
   if (full_freq && mean_arrival_time)

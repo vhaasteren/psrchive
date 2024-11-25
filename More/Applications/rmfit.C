@@ -1556,9 +1556,10 @@ void do_refine (Pulsar::DeltaRM& delta_rm,
     converged = fabs (old_RM - new_RM) <= err_RM;
     iterations ++;
 
-    if (iterations > max_iterations / 2) {
+    if (iterations > max_iterations / 2)
+    {
       new_RM = (new_RM + old_RM) / 2.0;
-      cerr << "Getting old ... try mean=" << new_RM << endl;
+      cerr << "Getting old ... try mean of last two = " << new_RM << endl;
     }
 
     if (set_auxrm)
@@ -1570,6 +1571,8 @@ void do_refine (Pulsar::DeltaRM& delta_rm,
       double dRM = new_RM - data->get_rotation_measure();
       double auxRM = aux->get_rotation_measure();
       aux->set_rotation_measure(auxRM + dRM);
+
+      cerr << "rmfit: set_auxrm header RM=" << data->get_rotation_measure() << " new RM=" << new_RM << " int[" << isubint << "]:aux:rm=" << auxRM << " new aux:rm=" << auxRM+dRM << endl;
     }
     else
     {
