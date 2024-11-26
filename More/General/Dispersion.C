@@ -101,6 +101,9 @@ void Pulsar::Dispersion::apply (Integration* data, unsigned ichan) try
   {
     bary.set_Integration(data);
     earth_doppler = bary.get_Doppler();
+
+    if (Archive::verbose > 2)
+      cerr << "Pulsar::Dispersion::apply barycentric Doppler correction=1+" << earth_doppler - 1.0 << endl;
   }
 
   for (unsigned ipol=0; ipol < data->get_npol(); ipol++)
