@@ -1238,7 +1238,6 @@ int main( int argc, char *argv[] ) try
 			break;
                 case TEXT_FREQ_PREC:
                         freq_precision = fromstring<int>( string(optarg) );
-                        cerr << "GOT FREQ PREC " << freq_precision << endl;
                         break;
 #ifdef HAVE_PGPLOT
                  case BANDPASS_KEY:
