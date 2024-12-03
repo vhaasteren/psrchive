@@ -56,6 +56,7 @@ using Pulsar::FITSArchive;
 
 
 const char TEXT_HEADERS_KEY     = 'A';
+const char TEXT_FREQ_PREC       = 'a';
 const char BSCRUNCH_KEY         = 'B';
 const char IBIN_KEY             = 'b';
 const char CENTRE_KEY           = 'C';
@@ -133,6 +134,7 @@ int ibin = -1;
 int isub = -1;
 float phase = 0.0;
 float pa_threshold = 3.0;
+int freq_precision = 3;
 
 vector<string> jobs;
 
@@ -179,6 +181,7 @@ void Usage( void )
   "   -" << BASELINE_KEY <<       "          Do not remove baseline \n"
   "   -" << TEXT_KEY <<           "          Print out profiles as ASCII text \n"
   "   -" << TEXT_HEADERS_KEY <<   "          Print out profiles as ASCII text (with per channel headers) \n"
+  "   -" << TEXT_FREQ_PREC <<     "          Number of digits to use after decimal point for frequency (defaults to 3) \n"
 #ifdef HAVE_PGPLOT
   "   -" << BANDPASS_KEY <<       "          Print out the original bandpass as ASCII text \n"
 #endif
@@ -414,7 +417,9 @@ void OutputDataAsText( Reference::To< Pulsar::Archive > archive )
 	    if( per_channel_headers )
 	    {
 	      IntegrationHeader( intg );
+              tostring_precision = freq_precision;
 	      cout << " Freq: " << tostring<double>( intg->get_centre_frequency( c ) );
+              tostring_precision = 3;
 	      cout << " BW: " << intg->get_bandwidth() / nchn;
 	      cout << endl;
 		}
@@ -1188,6 +1193,7 @@ int main( int argc, char *argv[] ) try
    args += PULSE_FLUX_KEY;
    args += TEXT_KEY;
    args += TEXT_HEADERS_KEY;
+   args += TEXT_FREQ_PREC; args += ':';
 #ifdef HAVE_PGPLOT
    args += BANDPASS_KEY;
 #endif
@@ -1230,6 +1236,10 @@ int main( int argc, char *argv[] ) try
 			cmd_text = true;
 			per_channel_headers = true;
 			break;
+                case TEXT_FREQ_PREC:
+                        freq_precision = fromstring<int>( string(optarg) );
+                        cerr << "GOT FREQ PREC " << freq_precision << endl;
+                        break;
 #ifdef HAVE_PGPLOT
                  case BANDPASS_KEY:
                         bandpass_text = true;
