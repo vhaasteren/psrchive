@@ -63,6 +63,7 @@ const char CENTRE_KEY           = 'C';
 const char CALIBRATOR_KEY       = 'c';
 const char FSCRUNCH_KEY         = 'F';
 const char PULSE_WIDTHS_KEY     = 'f';
+const char PRINT_FREQ_KEY       = 'G';
 const char HISTORY_KEY          = 'H';
 const char HELP_KEY             = 'h';
 const char PULSE_FLUX_KEY       = 'I';
@@ -112,6 +113,7 @@ using Pulsar::AuxColdPlasmaMeasures;
 
 bool bandpass_text = false;
 bool cmd_text = false;
+bool print_freq = false;
 bool cmd_flux = false;
 bool cmd_flux2 = false;
 bool cmd_subints = false;
@@ -181,7 +183,8 @@ void Usage( void )
   "   -" << BASELINE_KEY <<       "          Do not remove baseline \n"
   "   -" << TEXT_KEY <<           "          Print out profiles as ASCII text \n"
   "   -" << TEXT_HEADERS_KEY <<   "          Print out profiles as ASCII text (with per channel headers) \n"
-  "   -" << TEXT_FREQ_PREC <<     "          Number of digits to use after decimal point for frequency (defaults to 3) \n"
+  "   -" << TEXT_FREQ_PREC <<     " prec     Number of digits to use in the header after decimal point for frequency (defaults to 3) \n"
+  "   -" << PRINT_FREQ_KEY <<     "          Also print frequency as the 4th column \n"
 #ifdef HAVE_PGPLOT
   "   -" << BANDPASS_KEY <<       "          Print out the original bandpass as ASCII text \n"
 #endif
@@ -427,6 +430,8 @@ void OutputDataAsText( Reference::To< Pulsar::Archive > archive )
 		for (int b = fbin; b <= lbin; b++)
 		{
 		   cout << s << " " << c << " " << b;
+                   if ( print_freq )
+                     cout << " " << intg->get_centre_frequency( c );
 		   for(int ipol=0; ipol<npol; ipol++)
 		   {
 			  Profile *p = intg->get_Profile( ipol, c );
@@ -1194,6 +1199,7 @@ int main( int argc, char *argv[] ) try
    args += TEXT_KEY;
    args += TEXT_HEADERS_KEY;
    args += TEXT_FREQ_PREC; args += ':';
+   args += PRINT_FREQ_KEY;
 #ifdef HAVE_PGPLOT
    args += BANDPASS_KEY;
 #endif
@@ -1238,6 +1244,9 @@ int main( int argc, char *argv[] ) try
 			break;
                 case TEXT_FREQ_PREC:
                         freq_precision = fromstring<int>( string(optarg) );
+                        break;
+                case PRINT_FREQ_KEY:
+                        print_freq = true;
                         break;
 #ifdef HAVE_PGPLOT
                  case BANDPASS_KEY:
