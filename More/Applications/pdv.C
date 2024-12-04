@@ -136,7 +136,8 @@ int ibin = -1;
 int isub = -1;
 float phase = 0.0;
 float pa_threshold = 3.0;
-int freq_precision = 3;
+unsigned org_precision;
+unsigned freq_precision = 3;
 
 vector<string> jobs;
 
@@ -183,7 +184,7 @@ void Usage( void )
   "   -" << BASELINE_KEY <<       "          Do not remove baseline \n"
   "   -" << TEXT_KEY <<           "          Print out profiles as ASCII text \n"
   "   -" << TEXT_HEADERS_KEY <<   "          Print out profiles as ASCII text (with per channel headers) \n"
-  "   -" << TEXT_FREQ_PREC <<     " prec     Number of digits to use in the header after decimal point for frequency (defaults to 3) \n"
+  "   -" << TEXT_FREQ_PREC <<     " prec     Number of digits to use in after decimal point for frequency (defaults to 3) \n"
   "   -" << PRINT_FREQ_KEY <<     "          Also print frequency as the 4th column \n"
 #ifdef HAVE_PGPLOT
   "   -" << BANDPASS_KEY <<       "          Print out the original bandpass as ASCII text \n"
@@ -420,9 +421,10 @@ void OutputDataAsText( Reference::To< Pulsar::Archive > archive )
 	    if( per_channel_headers )
 	    {
 	      IntegrationHeader( intg );
+              org_precision = tostring_precision;
               tostring_precision = freq_precision;
 	      cout << " Freq: " << tostring<double>( intg->get_centre_frequency( c ) );
-              tostring_precision = 3;
+              tostring_precision = org_precision;
 	      cout << " BW: " << intg->get_bandwidth() / nchn;
 	      cout << endl;
 		}
@@ -430,8 +432,12 @@ void OutputDataAsText( Reference::To< Pulsar::Archive > archive )
 		for (int b = fbin; b <= lbin; b++)
 		{
 		   cout << s << " " << c << " " << b;
-                   if ( print_freq )
-                     cout << " " << intg->get_centre_frequency( c );
+                   if ( print_freq ) {
+                     org_precision = tostring_precision;
+                     tostring_precision = freq_precision;
+                     cout << " " << tostring<double>(intg->get_centre_frequency( c ));
+                     tostring_precision = org_precision;
+                   }
 		   for(int ipol=0; ipol<npol; ipol++)
 		   {
 			  Profile *p = intg->get_Profile( ipol, c );
@@ -1243,7 +1249,7 @@ int main( int argc, char *argv[] ) try
 			per_channel_headers = true;
 			break;
                 case TEXT_FREQ_PREC:
-                        freq_precision = fromstring<int>( string(optarg) );
+                        freq_precision = fromstring<unsigned>( string(optarg) );
                         break;
                 case PRINT_FREQ_KEY:
                         print_freq = true;
