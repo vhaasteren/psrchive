@@ -1864,18 +1864,25 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile) try
   
   cerr << "pcm: get calibrator filenames" << endl;
 
-  DataSet* dataset = data_manager->get (autobin);
-  vector<string> filenames = dataset->get_calibrator_filenames ();
-
-  if (!calfile.empty())
+  try
   {
-    cerr << "pcm: loading calibrator filenames from " << calfile << endl;
-    stringfload (&filenames, calfile);
-  }
+    DataSet* dataset = data_manager->get (autobin);
+    vector<string> filenames = dataset->get_calibrator_filenames ();
 
-  cerr << "pcm: set calibrators" << endl;
-  model->set_calibrator_preprocessor (standard_options);
-  model->set_calibrators (filenames);
+    if (!calfile.empty())
+    {
+      cerr << "pcm: loading calibrator filenames from " << calfile << endl;
+      stringfload (&filenames, calfile);
+    }
+
+    cerr << "pcm: set calibrators" << endl;
+    model->set_calibrator_preprocessor (standard_options);
+    model->set_calibrators (filenames);
+  }
+  catch (Error& error)
+  {
+    cerr << "pcm: error loading calibrator filenames - " << error.get_message() << endl;
+  }
 
   // add the specified phase bins
   for (unsigned ibin=0; ibin<phase_bins.size(); ibin++)

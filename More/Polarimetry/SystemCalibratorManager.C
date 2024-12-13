@@ -53,6 +53,9 @@ SystemCalibrator* SystemCalibratorManager::get_calibrator (const Archive* data)
 {
   bool throw_exception = false;
 
+  if (calibrator.size() == 0)
+    throw Error (InvalidParam, "SystemCalibratorManager::get_calibrator", "no calibrators added");
+
   for (auto cal: calibrator)
   {
     if (fscrunch_data_to_model)
@@ -64,7 +67,7 @@ SystemCalibrator* SystemCalibratorManager::get_calibrator (const Archive* data)
 
     if (match)
       return cal;
-    else if (Archive::verbose > 1)
+    // else if (Archive::verbose > 1)
       cerr << "SystemCalibratorManager::get_calibrator mismatch reason=" << cal->get_mismatch_reason() << endl;
   }
   
