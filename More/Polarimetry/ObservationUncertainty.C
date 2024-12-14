@@ -8,8 +8,6 @@
 #include "Pulsar/ObservationUncertainty.h"
 #include "Pauli.h"
 
-#include <cassert>
-
 using namespace std;
 using namespace Calibration;
 
@@ -26,7 +24,10 @@ double ObservationUncertainty::get_weighted_norm
     difference += sqr(stokes[ipol].real()) * inv_variance[ipol].real();
     difference += sqr(stokes[ipol].imag()) * inv_variance[ipol].imag();
   }
-  assert (true_math::finite(difference));
+
+  if (!true_math::finite(difference))
+    throw Error (InvalidState, "ObservationUncertainty::get_weighted_norm", "non-finite difference");
+
   return difference;
 }
 
@@ -35,8 +36,6 @@ Jones<double> ObservationUncertainty::get_weighted_conjugate
 ( const Jones<double>& matrix ) const try
 {
   Stokes< complex<double> > stokes = complex_coherency( matrix );
-
-  // cerr << "inv=" << inv_variance << endl;
 
   for (unsigned ipol=0; ipol<4; ipol++)
   {
@@ -75,7 +74,16 @@ ObservationUncertainty::get_weighted_components
       complex<double>( sqrt(inv_variance[ipol].real()) * stokes[ipol].real(),
 		       sqrt(inv_variance[ipol].imag()) * stokes[ipol].imag() );
 
-    assert (true_math::finite(stokes[ipol]));
+    if (!true_math::finite(stokes[ipol]))
+    {
+      cerr << "ObservationUncertainty::get_weighted_components non-finite result\n"
+        " input=" << matrix << endl <<
+        " stokes[" << ipol << "]=" << stokes[ipol] << endl <<
+        " invvar[" << ipol << "]=" << inv_variance[ipol] << endl;
+
+      throw Error (InvalidState, "ObservationUncertainty::get_weighted_components",
+                   "non-finite result");
+    }
   }
 
   return stokes;
@@ -90,8 +98,14 @@ void ObservationUncertainty::set_variance
     double inv_re = 1.0 / variance[ipol].real();
     double inv_im = 1.0 / variance[ipol].imag();
 
-    assert (true_math::finite(inv_re));
-    assert (true_math::finite(inv_im));
+    if (!true_math::finite(inv_re) || !true_math::finite(inv_im))
+    {
+      cerr << "ObservationUncertainty::set_variance non-finite result after inverting\n"
+        " var[" << ipol << "]=" << variance[ipol] << endl;
+
+      throw Error (InvalidState, "ObservationUncertainty::set_variance",
+                   "non-finite result");
+    }
 
     inv_variance[ipol] = complex<double>( inv_re, inv_im );
   }
@@ -104,7 +118,15 @@ void ObservationUncertainty::set_variance
   for (unsigned ipol=0; ipol < 4; ipol++)
   {
     double inv_var = 1.0 / variance[ipol];
-    assert (true_math::finite(inv_var));
+
+    if (!true_math::finite(inv_var))
+    {
+      cerr << "ObservationUncertainty::set_variance non-finite result after inverting\n"
+        " var[" << ipol << "]=" << variance[ipol] << endl;
+
+      throw Error (InvalidState, "ObservationUncertainty::set_variance",
+                   "non-finite result");
+    }
 
     inv_variance[ipol] = complex<double>( inv_var, inv_var );
   }
@@ -175,9 +197,15 @@ void ObservationUncertainty::add (const Uncertainty* other)
     double inv_re = 1.0 / var.real();
     double inv_im = 1.0 / var.imag();
 
-    assert (true_math::finite(inv_re));
-    assert (true_math::finite(inv_im));
-    
+    if (!true_math::finite(inv_re) || !true_math::finite(inv_im))
+    {
+      cerr << "ObservationUncertainty::add non-finite result after inverting\n"
+        " var[" << ipol << "]=" << var << endl;
+
+      throw Error (InvalidState, "ObservationUncertainty::add",
+                   "non-finite result");
+    }
+
     inv_variance[ipol] = complex<double>( inv_re, inv_im );
   }
 }
