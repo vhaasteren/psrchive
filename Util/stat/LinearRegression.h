@@ -36,6 +36,9 @@ public:
   //! The weighted mean abscissa (x value)
   double weighted_mean_abscissa = 0.0;
 
+  //! The merit function (chi squared)
+  double chisq = 0.0;
+
   //! ordinary least squares with optional mask
   void ordinary_least_squares (const std::vector<double>& yval,
                                const std::vector<double>& xval,
