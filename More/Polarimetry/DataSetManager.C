@@ -131,6 +131,9 @@ MJD DataSetManager::get_epoch () const
 //! Get the data set that matches the archive
 DataSet* DataSetManager::get (const Archive* data)
 {
+  if (datasets.size() == 0)
+    throw Error (InvalidState, "DataSetManager::get", "no data sets added");
+
   for (auto ds: datasets)
     if (ds->matches(data))
       return ds;

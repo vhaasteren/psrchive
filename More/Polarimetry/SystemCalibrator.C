@@ -1572,23 +1572,24 @@ void SystemCalibrator::create_model () try
       cerr << "SystemCalibrator::create_model receiver set" << endl;
 
     Pauli::basis().set_basis( get_Receiver()->get_basis() );
-    
-    if (!get_Receiver()->get_basis_corrected())
+
+    BasisCorrection basis_correction;
+
+    if (basis_correction.required(get_Receiver()))
     {
-      BasisCorrection basis_correction;
       basis = new MEAL::Complex2Constant( basis_correction(get_Receiver()) );
 
       invert_basis = inv( basis->evaluate() );
 
-      if (verbose)
-        cerr << "SystemCalibrator::create_model basis corrections:\n"
-            << basis_correction.get_summary () << endl
-            << "SystemCalibrator::create_model receiver=\n  " 
-            << basis->evaluate() << endl;
+      cerr << "SystemCalibrator::create_model basis corrections:\n"
+          << basis_correction.get_summary () << endl;
+
+      if (verbose) cerr
+          << "SystemCalibrator::create_model receiver=\n  " 
+          << basis->evaluate() << endl;
     }
     else if (verbose)
-      cerr << "SystemCalibrator::create_model basis correction not required"
-           << endl;
+      cerr << "SystemCalibrator::create_model basis correction not required" << endl;
   }
   else if (verbose)
     cerr << "SystemCalibrator::create_model receiver not set" << endl;

@@ -1864,18 +1864,25 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile) try
   
   cerr << "pcm: get calibrator filenames" << endl;
 
-  DataSet* dataset = data_manager->get (autobin);
-  vector<string> filenames = dataset->get_calibrator_filenames ();
-
-  if (!calfile.empty())
+  try
   {
-    cerr << "pcm: loading calibrator filenames from " << calfile << endl;
-    stringfload (&filenames, calfile);
-  }
+    DataSet* dataset = data_manager->get (autobin);
+    vector<string> filenames = dataset->get_calibrator_filenames ();
 
-  cerr << "pcm: set calibrators" << endl;
-  model->set_calibrator_preprocessor (standard_options);
-  model->set_calibrators (filenames);
+    if (!calfile.empty())
+    {
+      cerr << "pcm: loading calibrator filenames from " << calfile << endl;
+      stringfload (&filenames, calfile);
+    }
+
+    cerr << "pcm: set calibrators" << endl;
+    model->set_calibrator_preprocessor (standard_options);
+    model->set_calibrators (filenames);
+  }
+  catch (Error& error)
+  {
+    cerr << "pcm: error (ignored) loading calibrator filenames - " << error.get_message() << endl;
+  }
 
   // add the specified phase bins
   for (unsigned ibin=0; ibin<phase_bins.size(); ibin++)
@@ -1937,19 +1944,26 @@ SystemCalibrator* pcm::matrix_template_matching (const string& stdname)
   clock.stop();
   cerr << "pcm: standard set in " << clock << endl;
 
-  DataSet* dataset = data_manager->get (standard);
-
-  const vector<string>& filenames = dataset->get_calibrator_filenames ();
-  
-  if (filenames.size())
-    cerr << "pcm: adding " << filenames.size() << " calibrators" << endl;
-
-  for (unsigned ical=0; ical < filenames.size(); ical++)
+  try
   {
-    Reference::To<Archive> cal = Archive::load (filenames[ical]);
-    standard_options->process (cal);
+    DataSet* dataset = data_manager->get (standard);
 
-    model->add_observation( cal );
+    const vector<string>& filenames = dataset->get_calibrator_filenames ();
+  
+    if (filenames.size())
+      cerr << "pcm: adding " << filenames.size() << " calibrators" << endl;
+
+    for (unsigned ical=0; ical < filenames.size(); ical++)
+    {
+      Reference::To<Archive> cal = Archive::load (filenames[ical]);
+      standard_options->process (cal);
+
+      model->add_observation( cal );
+    }
+  }
+  catch (Error& error)
+  {
+    cerr << "pcm: error (ignored) loading calibrator filenames - " << error.get_message() << endl;
   }
 
   return model;
