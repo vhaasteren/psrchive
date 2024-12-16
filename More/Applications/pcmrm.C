@@ -116,11 +116,11 @@ void pcmrm::process (Pulsar::Archive* archive)
 
   for (unsigned ichan = 0; ichan < nchan; ichan++)
   {
-    MEAL::Complex2* xform = Calibration::new_transformation(ext, ichan);
+    Reference::To<MEAL::Complex2> xform = Calibration::new_transformation(ext, ichan);
     if (!xform)
       continue;
     
-    auto feed = dynamic_cast<Calibration::HasOrientation*>(xform);
+    auto feed = dynamic_cast<Calibration::HasOrientation*>(xform.get());
     if (!feed)
       continue;
 
@@ -287,11 +287,11 @@ double pcmrm::update (PolnCalibratorExtension* ext)
   
   for (unsigned ichan = 0; ichan < nchan; ichan++)
   {
-    MEAL::Complex2* xform = Calibration::new_transformation(ext, ichan);
+    Reference::To<MEAL::Complex2> xform = Calibration::new_transformation(ext, ichan);
     if (!xform)
       continue;
     
-    auto feed = dynamic_cast<Calibration::HasOrientation*>(xform);
+    auto feed = dynamic_cast<Calibration::HasOrientation*>(xform.get());
     if (!feed)
       continue;
 
@@ -301,7 +301,7 @@ double pcmrm::update (PolnCalibratorExtension* ext)
     double Faraday_orientation = rotation_measure * lambda * lambda;
     feed->offset_orientation(-Faraday_orientation);
 
-    Calibration::copy (ext->get_transformation(ichan), xform);
+    Calibration::copy (ext->get_transformation(ichan), xform.get());
   }
 
   return rotation_measure;
