@@ -50,12 +50,25 @@ protected:
   Estimate<double> fit_psi0;
   Estimate<double> fit_rm;
 
-  void add_options (CommandLine::Menu&) override { /* none */ }
+  void add_options (CommandLine::Menu&) override;
+
+  float iterative_outlier_threshold = 0.0;
 };
 
 pcmrm::pcmrm ()
   : Application ("pcmrm", "estimates RM from a set of pcm outputs")
 {
+}
+
+//! Add command line options
+void pcmrm::add_options (CommandLine::Menu& menu)
+{
+  CommandLine::Argument* arg = 0;
+  
+  menu.add ("\n" "Output options:");
+
+  arg = menu.add (iterative_outlier_threshold, "iqr", "threshold");
+  arg->set_help ("set the iterative outlier excision threshold (multiple of IQR)");
 }
 
 void pcmrm::process (Pulsar::Archive* archive)
@@ -105,15 +118,26 @@ void pcmrm::finalize ()
   }
 
   LinearRegression fit;
+  fit.iterative_outlier_threshold = iterative_outlier_threshold;
   fit.weighted_least_squares (yval, lambda_sq, wt);
   fit_rm = fit.scale;
   fit_psi0 = fit.offset;
+  double chisq = fit.chisq;
+
+  if (iterative_outlier_threshold)
+  {
+    unsigned count = 0;
+    for (auto val: fit.masked_weights)
+      if (val == 0.0)
+        count ++;
+
+    cerr << "pcmrm: " << count << " values out of " << wt.size() << " flagged as outliers" << endl;
+  }
 
   cout << "ndat= " << ndat << "  MJD= " << epoch
        << "  RM= " << fit_rm.val << " +/- " << sqrt(fit_rm.var) << endl;
 
   MJD epoch;
-
   for (unsigned ifile=0; ifile < input_filenames.size(); ifile++)
   {
     string filename = input_filenames[ifile];
