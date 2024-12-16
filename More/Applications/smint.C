@@ -787,7 +787,7 @@ void smint::fit (set& dataset)
     {
       SmoothingSpline spline;
       if (minimize_tmse)
-	spline.set_msre (1.0);
+	      spline.set_msre (1.0);
 
       spline.fit (table[irow].freq, table[irow].data);
       nfree[irow] = spline.get_fit_effective_nfree ();
@@ -804,21 +804,21 @@ void smint::fit (set& dataset)
     {
       if (use_smoothing_spline())
       {
-	cerr << "smint::fit 1-D pspline to "
-	     << table[irow].freq.size() << " points" << endl;
+        cerr << "smint::fit 1-D pspline to "
+            << table[irow].freq.size() << " points" << endl;
 
         data_filename = dataset.table[irow].filename;
 
-	fit_pspline (dataset.table[irow].spline1d,
-		     table[irow].freq, table[irow].data);
+        fit_pspline (dataset.table[irow].spline1d,
+              table[irow].freq, table[irow].data);
       }
       else
       {
-	fit_polynomial (table[irow].freq, table[irow].data);
+        fit_polynomial (table[irow].freq, table[irow].data);
       }
       
       if (row_by_row)
-	unload_row (dataset, irow);
+        unload_row (dataset, irow);
     }
 
 #if HAVE_PGPLOT
