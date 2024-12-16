@@ -134,9 +134,6 @@ void pcmrm::finalize ()
     cerr << "pcmrm: " << count << " values out of " << wt.size() << " flagged as outliers" << endl;
   }
 
-  cout << "ndat= " << ndat << "  MJD= " << epoch
-       << "  RM= " << fit_rm.val << " +/- " << sqrt(fit_rm.var) << endl;
-
   MJD epoch;
   for (unsigned ifile=0; ifile < input_filenames.size(); ifile++)
   {
