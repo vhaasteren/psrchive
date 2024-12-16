@@ -109,6 +109,9 @@ void pcmrm::finalize ()
   fit_rm = fit.scale;
   fit_psi0 = fit.offset;
 
+  cout << "ndat= " << ndat << "  MJD= " << epoch
+       << "  RM= " << fit_rm.val << " +/- " << sqrt(fit_rm.var) << endl;
+
   MJD epoch;
 
   for (unsigned ifile=0; ifile < input_filenames.size(); ifile++)
@@ -134,9 +137,6 @@ void pcmrm::finalize ()
     if (epoch == 0.0)
       epoch = ext->get_epoch();
   }
-
-  cout << "ndat= " << ndat << "  MJD= " << epoch 
-       << "  RM= " << fit_rm.val << " +/- " << sqrt(fit_rm.var) << endl;
 }
 
 void pcmrm::update (PolnCalibratorExtension* ext)

@@ -1202,8 +1202,8 @@ void pcm::setup ()
     throw Error (InvalidState, "pcm",
 		 "invalid number of threads = %u", nthread);
 
-  cerr << "pcm: using a maximum of " << maxbins << " bins or harmonics" 
-       << endl;
+  if (! choose_maximum_harmonic)
+    cerr << "pcm: using a maximum of " << maxbins << " bins or harmonics" << endl;
 
   bool mem_mode = template_filenames.empty();
   
@@ -1908,9 +1908,15 @@ SystemCalibrator* pcm::matrix_template_matching (const string& stdname)
     model->share_phase ();
 
   if (choose_maximum_harmonic)
+  {
+    cerr << "pcm: choosing the maximum harmonic" << endl;
     model->set_choose_maximum_harmonic ();
+  }
   else
+  {
+    cerr << "pcm: using " << maxbins << " harmonics" << endl;
     model->set_maximum_harmonic (maxbins);
+  }
 
   if (solve_each)
   {
