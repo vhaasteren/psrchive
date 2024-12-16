@@ -50,8 +50,58 @@ void LinearRegression::weighted_least_squares
   vector<double> alpha (yval.size(), 1.0);
   generalized_least_squares (yval, xval, weight, alpha);
 }
- 
+
 void LinearRegression::generalized_least_squares 
+(
+  const vector<double>& yval,
+  const vector<double>& xval,
+  const vector<double>& weight,
+  const vector<double>& alpha
+)
+{
+  bool done = false;
+
+  masked_weights = weight;
+
+  while (!done)
+  {
+    least_squares_worker(yval, xval, masked_weights, alpha);
+
+    done = true;
+
+    if (iterative_outlier_threshold > 0.0)
+    {
+      double Q1=0, Q2=0, Q3=0;
+      Q1_Q2_Q3 (residual, Q1, Q2, Q3);
+
+      double IQR = Q3-Q1;
+      double diff_min = Q1 - iterative_outlier_threshold * IQR;
+      double diff_max = Q3 + iterative_outlier_threshold * IQR;
+      
+      // cerr << "diff_min=" << diff_min << " diff_max=" << diff_max << endl;
+
+      unsigned idiff = 0;
+      unsigned ndim = yval.size ();
+
+      for (unsigned idim=0; idim<ndim; idim++)
+      {
+        if (masked_weights[idim] == 0)
+          continue;
+    
+        double diff = residual[idim];
+        if (diff > diff_max || diff < diff_min)
+        {
+          masked_weights[idim] = 0;
+          done = false;
+        }
+
+        idiff ++;
+      }
+    }
+  }
+}
+
+void LinearRegression::least_squares_worker
 (
   const vector<double>& yval,
   const vector<double>& xval,
@@ -141,6 +191,9 @@ void LinearRegression::generalized_least_squares
   unsigned idiff = 0;
   chisq = 0.0;
 
+  if (iterative_outlier_threshold > 0)
+    residual.resize(count);
+
   for (unsigned idim=0; idim<ndim; idim++)
   {
     if (weight[idim] == 0)
@@ -150,6 +203,10 @@ void LinearRegression::generalized_least_squares
 
     double diff = yval[idim] - scale.val*xdatum - offset.val*alpha[idim];
     chisq += diff * diff * weight[idim];
+
+    if (iterative_outlier_threshold > 0)
+      residual[idiff] = diff * sqrt(weight[idim]);
+
     idiff ++;
   }
 
@@ -160,6 +217,4 @@ void LinearRegression::generalized_least_squares
 
   if ( ! true_math::finite(offset.var) )
     throw Error (InvalidState, "linear_fit_work", "non-finite offset var=%lf", offset.var);
-
-  // cerr << "scale=" << scale << " offset=" << offset << endl;
 }
