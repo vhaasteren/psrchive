@@ -188,7 +188,7 @@ void LinearRegression::least_squares_worker
     throw Error (InvalidState, "LinearRegression::generalized_least_squares",
                  "non-finite offset var=%lf", offset.var);
 
-  unsigned idiff = 0;
+  nfree = 0;
   chisq = 0.0;
 
   if (iterative_outlier_threshold > 0)
@@ -205,12 +205,12 @@ void LinearRegression::least_squares_worker
     chisq += diff * diff * weight[idim];
 
     if (iterative_outlier_threshold > 0)
-      residual[idiff] = diff * sqrt(weight[idim]);
+      residual[nfree] = diff * sqrt(weight[idim]);
 
-    idiff ++;
+    nfree ++;
   }
 
-  assert (idiff == count);
+  assert (nfree == count);
 
   if ( ! true_math::finite(offset.val) )
     throw Error (InvalidState, "linear_fit_work", "non-finite offset=%lf", offset.val);

@@ -160,7 +160,8 @@ void pcmrm::finalize ()
   }
 
   cout << "ndat= " << ndat << "  MJD= " << epoch 
-       << "  RM= " << fit_rm.val << " +/- " << sqrt(fit_rm.var) << endl;
+       << "  RM= " << fit_rm.val << " +/- " << sqrt(fit_rm.var) 
+       << "  chisq= " << fit.chisq << " nfree= " << fit.nfree << endl;
 }
 
 void pcmrm::update (PolnCalibratorExtension* ext)

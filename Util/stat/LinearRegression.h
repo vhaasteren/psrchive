@@ -40,6 +40,9 @@ public:
   //! The merit function (chi squared)
   double chisq = 0.0;
 
+  //! The number of degrees of freedom
+  unsigned nfree = 0;
+  
   //! ordinary least squares with optional mask
   void ordinary_least_squares (const std::vector<double>& yval,
                                const std::vector<double>& xval,
