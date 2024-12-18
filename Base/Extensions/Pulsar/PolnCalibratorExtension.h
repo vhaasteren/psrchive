@@ -197,6 +197,9 @@ namespace Pulsar {
     //! Get the best fit value of the reduced chi squared = chisq/nfree
     double get_reduced_chisq () const;
 
+    //! Get the Akaike information criterion
+    double get_Akaike_information_criterion() const;
+
     // Text interface to a PolnCalibratorExtension instance
     class Interface : public TextInterface::To<Transformation>
     {

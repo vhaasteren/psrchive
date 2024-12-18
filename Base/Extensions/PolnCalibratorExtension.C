@@ -252,8 +252,7 @@ PolnCalibratorExtension::Transformation::get_param_name (unsigned i) const
 
 //! Set the name of the specified model parameter
 void
-PolnCalibratorExtension::Transformation::set_param_name (unsigned i,
-							 const string& n)
+PolnCalibratorExtension::Transformation::set_param_name (unsigned i, const string& n)
 {
   names[i] = n;
 }
@@ -268,8 +267,7 @@ PolnCalibratorExtension::Transformation::get_param_description (unsigned i)
 
 //! Set the description of the specified model parameter
 void
-PolnCalibratorExtension::Transformation::set_param_description 
-(unsigned i, const string& n)
+PolnCalibratorExtension::Transformation::set_param_description (unsigned i, const string& n)
 {
   descriptions[i] = n;
 }
@@ -364,6 +362,17 @@ double PolnCalibratorExtension::Transformation::get_reduced_chisq () const
     return chisq / nfree;
   else
     return 0.0;
+}
+
+double PolnCalibratorExtension::Transformation::get_Akaike_information_criterion() const
+{
+  if (nfree == 0)
+    return 0;
+
+  // AICc (with small number correction)
+  // assumes normally distributed residuals, for which chisq = -2 log(likelihood) + C,
+  // where C is a constant defined by the estimated uncertainties of the data
+  return chisq + 2*nfit * (1.0 + (nfit + 1.0) / (nfree - 1.0));
 }
 
 //! Get the covariance matrix of the model paramters
