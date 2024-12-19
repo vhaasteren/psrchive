@@ -84,3 +84,10 @@ void DynamicResponse::resize_data ()
 {
   response.resize ( nchan * ntime * npol );
 }
+
+void DynamicResponse::set_data(const std::vector<std::complex<double>>& data)
+{
+  auto expected_size = nchan * ntime * npol;
+  if (data.size() != expected_size)
+    throw Error(InvalidParam, "DynamicResponse::set_data", "data.size=%u does not equal expected size=%u", data.size(), expected_size);
+}

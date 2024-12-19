@@ -845,6 +845,12 @@ def rotate_phase(self,phase): return self._rotate_phase_swig(phase)
     {
       return self->get<Pulsar::DynamicResponse>();
     }
+
+    // Add a DynamicResponse Extension and return it
+    Pulsar::DynamicResponse* add_dynamic_response()
+    {
+      return self->getadd<Pulsar::DynamicResponse>();
+    }
 }
 
 %extend Pulsar::PeakCumulative
