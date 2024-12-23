@@ -98,20 +98,20 @@ namespace MEAL
     */
     template <class At, class Et, class Mt>
     float init (const std::vector< At >& x,
-		const std::vector< Et >& y,
-		Mt& model);
+                const std::vector< Et >& y,
+                Mt& model);
     
     //! returns next chi-squared (better or worse)
     template <class At, class Et, class Mt>
     float iter (const std::vector< At >& x,
-		const std::vector< Et >& y,
-		Mt& model);
+                const std::vector< Et >& y,
+                Mt& model);
 
-    //! returns the best-fit answers
+    //! returns the determinant of the curvature matrix
     template <class Mt>
-    void result (Mt& model,
-		 std::vector<std::vector<double> >& covariance = null_arg,
-		 std::vector<std::vector<double> >& curvature = null_arg);
+    double result (Mt& model,
+                  std::vector<std::vector<double> >& covariance = null_arg,
+                  std::vector<std::vector<double> >& curvature = null_arg);
 
     //! lamda determines the dominance of the steepest descent method
     float lamda;
@@ -134,8 +134,8 @@ namespace MEAL
     //! returns chi-squared and calculates the Hessian matrix and gradient
     template <class At, class Et, class Mt>
     float calculate_chisq (const std::vector< At >& x,
-			   const std::vector< Et >& y,
-			   Mt& model);
+                          const std::vector< Et >& y,
+                          Mt& model);
 
   private:
 
@@ -147,6 +147,7 @@ namespace MEAL
 
     //! curvature matrix
     std::vector<std::vector<double> > alpha;
+    double det_alpha = 0.0;
 
     //! next change to model
     std::vector<std::vector<double> > delta;
@@ -163,11 +164,13 @@ namespace MEAL
     //! gradient of chi-squared of best fit
     std::vector<double> best_beta;
 
+    //! determinant of curvature matrix of best fit
+    double det_best_alpha = 0.0;
+
     //! The parameters of the current model
     std::vector<double> backup;
 
     static std::vector<std::vector<double> > null_arg;
-
   };
 
   template<class At>
@@ -358,17 +361,16 @@ float MEAL::LevenbergMarquardt<Grad>::init
   }
 
   if (verbose > 2)
-    std::cerr << "MEAL::LevenbergMarquardt<Grad>::init calculate chisq"
-              << std::endl;
+    std::cerr << "MEAL::LevenbergMarquardt<Grad>::init calculate chisq" << std::endl;
 
   best_chisq = calculate_chisq (x, y, model);
   best_alpha = alpha;
+  det_best_alpha = det_alpha;
   best_beta = beta;
   lamda = 0.001;
 
   if (verbose > 0)
-    std::cerr << "MEAL::LevenbergMarquardt<Grad>::init chisq=" 
-	 << best_chisq << std::endl;
+    std::cerr << "MEAL::LevenbergMarquardt<Grad>::init chisq=" << best_chisq << std::endl;
 
   return best_chisq;
 }
@@ -558,7 +560,7 @@ void MEAL::LevenbergMarquardt<Grad>::solve_delta (const Mt& model)
   try
   {
     // invert Equation 15.5.14
-    MEAL::GaussJordan (alpha, delta, iinfit, singular_threshold, &name_ptrs);
+    det_alpha = MEAL::GaussJordan (alpha, delta, iinfit, singular_threshold, &name_ptrs);
   }
   catch (Error& error)
   {
@@ -647,6 +649,7 @@ float MEAL::LevenbergMarquardt<Grad>::iter
 
     best_chisq = new_chisq;
     best_alpha = alpha;
+    det_best_alpha = det_alpha;
     best_beta  = beta;
   }
   else
@@ -678,10 +681,11 @@ float MEAL::LevenbergMarquardt<Grad>::iter
 
    \retval covar the covariance matrix
    \retval curve the curvature matrix
+   \return determinant of the curvature matrix
 */
 template <class Grad>
 template <class Mt>
-void MEAL::LevenbergMarquardt<Grad>::result
+double MEAL::LevenbergMarquardt<Grad>::result
 ( Mt& model,
   std::vector<std::vector<double> >& covar,
   std::vector<std::vector<double> >& curve )
@@ -696,7 +700,7 @@ void MEAL::LevenbergMarquardt<Grad>::result
   solve_delta (model);
 
   if (&covar == &null_arg)
-    return;
+    return det_alpha;
 
   covar.resize (model.get_nparam());
 
@@ -725,7 +729,9 @@ void MEAL::LevenbergMarquardt<Grad>::result
       }
       iindim ++;
     }
-  }  
+  }
+
+  return det_alpha;
 }
 
 // /////////////////////////////////////////////////////////////////////////

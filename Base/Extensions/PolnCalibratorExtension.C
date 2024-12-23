@@ -364,6 +364,16 @@ double PolnCalibratorExtension::Transformation::get_reduced_chisq () const
     return 0.0;
 }
 
+double PolnCalibratorExtension::Transformation::get_det_curvature () const
+{
+  return det_curvature;
+}
+
+void PolnCalibratorExtension::Transformation::set_det_curvature (double val)
+{
+  det_curvature = val;
+}
+
 double PolnCalibratorExtension::Transformation::get_Akaike_information_criterion() const
 {
   if (nfree == 0)
@@ -373,6 +383,24 @@ double PolnCalibratorExtension::Transformation::get_Akaike_information_criterion
   // assumes normally distributed residuals, for which chisq = -2 log(likelihood) + C,
   // where C is a constant defined by the estimated uncertainties of the data
   return chisq + 2*nfit * (1.0 + (nfit + 1.0) / (nfree - 1.0));
+}
+
+double PolnCalibratorExtension::Transformation::get_Bayesian_information_criterion() const
+{
+  if (nfree == 0)
+    return 0;
+
+  double ndat = nfree + nfit;
+  return chisq + nfit * log(ndat);
+}
+
+double PolnCalibratorExtension::Transformation::get_stochastic_information_criterion() const
+{
+  if (nfree == 0)
+    return 0;
+
+  double ndat = nfree + nfit;
+  return chisq + nfit * log(ndat) + log(det_curvature);
 }
 
 //! Get the covariance matrix of the model paramters
@@ -462,9 +490,9 @@ void PolnCalibratorExtension::Transformation::set_covariance
       if (i==j)
       {
 #ifdef _DEBUG
-	cerr << j << " " << covar[icovar] << endl;
+        cerr << j << " " << covar[icovar] << endl;
 #endif
-	set_variance (j,covar[icovar]);
+        set_variance (j,covar[icovar]);
       }
       icovar++;
     }

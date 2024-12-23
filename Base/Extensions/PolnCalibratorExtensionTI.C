@@ -68,6 +68,12 @@ Pulsar::PolnCalibratorExtension::Transformation::Interface::Interface ()
         "gof", "Reduced chi squared" );
         
    add( &Transformation::get_Akaike_information_criterion,
-        "aic", "Akaike information criterion" );
+        "AIC", "Akaike information criterion" );
+
+   add( &Transformation::get_Bayesian_information_criterion,
+        "BIC", "Bayesian information criterion" );
+
+   add( &Transformation::get_stochastic_information_criterion,
+        "SOC", "Stochastic information criterion" );
 }
 

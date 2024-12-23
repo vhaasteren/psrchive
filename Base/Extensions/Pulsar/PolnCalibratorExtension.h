@@ -184,6 +184,11 @@ namespace Pulsar {
     //! Set the best fit value of chi squared
     void set_chisq (double);
 
+    //! Get the determinant of the chi squared curvature (Hessian) matrix
+    double get_det_curvature () const;
+    //! Set the determinant of the chi squared curvature (Hessian) matrix
+    void set_det_curvature (double);
+
     //! Get the number of degrees of freedom
     unsigned get_nfree() const;
     //! Set the number of degress of freedom
@@ -200,6 +205,12 @@ namespace Pulsar {
     //! Get the Akaike information criterion
     double get_Akaike_information_criterion() const;
 
+    //! Get the Bayesian information criterion
+    double get_Bayesian_information_criterion() const;
+
+    //! Get the stochastic information criterion
+    double get_stochastic_information_criterion() const;
+
     // Text interface to a PolnCalibratorExtension instance
     class Interface : public TextInterface::To<Transformation>
     {
@@ -214,10 +225,11 @@ namespace Pulsar {
     std::vector< std::string > descriptions;
 
     std::vector<double> covariance;
-    double chisq;
-    unsigned nfree;
-    unsigned nfit;
-    bool valid;
+    double chisq = 0.0;
+    double det_curvature = 0.0;
+    unsigned nfree = 0;
+    unsigned nfit = 0;
+    bool valid = false;
 
   };
 

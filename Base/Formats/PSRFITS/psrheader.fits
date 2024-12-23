@@ -461,6 +461,8 @@ TTYPE#  = NFREE                / Number of degrees of freedom
 TFORM#  = J                    / NCHAN long (32-bit) integers
 TTYPE#  = NFIT                 / Number of model parameters varied in fit
 TFORM#  = J                    / NCHAN long (32-bit) integers
+TTYPE#  = DET_CURV             / Determinant of the curvature of chi-squared
+TFORM#  = E                    / NCHAN floats
 END
 #
 ###############################################################################

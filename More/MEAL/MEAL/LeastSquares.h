@@ -23,9 +23,6 @@ namespace MEAL {
 
     typedef std::vector< std::vector<double> > matrix;
 
-    //! Default constructor
-    LeastSquares ();
-
     //! Return the name of the fit algorithm
     virtual std::string get_name () const = 0;
 
@@ -80,46 +77,47 @@ namespace MEAL {
   protected:
 
     //! The maximum number of iterations in during fit
-    unsigned maximum_iterations;
+    unsigned maximum_iterations = 50;
 
     //! The convergence chisq
-    float convergence_chisq;
+    float convergence_chisq = 0.0;
 
     //! The convergence delta
-    float convergence_delta;
+    float convergence_delta = 0.01;
 
     //! The maximum reduced chi-squared allowed
-    float maximum_reduced;
+    float maximum_reduced = 0.0;
 
     //! The number of iterations in last call to solve method
-    unsigned iterations;
+    unsigned iterations = 0;
+
+    //! Determinant of the Hessian matrix
+    double det_Hessian = 0.0;
 
     //! The best chi-squared in last call to solve method
-    float best_chisq;
+    float best_chisq = 0.0;
 
     //! The number of free parameters in last call to solve method
-    unsigned nfree;
+    unsigned nfree = 0;
 
     //! The number of parameters to be fit
-    unsigned nparam_infit;
+    unsigned nparam_infit = 0;
 
     //! The total number of constraints (multi-dimensional data)
-    unsigned ndat_constraint;
+    unsigned ndat_constraint = 0;
 
     //! The fit debug mode
-    bool debug;
+    bool debug = false;
 
     //! Set true when fit has been solved
-    bool solved;
+    bool solved = false;
 
     //! Set true when the fit failed due to a singular Hessian matrix
-    bool singular;
+    bool singular = false;
 
     //! The covariance matrix set after fitting
     matrix covariance;
-
   };
-
 }
 
 #endif

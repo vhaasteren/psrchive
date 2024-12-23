@@ -296,7 +296,10 @@ void Calibration::SolveMEAL::fit ()
 
   try
   {
-    fit.result (*equation, covariance);
+    double det_curvature = fit.result (*equation, covariance);
+
+    /* the curvature matrix is one half of the Hessian */
+    det_Hessian = det_curvature * pow(2.0, nfree);
   }
   catch (Error& error)
   {
