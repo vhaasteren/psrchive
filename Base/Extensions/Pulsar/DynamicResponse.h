@@ -86,7 +86,11 @@ namespace Pulsar {
     
     //! Get the response matrix data
     const std::vector<std::complex<double>>& get_data () const { return response; }
-    
+
+    //! Set the response matrix data
+    /* @pre vector must have size=ntime*nchan*npol */
+    void set_data(const std::vector<std::complex<double>>&);
+
   protected:
 
     unsigned nchan = 0;

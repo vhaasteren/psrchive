@@ -1,11 +1,12 @@
 /***************************************************************************
  *
- *   Copyright (C) 2022 by Willem van Straten
+ *   Copyright (C) 2022 - 2024 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
 
 #include "MEAL/GaussJordan.h"
+#include "Jacobi.h"
 #include "random.h"
 #include <vector>
 
@@ -13,9 +14,11 @@ using namespace std;
 
 const unsigned dim = 73;
 
+#define PRINT_MATRIX 0
+
 int once ()
 {
-  vector< vector<double> > test (dim, vector<double>(dim) );
+  vector< vector<double> > test (dim, vector<double>(dim));
   random_matrix (test, 10.0);
 
   vector< vector<double> > copy = test;
@@ -23,13 +26,26 @@ int once ()
   vector< vector<double> > other (dim, vector<double>(1) );
   random_matrix (other, 10.0);
 
-  MEAL::GaussJordan (test, other);
+  double log_abs_det_A = MEAL::GaussJordan (test, other);
+
+#if PRINT_MATRIX
+  cerr << "log(abs(det(A)))=" << log_abs_det_A << endl;
+#endif
 
   double tolerance = 2e-12;
 
+  Matrix<dim,dim,double> matrix;
+
   for (unsigned irow=0; irow < dim; irow++)
+  {
     for (unsigned icol=0; icol < dim; icol++)
     {
+      matrix[irow][icol] = copy[irow][icol];
+
+#if PRINT_MATRIX
+      cerr << copy[irow][icol] << "\t";
+#endif
+
       double sum = 0.0;
       for (unsigned k=0; k < dim; k++)
         sum += test[irow][k] * copy[k][icol];
@@ -41,6 +57,31 @@ int once ()
         return -1;
       }
     }
+
+#if PRINT_MATRIX
+    cerr << endl;
+#endif
+  }
+
+#if JACOBI_IS_FIXED
+
+  // estimate the determinant via the product of eigenvalues
+  Matrix<dim,dim,double> evec;
+  Vector<dim,double> eval;
+  Jacobi (matrix, evec, eval);
+
+  double det_Jacobi = 1.0;
+  for (unsigned irow=0; irow < dim; irow++)
+    det_Jacobi *= eval[irow];
+
+  if (fabs(det - det_Jacobi) > tolerance)
+  {
+    cerr << "determinant (via GaussJordan) = " << det << endl
+         << "determinant (via Jacobi) = " << det_Jacobi << endl;
+    return -1;
+  }
+
+#endif
 
   return 0;
 }

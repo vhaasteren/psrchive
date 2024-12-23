@@ -252,8 +252,7 @@ PolnCalibratorExtension::Transformation::get_param_name (unsigned i) const
 
 //! Set the name of the specified model parameter
 void
-PolnCalibratorExtension::Transformation::set_param_name (unsigned i,
-							 const string& n)
+PolnCalibratorExtension::Transformation::set_param_name (unsigned i, const string& n)
 {
   names[i] = n;
 }
@@ -268,8 +267,7 @@ PolnCalibratorExtension::Transformation::get_param_description (unsigned i)
 
 //! Set the description of the specified model parameter
 void
-PolnCalibratorExtension::Transformation::set_param_description 
-(unsigned i, const string& n)
+PolnCalibratorExtension::Transformation::set_param_description (unsigned i, const string& n)
 {
   descriptions[i] = n;
 }
@@ -366,6 +364,49 @@ double PolnCalibratorExtension::Transformation::get_reduced_chisq () const
     return 0.0;
 }
 
+double PolnCalibratorExtension::Transformation::get_log_abs_det_curvature () const
+{
+  return log_abs_det_curvature;
+}
+
+void PolnCalibratorExtension::Transformation::set_log_abs_det_curvature (double val)
+{
+  log_abs_det_curvature = val;
+}
+
+double PolnCalibratorExtension::Transformation::get_Akaike_information_criterion() const
+{
+  if (nfree == 0)
+    return 0;
+
+  // AICc (with small number correction)
+  // assumes normally distributed residuals, for which chisq = -2 log(likelihood) + C,
+  // where C is a constant defined by the estimated uncertainties of the data
+  return chisq + 2*nfit * (1.0 + (nfit + 1.0) / (nfree - 1.0));
+}
+
+double PolnCalibratorExtension::Transformation::get_Bayesian_information_criterion() const
+{
+  if (nfree == 0)
+    return 0;
+
+  double ndat = nfree + nfit;
+  return chisq + nfit * log(ndat);
+}
+
+double PolnCalibratorExtension::Transformation::get_stochastic_information_complexity() const
+{
+  if (nfree == 0)
+    return 0;
+
+#if _DEBUG
+  cerr << "PolnCalibratorExtension::Transformation::get_stochastic_information_complexity: log(abs(det(curv)))=" << log_abs_det_curvature << endl;
+#endif
+
+  double ndat = nfree + nfit;
+  return chisq + nfit * log(ndat) + log_abs_det_curvature;
+}
+
 //! Get the covariance matrix of the model paramters
 vector< vector<double> >
 PolnCalibratorExtension::Transformation::get_covariance () const
@@ -453,9 +494,9 @@ void PolnCalibratorExtension::Transformation::set_covariance
       if (i==j)
       {
 #ifdef _DEBUG
-	cerr << j << " " << covar[icovar] << endl;
+        cerr << j << " " << covar[icovar] << endl;
 #endif
-	set_variance (j,covar[icovar]);
+        set_variance (j,covar[icovar]);
       }
       icovar++;
     }
