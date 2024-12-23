@@ -28,9 +28,11 @@ namespace MEAL {
 
       On output, a is replaced by its matrix inverse, and b is replaced by 
       the corresponding set of solution vectors.
+
+      The return value is log(abs(det(a)))
   */
   template <class T, class U>
-    double GaussJordan (std::vector<std::vector<T> >& a,
+    T GaussJordan (std::vector<std::vector<T> >& a,
                         std::vector<std::vector<U> >& b,
                         int nrow = -1, double singular_threshold = 0.0,
                         std::vector<const char*>* names = 0);
@@ -39,7 +41,7 @@ namespace MEAL {
 inline double inv (double x) { return 1.0/x; }
 
 template <class T, class U>
-double MEAL::GaussJordan (std::vector<std::vector<T> >& a,
+T MEAL::GaussJordan (std::vector<std::vector<T> >& a,
                           std::vector<std::vector<U> >& b,
                           int nrow, double singular_threshold,
                           std::vector<const char*>* names)
@@ -82,7 +84,7 @@ double MEAL::GaussJordan (std::vector<std::vector<T> >& a,
   std::cerr << "MEAL::GaussJordan start loop" << std::endl;
 #endif
 
-  double determinant = 1.0;
+  T log_abs_det_a = 0.0;
 
   for (int i=0; i<nrow; i++)
   {
@@ -153,8 +155,6 @@ double MEAL::GaussJordan (std::vector<std::vector<T> >& a,
 
       if (names)
         std::swap ( (*names)[irow], (*names)[icol] );
-
-      determinant *= -1.0;
     }
 
 #ifdef _DEBUG
@@ -165,8 +165,7 @@ double MEAL::GaussJordan (std::vector<std::vector<T> >& a,
     indxc[i]=icol;
 
     T pivinv = inv(a[icol][icol]);
-
-    determinant *= a[icol][icol];
+    log_abs_det_a += std::log(std::fabs(a[icol][icol]));
 
 #ifdef _DEBUG
     std::cerr << "icol=" << icol << " irow=" << irow << " 1/piv=" << pivinv << std::endl;
@@ -200,13 +199,13 @@ double MEAL::GaussJordan (std::vector<std::vector<T> >& a,
 
   // unscramble the column interchanges
   for (int i=nrow-1; i>=0; i--)
+  {
     if (indxr[i] != indxc[i])
     {
       for (int j=0; j<nrow; j++)
         std::swap(a[j][indxr[i]],a[j][indxc[i]]);
-
-      determinant != -1.0;
     }
+  }
 
-  return determinant;
+  return log_abs_det_a;
 }

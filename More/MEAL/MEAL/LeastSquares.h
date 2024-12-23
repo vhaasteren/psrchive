@@ -71,6 +71,9 @@ namespace MEAL {
     //! The total number of constraints (one-dimensional data)
     unsigned get_ndat_constraint () const { return ndat_constraint; }
 
+    //! The logarithm of the absolute value of the determinant of the chi-squared curvature matrix
+    double get_log_abs_det_curvature () const { return log_abs_det_Hessian; }
+
     //! Get the covariance matrix of the last fit
     void get_covariance (matrix& c) const { c = covariance; }
 
@@ -91,8 +94,8 @@ namespace MEAL {
     //! The number of iterations in last call to solve method
     unsigned iterations = 0;
 
-    //! Determinant of the Hessian matrix
-    double det_Hessian = 0.0;
+    //! Logarithm of the absolute value of the determinant of the Hessian matrix
+    double log_abs_det_Hessian = 0.0;
 
     //! The best chi-squared in last call to solve method
     float best_chisq = 0.0;

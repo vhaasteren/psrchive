@@ -97,6 +97,7 @@ Pulsar::PolnCalibratorExtension::PolnCalibratorExtension
       get_transformation(ichan)->set_chisq( solver->get_chisq() );
       get_transformation(ichan)->set_nfree( solver->get_nfree() );
       get_transformation(ichan)->set_nfit( solver->get_nparam_infit() );
+      get_transformation(ichan)->set_log_abs_det_curvature( solver->get_log_abs_det_curvature() );
     }
   }
 }

@@ -14,6 +14,8 @@ using namespace std;
 
 const unsigned dim = 73;
 
+#define PRINT_MATRIX 0
+
 int once ()
 {
   vector< vector<double> > test (dim, vector<double>(dim));
@@ -24,7 +26,11 @@ int once ()
   vector< vector<double> > other (dim, vector<double>(1) );
   random_matrix (other, 10.0);
 
-  double det = MEAL::GaussJordan (test, other);
+  double log_abs_det_A = MEAL::GaussJordan (test, other);
+
+#if PRINT_MATRIX
+  cerr << "log(abs(det(A)))=" << log_abs_det_A << endl;
+#endif
 
   double tolerance = 2e-12;
 
@@ -35,7 +41,10 @@ int once ()
     for (unsigned icol=0; icol < dim; icol++)
     {
       matrix[irow][icol] = copy[irow][icol];
-      // cerr << copy[irow][icol] << "\t";
+
+#if PRINT_MATRIX
+      cerr << copy[irow][icol] << "\t";
+#endif
 
       double sum = 0.0;
       for (unsigned k=0; k < dim; k++)
@@ -49,7 +58,9 @@ int once ()
       }
     }
 
-    // cerr << endl;
+#if PRINT_MATRIX
+    cerr << endl;
+#endif
   }
 
 #if JACOBI_IS_FIXED

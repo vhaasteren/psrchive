@@ -364,14 +364,14 @@ double PolnCalibratorExtension::Transformation::get_reduced_chisq () const
     return 0.0;
 }
 
-double PolnCalibratorExtension::Transformation::get_det_curvature () const
+double PolnCalibratorExtension::Transformation::get_log_abs_det_curvature () const
 {
-  return det_curvature;
+  return log_abs_det_curvature;
 }
 
-void PolnCalibratorExtension::Transformation::set_det_curvature (double val)
+void PolnCalibratorExtension::Transformation::set_log_abs_det_curvature (double val)
 {
-  det_curvature = val;
+  log_abs_det_curvature = val;
 }
 
 double PolnCalibratorExtension::Transformation::get_Akaike_information_criterion() const
@@ -394,13 +394,17 @@ double PolnCalibratorExtension::Transformation::get_Bayesian_information_criteri
   return chisq + nfit * log(ndat);
 }
 
-double PolnCalibratorExtension::Transformation::get_stochastic_information_criterion() const
+double PolnCalibratorExtension::Transformation::get_stochastic_information_complexity() const
 {
   if (nfree == 0)
     return 0;
 
+#if _DEBUG
+  cerr << "PolnCalibratorExtension::Transformation::get_stochastic_information_complexity: log(abs(det(curv)))=" << log_abs_det_curvature << endl;
+#endif
+
   double ndat = nfree + nfit;
-  return chisq + nfit * log(ndat) + log(det_curvature);
+  return chisq + nfit * log(ndat) + log_abs_det_curvature;
 }
 
 //! Get the covariance matrix of the model paramters
