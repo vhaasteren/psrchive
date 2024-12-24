@@ -296,10 +296,10 @@ void Calibration::SolveMEAL::fit ()
 
   try
   {
-    double log_abs_det_curvature = fit.result (*equation, covariance);
+    double log_det_curvature = fit.result (*equation, covariance);
 
     /* the curvature matrix is one half of the Hessian */
-    log_abs_det_Hessian = log_abs_det_curvature + nfree * log(2.0);
+    log_det_Hessian = log_det_curvature + nfree * log(2.0);
   }
   catch (Error& error)
   {

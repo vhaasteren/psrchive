@@ -321,16 +321,18 @@ void load_solver (fitsfile* fptr, Pulsar::PolnCalibratorExtension* pce,
   }
 
   // WvS new on 24 Dec 2024 - needed to compute the SIC
-  vector<float> log_abs_det_curvature ( nchan, 0.0 );
-  try {
-    psrfits_read_col (fptr, "LAD_CURV", log_abs_det_curvature);
+  vector<float> log_det_curvature ( nchan, 0.0 );
+  try
+  {
+    psrfits_read_col (fptr, "LN_DET_H", log_det_curvature);
   }
   catch (Error& error)
   {
     if (Pulsar::Archive::verbose > 2)
-      cerr << "FITSArchive::load_PolnCalibratorExtension no LAD_CURV" << endl;
-    log_abs_det_curvature.resize (0);
+      cerr << "FITSArchive::load_PolnCalibratorExtension no LN_DET_H" << endl;
+    log_det_curvature.resize (0);
   }
+
   for (unsigned ichan = 0; ichan < nchan; ichan++)
   {
     if (! pce->get_valid(ichan))
@@ -344,8 +346,8 @@ void load_solver (fitsfile* fptr, Pulsar::PolnCalibratorExtension* pce,
       pce->get_transformation(ichan)->set_nfit( nfit[ichan] );
 
     // WvS new on 24 Dec 2024 - needed to compute the SIC
-    if (log_abs_det_curvature.size() == nchan)
-      pce->get_transformation(ichan)->set_log_abs_det_curvature( log_abs_det_curvature[ichan] );
+    if (log_det_curvature.size() == nchan)
+      pce->get_transformation(ichan)->set_log_det_curvature( log_det_curvature[ichan] );
   }
 
   pce->set_has_solver (true);

@@ -67,8 +67,8 @@ Pulsar::PolnCalibratorExtension::Transformation::Interface::Interface ()
    add( &Transformation::get_reduced_chisq,
         "gof", "Reduced chi squared" );
 
-   add( &Transformation::get_log_abs_det_curvature,
-        "ladc", "Logarithm of abs(det(curvature))" );
+   add( &Transformation::get_log_det_curvature,
+        "ln_det", "Logarithm of determinant of curvature" );
 
    add( &Transformation::get_Akaike_information_criterion,
         "AIC", "Akaike information criterion" );

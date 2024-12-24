@@ -184,10 +184,10 @@ namespace Pulsar {
     //! Set the best fit value of chi squared
     void set_chisq (double);
 
-    //! Get the logarithm of the absolute value of the determinant of the curvature matrix
-    double get_log_abs_det_curvature () const;
-    //! Set the logarithm of the absolute value of the determinant of the curvature matrix
-    void set_log_abs_det_curvature (double);
+    //! Get the logarithm of the determinant of the curvature matrix
+    double get_log_det_curvature () const;
+    //! Set the logarithm of the determinant of the curvature matrix
+    void set_log_det_curvature (double);
 
     //! Get the number of degrees of freedom
     unsigned get_nfree() const;
@@ -226,7 +226,7 @@ namespace Pulsar {
 
     std::vector<double> covariance;
     double chisq = 0.0;
-    double log_abs_det_curvature = 0.0;
+    double log_det_curvature = 0.0;
     unsigned nfree = 0;
     unsigned nfit = 0;
     bool valid = false;
