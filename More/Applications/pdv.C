@@ -6,12 +6,6 @@
  *
  ***************************************************************************/
 
-/* $Source: /cvsroot/psrchive/psrchive/More/Applications/pdv.C,v $
-   $Revision: 1.50 $
-   $Date: 2010/10/06 00:35:45 $
-   $Author: jonathan_khoo $ */
-
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif

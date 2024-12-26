@@ -107,11 +107,17 @@ namespace MEAL
                 const std::vector< Et >& y,
                 Mt& model);
 
-    //! returns the determinant of the curvature matrix
+    //! returns covariance and curvatuere matrix of the current fit
     template <class Mt>
-    double result (Mt& model,
-                  std::vector<std::vector<double> >& covariance = null_arg,
-                  std::vector<std::vector<double> >& curvature = null_arg);
+    void result (Mt& model,
+                 std::vector<std::vector<double> >& covariance = null_arg,
+                 std::vector<std::vector<double> >& curvature = null_arg);
+
+    //! return the logarithm of the determinance of the curvature matrix
+    double get_log_det_curvature() const { return log_det_alpha; }
+
+    //! return the number of parameters varied in the fit
+    unsigned get_nparam_infit() const { return nparam_infit; }
 
     //! lamda determines the dominance of the steepest descent method
     float lamda;
@@ -147,7 +153,7 @@ namespace MEAL
 
     //! curvature matrix
     std::vector<std::vector<double> > alpha;
-    double det_alpha = 0.0;
+    double log_det_alpha = 0.0;
 
     //! next change to model
     std::vector<std::vector<double> > delta;
@@ -157,7 +163,7 @@ namespace MEAL
     std::vector<const char*> name_ptrs;
 
     //! chi-squared of best fit
-    float best_chisq;                     
+    float best_chisq = 0;
 
     //! curvature matrix (one half of Hessian matrix) of best fit
     std::vector<std::vector<double> > best_alpha;
@@ -165,7 +171,10 @@ namespace MEAL
     std::vector<double> best_beta;
 
     //! determinant of curvature matrix of best fit
-    double det_best_alpha = 0.0;
+    double log_det_best_alpha = 0.0;
+
+    //! number of parameters varied on the fit
+    unsigned nparam_infit = 0;
 
     //! The parameters of the current model
     std::vector<double> backup;
@@ -365,7 +374,7 @@ float MEAL::LevenbergMarquardt<Grad>::init
 
   best_chisq = calculate_chisq (x, y, model);
   best_alpha = alpha;
-  det_best_alpha = det_alpha;
+  log_det_best_alpha = log_det_alpha;
   best_beta = beta;
   lamda = 0.001;
 
@@ -551,6 +560,8 @@ void MEAL::LevenbergMarquardt<Grad>::solve_delta (const Mt& model)
   if (iinfit == 0)
     throw Error (InvalidState, "MEAL::LevenbergMarquardt<Grad>::solve_delta", "no parameters in fit");
 
+  nparam_infit = iinfit;
+
   if (verbose > 2)
     std::cerr << "MEAL::LevenbergMarquardt<Grad>::solve_delta for " << iinfit << " parameters" << std::endl;
 
@@ -560,7 +571,7 @@ void MEAL::LevenbergMarquardt<Grad>::solve_delta (const Mt& model)
   try
   {
     // invert Equation 15.5.14
-    det_alpha = MEAL::GaussJordan (alpha, delta, iinfit, singular_threshold, &name_ptrs);
+    log_det_alpha = MEAL::GaussJordan (alpha, delta, iinfit, singular_threshold, &name_ptrs);
   }
   catch (Error& error)
   {
@@ -649,7 +660,7 @@ float MEAL::LevenbergMarquardt<Grad>::iter
 
     best_chisq = new_chisq;
     best_alpha = alpha;
-    det_best_alpha = det_alpha;
+    log_det_best_alpha = log_det_alpha;
     best_beta  = beta;
   }
   else
@@ -685,7 +696,7 @@ float MEAL::LevenbergMarquardt<Grad>::iter
 */
 template <class Grad>
 template <class Mt>
-double MEAL::LevenbergMarquardt<Grad>::result
+void MEAL::LevenbergMarquardt<Grad>::result
 ( Mt& model,
   std::vector<std::vector<double> >& covar,
   std::vector<std::vector<double> >& curve )
@@ -700,7 +711,7 @@ double MEAL::LevenbergMarquardt<Grad>::result
   solve_delta (model);
 
   if (&covar == &null_arg)
-    return det_alpha;
+    return;
 
   covar.resize (model.get_nparam());
 
@@ -730,8 +741,6 @@ double MEAL::LevenbergMarquardt<Grad>::result
       iindim ++;
     }
   }
-
-  return det_alpha;
 }
 
 // /////////////////////////////////////////////////////////////////////////
@@ -879,7 +888,7 @@ try
       // Equation 15.5.11 of NR
       for (unsigned jfit=0; jfit <= ifit; jfit++)
       {
-	if (model.get_infit(jfit))
+        if (model.get_infit(jfit))
         {
           double term = traits.to_real (w_gradient * gradient[jfit]);
           if (!true_math::finite(term))

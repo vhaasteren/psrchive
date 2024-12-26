@@ -129,8 +129,9 @@ void Calibration::ReceptionModel::Solver::check_transformations ()
     
     if (need_path && !path_observed[ipath])
     {
-      cerr << "Calibration::ReceptionModel::Solver::check_transformations WARNING:"
-		   " removing signal path with unconstrained free parameters (" << names << ")" << endl;
+      if (verbose)
+        cerr << "Calibration::ReceptionModel::Solver::check_transformations WARNING:"
+	  	   " removing signal path with unconstrained free parameters (" << names << ")" << endl;
 
       erase_transformation(ipath);
     }
@@ -179,8 +180,9 @@ void Calibration::ReceptionModel::Solver::check_inputs ()
 
     if (need_source && !state_observed[isource])
     {
-      cerr << "Calibration::ReceptionModel::Solver::check_inputs WARNING:"
-              " removing source with unconstrained free parameters (" << names << ")" << endl;
+      if (verbose)
+        cerr << "Calibration::ReceptionModel::Solver::check_inputs WARNING:"
+                " removing source with unconstrained free parameters (" << names << ")" << endl;
 
       erase_input(isource);
     }
@@ -215,9 +217,12 @@ void Calibration::ReceptionModel::Solver::solve () try
   count_infit ();
   count_constraint ();
 
-  nfree = ndat_constraint - nparam_infit;
-
   check_constraints ();
+
+  count_infit ();
+  count_constraint ();
+
+  nfree = ndat_constraint - nparam_infit;
 
   singular = false;
   solved = false;

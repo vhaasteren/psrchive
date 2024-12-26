@@ -1,13 +1,22 @@
 /***************************************************************************
  *
- *   Copyright (C) 2004-2008 by Willem van Straten
+ *   Copyright (C) 2004 - 2024 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "Pulsar/ReceptionModelSolveMEAL.h"
 #include "Pulsar/CoherencyMeasurementSet.h"
 #include "MEAL/LevenbergMarquardt.h"
+
+#if HAVE_GSL
+#include <gsl/gsl_eigen.h>
+#include <gsl/gsl_linalg.h>
+#endif
 
 #include <iostream>
 
@@ -294,18 +303,128 @@ void Calibration::SolveMEAL::fit ()
   if (iterations == maximum_iterations)
     return;
 
+  std::vector<std::vector<double> > curvature;
+
   try
   {
-    double log_det_curvature = fit.result (*equation, covariance);
-
-    /* the curvature matrix is one half of the Hessian */
-    log_det_Hessian = log_det_curvature + nfree * log(2.0);
+    fit.result (*equation, covariance, curvature);
   }
   catch (Error& error)
   {
     error << "\n\t" "result";
     throw error += "Calibration::SolveMEAL::fit";
   }
+
+  if (fit.get_nparam_infit() != nparam_infit)
+    throw Error (InvalidState, "Calibration::SolveMEAL::fit",
+                "nparam_infit=%u != that returned by fit algorithm =%u",
+                nparam_infit, fit.get_nparam_infit());
+
+  double log_det_curvature = fit.get_log_det_curvature();
+  /* the curvature matrix in Levenberg-Marquardt is one half of the Hessian */
+  log_det_Hessian = log_det_curvature + nfree * log(2.0);
+
+#if HAVE_GSL
+
+  assert(curvature.size() >= nparam_infit);
+
+  DEBUG("Calibration::SolveMEAL::fit allocate arrays");
+  gsl_matrix *m = gsl_matrix_alloc(nparam_infit, nparam_infit);
+  gsl_vector *eval = gsl_vector_alloc(nparam_infit);
+  gsl_matrix *evec = gsl_matrix_alloc(nparam_infit, nparam_infit);
+  gsl_eigen_symmv_workspace *w = gsl_eigen_symmv_alloc(nparam_infit);
+
+  DEBUG("Calibration::SolveMEAL::fit copy");
+  for (unsigned i=0; i<nparam_infit; i++)
+  {
+    for (unsigned j=0; j<=i; j++)
+    {
+      gsl_matrix_set(m, i, j, curvature[i][j]);
+      gsl_matrix_set(m, j, i, curvature[i][j]);
+    }
+  }
+
+  DEBUG("Calibration::SolveMEAL::fit gsl_eigen_symmv");
+  gsl_eigen_symmv(m, eval, evec, w);
+  gsl_eigen_symmv_sort(eval, evec, GSL_EIGEN_SORT_VAL_DESC);
+
+  double lambda_max = gsl_vector_get(eval, 0);
+  double lambda_min = lambda_max;
+
+  double plateau_threshold = 1.01;
+  double nullspace_threshold = 1e-3;
+  unsigned ndim_nullspace = 0;
+
+  const int falling = 0;
+  const int plateau = 1;
+  const int nullspace = 2;
+
+  int state = falling;
+
+  if (verbose)
+    cerr << "Calibration::SolveMEAL::fit testing " << nparam_infit << " eigenvalues" << endl;
+
+  double log_det = 0.0;
+
+  for (unsigned i=1; i<nparam_infit; i++)
+  {
+    double lambda = gsl_vector_get(eval, i);
+
+    if (state == falling && lambda > 0.0 && lambda_min / lambda < plateau_threshold)
+    {
+      if (verbose)
+        cerr << "entering plateau at i=" << i << " lambda=" << lambda << " lambda_min=" << lambda_min << endl;
+      state = plateau;
+    }
+    else if (state == plateau && lambda / lambda_min < nullspace_threshold)
+    {
+      //if (verbose)
+        cerr << "entering nullspace at i=" << i << " fall=" << lambda/lambda_min << endl;
+      state = nullspace;
+      ndim_nullspace = nparam_infit - i;
+    }
+
+    if (state != nullspace)
+    {
+      lambda_min = lambda;
+      log_det += log(lambda);
+    }
+    else if (verbose)
+    {
+      cerr << "lambda_" << i << "=" << lambda << endl;
+
+      unsigned iiparam = 0;
+      for (unsigned iparam=0; iparam<equation->get_nparam(); iparam++)
+      {
+        if (!equation->get_infit(iparam))
+          continue;
+
+        double val = gsl_matrix_get(evec, i, iiparam);
+        if (fabs(val) > 1e-5)
+          cerr << iiparam << " " << equation->get_param_name(iparam)
+              << " " << val << endl;
+
+        iiparam ++;
+      }
+    }
+  }
+
+  if (verbose)
+  {
+    cerr << "lambda_max=" << lambda_max << endl;
+    cerr << "lambda_min=" << lambda_min << endl;
+  }
+
+  cerr << "log(condition) of Hessian =" << log(fabs(lambda_max)) - log(fabs(lambda_min)) 
+      << " ndim_nullspace=" << ndim_nullspace << " log(det)=" << log_det 
+      << " or " << log_det_curvature << endl;
+
+  gsl_matrix_free(m);
+  gsl_matrix_free(evec);
+  gsl_vector_free(eval);
+  gsl_eigen_symmv_free(w);
+
+#endif
 
   if (covariance.size() != equation->get_nparam())
     throw Error (InvalidState, "Calibration::SolveMEAL::fit",
