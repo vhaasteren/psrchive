@@ -555,6 +555,10 @@ void SystemCalibrator::add_pulsar (const Archive* data, unsigned isub) try
   {
     faraday_rotation->set_archive (data);
     faraday_rotation->set_subint (isub);
+    faraday_rotation->set_chan (0);
+
+    if (faraday_rotation->required())
+      cerr << faraday_rotation->get_description() << endl;
   }
 
   Reference::To<Faraday> ism_faraday;
