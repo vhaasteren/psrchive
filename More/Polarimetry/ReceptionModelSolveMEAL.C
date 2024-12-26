@@ -335,13 +335,26 @@ void Calibration::SolveMEAL::fit ()
   gsl_eigen_symmv_workspace *w = gsl_eigen_symmv_alloc(nparam_infit);
 
   DEBUG("Calibration::SolveMEAL::fit copy");
-  for (unsigned i=0; i<nparam_infit; i++)
+  unsigned nparam = curvature.size();
+  unsigned in_iparam = 0;
+  for (unsigned iparam=0; iparam<nparam; iparam++)
   {
-    for (unsigned j=0; j<=i; j++)
+    if (!equation->get_infit(iparam))
+      continue;
+
+    unsigned in_jparam = 0;
+    for (unsigned jparam=0; jparam<=iparam; jparam++)
     {
-      gsl_matrix_set(m, i, j, curvature[i][j]);
-      gsl_matrix_set(m, j, i, curvature[i][j]);
+      if (!equation->get_infit(jparam))
+        continue;
+
+      gsl_matrix_set(m, in_iparam, in_jparam, curvature[iparam][jparam]);
+      gsl_matrix_set(m, in_jparam, in_iparam, curvature[iparam][jparam]);
+
+      in_jparam ++;
     }
+
+    in_iparam ++;
   }
 
   DEBUG("Calibration::SolveMEAL::fit gsl_eigen_symmv");
@@ -393,18 +406,18 @@ void Calibration::SolveMEAL::fit ()
     {
       cerr << "lambda_" << i << "=" << lambda << endl;
 
-      unsigned iiparam = 0;
+      unsigned in_iparam = 0;
       for (unsigned iparam=0; iparam<equation->get_nparam(); iparam++)
       {
         if (!equation->get_infit(iparam))
           continue;
 
-        double val = gsl_matrix_get(evec, i, iiparam);
+        double val = gsl_matrix_get(evec, i, in_iparam);
         if (fabs(val) > 1e-5)
-          cerr << iiparam << " " << equation->get_param_name(iparam)
+          cerr << in_iparam << " " << equation->get_param_name(iparam)
               << " " << val << endl;
 
-        iiparam ++;
+        in_iparam ++;
       }
     }
   }
