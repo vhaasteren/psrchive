@@ -461,9 +461,10 @@ TTYPE#  = NFREE                / Number of degrees of freedom
 TFORM#  = J                    / NCHAN long (32-bit) integers
 TTYPE#  = NFIT                 / Number of model parameters varied in fit
 TFORM#  = J                    / NCHAN long (32-bit) integers
-TTYPE#  = LN_DET_H             / Logarithm of det(H), H = chi-squared Hessian
+TTYPE#  = LN_DET_H             / Logarithm of chi-squared Hessian determinant
 TFORM#  = E                    / NCHAN floats
-END
+TTYPE#  = LN_COND              / Logarithm of chi-squared Hessian condition no.
+TFORM#  = E                    / NCHAN floatsEND
 #
 ###############################################################################
 #

@@ -70,6 +70,9 @@ Pulsar::PolnCalibratorExtension::Transformation::Interface::Interface ()
    add( &Transformation::get_log_det_curvature,
         "ln_det", "Logarithm of determinant of curvature" );
 
+   add( &Transformation::get_log_cond_curvature,
+        "ln_cond", "Logarithm of condition number of curvature" );
+
    add( &Transformation::get_Akaike_information_criterion,
         "AIC", "Akaike information criterion" );
 

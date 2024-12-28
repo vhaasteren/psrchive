@@ -289,8 +289,7 @@ void load_covariances (fitsfile* fptr, Pulsar::PolnCalibratorExtension* pce,
 //
 //
 //
-void load_solver (fitsfile* fptr, Pulsar::PolnCalibratorExtension* pce,
-		  vector<float>& data)
+void load_solver (fitsfile* fptr, Pulsar::PolnCalibratorExtension* pce, vector<float>& data)
 {
   unsigned nchan = pce->get_nchan();
   data.resize( nchan );
@@ -333,6 +332,19 @@ void load_solver (fitsfile* fptr, Pulsar::PolnCalibratorExtension* pce,
     log_det_curvature.resize (0);
   }
 
+  // WvS new on 29 Dec 2024
+  vector<float> log_cond_curvature ( nchan, 0.0 );
+  try
+  {
+    psrfits_read_col (fptr, "LN_COND", log_cond_curvature);
+  }
+  catch (Error& error)
+  {
+    if (Pulsar::Archive::verbose > 2)
+      cerr << "FITSArchive::load_PolnCalibratorExtension no LN_COND" << endl;
+    log_cond_curvature.resize (0);
+  }
+
   for (unsigned ichan = 0; ichan < nchan; ichan++)
   {
     if (! pce->get_valid(ichan))
@@ -348,6 +360,10 @@ void load_solver (fitsfile* fptr, Pulsar::PolnCalibratorExtension* pce,
     // WvS new on 24 Dec 2024 - needed to compute the SIC
     if (log_det_curvature.size() == nchan)
       pce->get_transformation(ichan)->set_log_det_curvature( log_det_curvature[ichan] );
+
+    // WvS new on 29 Dec 2024
+    if (log_cond_curvature.size() == nchan)
+      pce->get_transformation(ichan)->set_log_cond_curvature( log_cond_curvature[ichan] );
   }
 
   pce->set_has_solver (true);

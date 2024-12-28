@@ -74,6 +74,9 @@ namespace MEAL {
     //! The logarithm of the determinant of the chi-squared curvature matrix
     double get_log_det_curvature () const { return log_det_Hessian; }
 
+    //! The logarithm of the condition number of the chi-squared curvature matrix
+    double get_log_cond_curvature () const { return log_cond_Hessian; }
+
     //! Get the covariance matrix of the last fit
     void get_covariance (matrix& c) const { c = covariance; }
 
@@ -96,6 +99,9 @@ namespace MEAL {
 
     //! Logarithm of the determinant of the Hessian matrix
     double log_det_Hessian = 0.0;
+
+    //! Logarithm of the condition number of the Hessian matrix
+    double log_cond_Hessian = 0.0;
 
     //! The best chi-squared in last call to solve method
     float best_chisq = 0.0;

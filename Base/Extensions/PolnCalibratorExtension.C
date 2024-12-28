@@ -374,6 +374,16 @@ void PolnCalibratorExtension::Transformation::set_log_det_curvature (double val)
   log_det_curvature = val;
 }
 
+double PolnCalibratorExtension::Transformation::get_log_cond_curvature () const
+{
+  return log_cond_curvature;
+}
+
+void PolnCalibratorExtension::Transformation::set_log_cond_curvature (double val)
+{
+  log_cond_curvature = val;
+}
+
 double PolnCalibratorExtension::Transformation::get_Akaike_information_criterion() const
 {
   if (nfree == 0)

@@ -422,15 +422,16 @@ void Calibration::SolveMEAL::fit ()
     }
   }
 
+  log_cond_Hessian = log(lambda_max) - log(lambda_min);
+
   if (verbose)
   {
     cerr << "lambda_max=" << lambda_max << endl;
     cerr << "lambda_min=" << lambda_min << endl;
+    cerr << "log(condition) of Hessian =" << log_cond_Hessian
+         << " ndim_nullspace=" << ndim_nullspace << " log(det)=" << log_det 
+         << " or " << log_det_curvature << " delta=" << log_det_curvature - log_det << endl;
   }
-
-  cerr << "log(condition) of Hessian =" << log(fabs(lambda_max)) - log(fabs(lambda_min)) 
-      << " ndim_nullspace=" << ndim_nullspace << " log(det)=" << log_det 
-      << " or " << log_det_curvature << " delta=" << log_det_curvature - log_det << endl;
 
   gsl_matrix_free(m);
   gsl_matrix_free(evec);

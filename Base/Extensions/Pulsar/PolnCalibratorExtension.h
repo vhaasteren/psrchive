@@ -189,6 +189,11 @@ namespace Pulsar {
     //! Set the logarithm of the determinant of the curvature matrix
     void set_log_det_curvature (double);
 
+    //! Get the logarithm of the condition number of the curvature matrix
+    double get_log_cond_curvature () const;
+    //! Set the logarithm of the condition number of the curvature matrix
+    void set_log_cond_curvature (double);
+
     //! Get the number of degrees of freedom
     unsigned get_nfree() const;
     //! Set the number of degress of freedom
@@ -227,6 +232,7 @@ namespace Pulsar {
     std::vector<double> covariance;
     double chisq = 0.0;
     double log_det_curvature = 0.0;
+    double log_cond_curvature = 0.0;
     unsigned nfree = 0;
     unsigned nfit = 0;
     bool valid = false;
