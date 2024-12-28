@@ -379,7 +379,7 @@ void Calibration::SolveMEAL::fit ()
 
   double log_det = 0.0;
 
-  for (unsigned i=1; i<nparam_infit; i++)
+  for (unsigned i=0; i<nparam_infit; i++)
   {
     double lambda = gsl_vector_get(eval, i);
 
@@ -391,7 +391,7 @@ void Calibration::SolveMEAL::fit ()
     }
     else if (state == plateau && lambda / lambda_min < nullspace_threshold)
     {
-      //if (verbose)
+      if (verbose)
         cerr << "entering nullspace at i=" << i << " fall=" << lambda/lambda_min << endl;
       state = nullspace;
       ndim_nullspace = nparam_infit - i;
@@ -430,7 +430,7 @@ void Calibration::SolveMEAL::fit ()
 
   cerr << "log(condition) of Hessian =" << log(fabs(lambda_max)) - log(fabs(lambda_min)) 
       << " ndim_nullspace=" << ndim_nullspace << " log(det)=" << log_det 
-      << " or " << log_det_curvature << endl;
+      << " or " << log_det_curvature << " delta=" << log_det_curvature - log_det << endl;
 
   gsl_matrix_free(m);
   gsl_matrix_free(evec);

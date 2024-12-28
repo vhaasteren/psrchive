@@ -12,7 +12,7 @@
 
 using namespace std;
 
-const unsigned dim = 73;
+const unsigned dim = 37;
 
 #define PRINT_MATRIX 0
 
@@ -32,7 +32,7 @@ int once ()
   cerr << "log(abs(det(A)))=" << log_abs_det_A << endl;
 #endif
 
-  double tolerance = 2e-12;
+  double tolerance = 1e-11;
 
   Matrix<dim,dim,double> matrix;
 
@@ -40,8 +40,6 @@ int once ()
   {
     for (unsigned icol=0; icol < dim; icol++)
     {
-      matrix[irow][icol] = copy[irow][icol];
-
 #if PRINT_MATRIX
       cerr << copy[irow][icol] << "\t";
 #endif
@@ -63,25 +61,31 @@ int once ()
 #endif
   }
 
-#if JACOBI_IS_FIXED
+  for (unsigned irow=0; irow < dim; irow++)
+    for (unsigned icol=0; icol <= irow; icol++)
+    {
+      // construct a symmetric matric from the original test matrix
+      matrix[irow][icol] = matrix[icol][irow] = copy[irow][icol];
+      test[irow][icol] = test[icol][irow] = copy[irow][icol];
+    }
+
+  log_abs_det_A = MEAL::GaussJordan (test, other);
 
   // estimate the determinant via the product of eigenvalues
   Matrix<dim,dim,double> evec;
   Vector<dim,double> eval;
   Jacobi (matrix, evec, eval);
 
-  double det_Jacobi = 1.0;
+  double det_Jacobi = 0.0;
   for (unsigned irow=0; irow < dim; irow++)
-    det_Jacobi *= eval[irow];
+    det_Jacobi += log(fabs(eval[irow]));
 
-  if (fabs(det - det_Jacobi) > tolerance)
+  if (fabs(log_abs_det_A - det_Jacobi) > tolerance)
   {
-    cerr << "determinant (via GaussJordan) = " << det << endl
-         << "determinant (via Jacobi) = " << det_Jacobi << endl;
+    cerr << "log(determinant) (via GaussJordan) = " << log_abs_det_A << endl
+         << "log(determinant) (via Jacobi) = " << det_Jacobi << endl;
     return -1;
   }
-
-#endif
 
   return 0;
 }

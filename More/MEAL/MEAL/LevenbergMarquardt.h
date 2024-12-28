@@ -170,9 +170,6 @@ namespace MEAL
     //! gradient of chi-squared of best fit
     std::vector<double> best_beta;
 
-    //! determinant of curvature matrix of best fit
-    double log_det_best_alpha = 0.0;
-
     //! number of parameters varied on the fit
     unsigned nparam_infit = 0;
 
@@ -374,7 +371,6 @@ float MEAL::LevenbergMarquardt<Grad>::init
 
   best_chisq = calculate_chisq (x, y, model);
   best_alpha = alpha;
-  log_det_best_alpha = log_det_alpha;
   best_beta = beta;
   lamda = 0.001;
 
@@ -660,7 +656,6 @@ float MEAL::LevenbergMarquardt<Grad>::iter
 
     best_chisq = new_chisq;
     best_alpha = alpha;
-    log_det_best_alpha = log_det_alpha;
     best_beta  = beta;
   }
   else
