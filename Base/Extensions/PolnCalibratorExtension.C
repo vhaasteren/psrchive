@@ -431,9 +431,11 @@ double PolnCalibratorExtension::Transformation::get_geometric_information_criter
     return 0;
 
   double ndat = nfree + nfit;
+  double ndim_dat = 4; // four Stokes parameters at each point
+  double N = ndat / ndim_dat;
 
   // Equation (7) of Kanatani (1998)
-  return chisq + 2*nfit + 2*ndim*ndat;
+  return chisq + 2*nfit + 2*N*ndim;
 }
 
 double PolnCalibratorExtension::Transformation::get_stochastic_information_complexity() const

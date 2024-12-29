@@ -221,14 +221,15 @@ void ConfigurableProjection::construct (const string& text)
         if (func->get_infit(i))
           infit_count ++;
 
+      // consider the dimension of the function only if it has free parameters
       if (infit_count)
       {
         if (Archive::verbose)
           cerr << "ConfigurableProjection::load adding " << func->get_ndim() << " to effective ndim" << endl;
-        effective_ndim += func->get_ndim();
+        effective_ndim = std::max(effective_ndim,func->get_ndim());
       }
       else if (Archive::verbose)
-        cerr << "ConfigurableProjection::load ignoring ndim=" << func->get_ndim() << " (no fit)" << endl;
+        cerr << "ConfigurableProjection::load ignoring ndim=" << func->get_ndim() << " of model with no free parameters" << endl;
 
       parameters[iparam] = params;
     }
