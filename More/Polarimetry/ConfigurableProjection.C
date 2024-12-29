@@ -141,6 +141,8 @@ void ConfigurableProjection::construct (const string& text)
 
   MEAL::NvariateScalarFactory function_factory;
 
+  effective_ndim = 0;
+
   for (auto it=node.begin(); it!=node.end(); ++it)
   {
     string key = it->first.as<string>();
@@ -214,6 +216,20 @@ void ConfigurableProjection::construct (const string& text)
           params[i] = args[i].as<string>();
       }
 
+      unsigned infit_count = 0;
+      for (unsigned i=0; i<func->get_nparam(); i++)
+        if (func->get_infit(i))
+          infit_count ++;
+
+      if (infit_count)
+      {
+        if (Archive::verbose)
+          cerr << "ConfigurableProjection::load adding " << func->get_ndim() << " to effective ndim" << endl;
+        effective_ndim += func->get_ndim();
+      }
+      else if (Archive::verbose)
+        cerr << "ConfigurableProjection::load ignoring ndim=" << func->get_ndim() << " (no fit)" << endl;
+
       parameters[iparam] = params;
     }
   }
@@ -253,6 +269,11 @@ void ConfigurableProjection::set_nchan (unsigned nchan)
 unsigned ConfigurableProjection::get_nchan () const
 {
   return xforms.size();
+}
+
+unsigned ConfigurableProjection::get_ndim () const
+{
+  return effective_ndim;
 }
 
 //! Return a newly constructed Transformation instance

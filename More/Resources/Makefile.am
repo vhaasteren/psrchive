@@ -4,6 +4,7 @@ noinst_LTLIBRARIES = libResources.la
 libResources_la_SOURCES = \
 	CommonOptions.C \
 	StandardOptions.C \
+  standard_interface.C \
 	standard_shell.C
 
 nobase_include_HEADERS = \

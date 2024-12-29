@@ -49,6 +49,9 @@ namespace Pulsar
     //! Get the number of frequency channels
     unsigned get_nchan () const;
 
+    //! Get the number of abscissa / dimensions that describe the variability
+    unsigned get_ndim () const;
+
     //! Return a newly constructed Argument::Value for the given Transformation
     MEAL::Argument::Value* new_value (VariableTransformationManager::Transformation*);
 
@@ -85,6 +88,9 @@ namespace Pulsar
 
     std::vector< Reference::To<Transformation> > xforms;
 
+    //! The effective number of dimensions / abscissa
+    unsigned effective_ndim = 0;
+    
   public:
 
     class Transformation : public VariableTransformationManager::Transformation

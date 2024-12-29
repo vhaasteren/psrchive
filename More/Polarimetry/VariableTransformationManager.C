@@ -20,7 +20,7 @@ VariableTransformationManager::VariableTransformationManager ()
 //! Set the Archive for which a tranformation will be computed
 void VariableTransformationManager::set_archive (const Archive* _archive) 
 {
-  if (!archive || archive != _archive)
+  if (!archive || !archive.is_equal_to(_archive))
     built = false;
 
   archive.set(_archive);

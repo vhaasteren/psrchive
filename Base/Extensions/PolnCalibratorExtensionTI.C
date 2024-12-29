@@ -79,6 +79,9 @@ Pulsar::PolnCalibratorExtension::Transformation::Interface::Interface ()
    add( &Transformation::get_Bayesian_information_criterion,
         "BIC", "Bayesian information criterion" );
 
+   add( &Transformation::get_geometric_information_criterion,
+        "GIC", "Geometric information criterion" );
+
    add( &Transformation::get_stochastic_information_complexity,
         "SIC", "Stochastic information complexity" );
 }

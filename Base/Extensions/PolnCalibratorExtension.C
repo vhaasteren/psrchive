@@ -130,6 +130,17 @@ unsigned PolnCalibratorExtension::get_nparam () const
   return nparam;
 }
 
+void PolnCalibratorExtension::set_ndim (unsigned ndim)
+{
+  for (unsigned ichan=0; ichan < response.size(); ichan++)
+    response[ichan].set_ndim(ndim);
+}
+
+unsigned PolnCalibratorExtension::get_ndim () const
+{
+  return ndim;
+}
+
 bool PolnCalibratorExtension::get_has_covariance () const
 {
   return has_covariance;
@@ -356,6 +367,16 @@ void PolnCalibratorExtension::Transformation::set_nfit (unsigned n)
   nfit = n;
 }
 
+unsigned PolnCalibratorExtension::Transformation::get_ndim() const
+{
+  return ndim;
+}
+
+void PolnCalibratorExtension::Transformation::set_ndim (unsigned n)
+{
+  ndim = n;
+}
+
 double PolnCalibratorExtension::Transformation::get_reduced_chisq () const
 {
   if (nfree > 0)
@@ -402,6 +423,17 @@ double PolnCalibratorExtension::Transformation::get_Bayesian_information_criteri
 
   double ndat = nfree + nfit;
   return chisq + nfit * log(ndat);
+}
+
+double PolnCalibratorExtension::Transformation::get_geometric_information_criterion() const
+{
+  if (nfree == 0)
+    return 0;
+
+  double ndat = nfree + nfit;
+
+  // Equation (7) of Kanatani (1998)
+  return chisq + 2*nfit + 2*ndim*ndat;
 }
 
 double PolnCalibratorExtension::Transformation::get_stochastic_information_complexity() const
