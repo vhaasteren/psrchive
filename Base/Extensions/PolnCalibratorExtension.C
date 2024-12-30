@@ -447,7 +447,8 @@ double PolnCalibratorExtension::Transformation::get_stochastic_information_compl
   cerr << "PolnCalibratorExtension::Transformation::get_stochastic_information_complexity: log(det(curv))=" << log_det_curvature << endl;
 #endif
 
-  return chisq + log_det_curvature;
+  double ndat = nfree + nfit;
+  return chisq + nfit * log(ndat) + log_det_curvature;
 }
 
 //! Get the covariance matrix of the model paramters
