@@ -277,22 +277,45 @@ Calibration::SingleAxisPolynomial* add_single_axis_polynomial (MEAL::ProductRule
   return backend;
 }
 
-void report_AIC_GIC(const Calibration::ReceptionModel::Solver* solver, unsigned ndim)
+float AIC = 0.0;
+float GIC = 0.0;
+float SIC = 0.0;
+
+void calculate_criteria(const Calibration::ReceptionModel::Solver* solver, unsigned ndim)
 {
   cerr << "chisq=" << solver->get_chisq() << " nfree=" << solver->get_nfree() << " n_infit=" << solver->get_nparam_infit() << " ndat=" << solver->get_ndat_constraint() << endl;
-  float AIC = solver->get_chisq() + 2.0 * solver->get_nparam_infit();
+  cerr << "log_det=" << solver->get_log_det_curvature() << " log_cond=" << solver->get_log_cond_curvature() << endl;
+
+  AIC = solver->get_chisq() + 2.0 * solver->get_nparam_infit();
 
   float N = solver->get_ndat_constraint() * 0.25;
-  float GIC = AIC + 2.0 * ndim * N;
+  GIC = AIC + 2.0 * ndim * N;
 
-  cerr << "AIC=" << AIC << " GIC=" << GIC << endl;
+  SIC = solver->get_chisq() + solver->get_log_det_curvature();
+
+  cerr << "AIC=" << AIC << " GIC=" << GIC << " SIC=" << SIC << endl;
 }
+
+float min_AIC, max_AIC = 0.0;
+float min_GIC, max_GIC = 0.0;
+float min_SIC, max_SIC = 0.0;
+
+void update_min_max (float& min, float& max, float val)
+{
+  if (min == 0.0 || val < min)
+    min = val;
+  if (max == 0.0 || val > max)
+    max = val;
+}
+
+double mean_AIC = 0.0;
+double mean_GIC = 0.0;
+double mean_SIC = 0.0;
 
 int runtest (Calibration::Parallactic& parallactic)
 {
   // connect parallactic.set_hour_angle to hour_angle axis
-  hour_angle.signal.connect (&parallactic,
-			     &Calibration::Parallactic::set_hour_angle);
+  hour_angle.signal.connect (&parallactic, &Calibration::Parallactic::set_hour_angle);
 
   // the randomly-generated receiver
   Jones<double> receiver;
@@ -555,10 +578,18 @@ int runtest (Calibration::Parallactic& parallactic)
     return -1;
   }
  
+  float AIC_0 = 0.0;
+  float GIC_0 = 0.0;
+  float SIC_0 = 0.0;
+
   if (ncoef && test_GIC)
   {
-    report_AIC_GIC(model.get_solver(), 0);
+    calculate_criteria(model.get_solver(), 0);
 
+    AIC_0 = AIC;
+    GIC_0 = GIC;
+    SIC_0 = SIC;
+    
     cerr << "Adding SingleAxisPolynomial with ncoef=" << ncoef << " to model signal path after first solution" << endl;
     add_single_axis_polynomial (*path);
 
@@ -566,8 +597,7 @@ int runtest (Calibration::Parallactic& parallactic)
 
     try
     {
-      if (verbose || test_GIC)
-        cerr << "runtest call Calibration::ReceptionModel::solve" << endl;
+      cerr << "runtest call Calibration::ReceptionModel::solve" << endl;
       model.solve ();
     }
     catch (Error& error)
@@ -576,7 +606,21 @@ int runtest (Calibration::Parallactic& parallactic)
       return -1;
     }
 
-    report_AIC_GIC(model.get_solver(), 1);
+    calculate_criteria(model.get_solver(), 1);
+
+    float delta_AIC = AIC - AIC_0;
+    update_min_max (min_AIC, max_AIC, delta_AIC);
+    mean_AIC += delta_AIC;
+
+    float delta_GIC = GIC - GIC_0;
+    update_min_max (min_GIC, max_GIC, delta_GIC);
+    mean_GIC += delta_GIC;
+    
+    float delta_SIC = SIC - SIC_0;
+    update_min_max (min_SIC, max_SIC, delta_SIC);
+    mean_SIC += delta_SIC;
+
+    return 0;
   }
 
   float limit = error_tolerance * error_tolerance * variance;
@@ -815,6 +859,16 @@ int main (int argc, char** argv)
         return -1;
     }
 
+    if (test_GIC)
+    {
+      mean_AIC /= nloop;
+      mean_GIC /= nloop;
+      mean_SIC /= nloop;
+      
+      cout << "delta AIC min=" << min_AIC << "\t max=" << max_AIC << "\t mean=" << mean_AIC << endl;
+      cout << "delta GIC min=" << min_GIC << "\t max=" << max_GIC << "\t mean=" << mean_GIC << endl;
+      cout << "delta SIC min=" << min_SIC << "\t max=" << max_SIC << "\t mean=" << mean_SIC << endl;
+    }
   }
   catch (Error& error)
   {
