@@ -66,8 +66,7 @@ namespace Calibration
     void integrate (Signal::Source type, const MEAL::Complex2*);
 
     //! Integrate an estimate of the source
-    void integrate (const Jones< Estimate<double> >& correct,
-		    const SourceObservation& data);
+    void integrate (const Jones< Estimate<double> >& correct, const SourceObservation& data);
 
     void submit (CoherencyMeasurementSet&, const SourceObservation&);
 

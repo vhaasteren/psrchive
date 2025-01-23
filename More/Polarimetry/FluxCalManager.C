@@ -231,8 +231,7 @@ void FluxCalManager::set_StokesV_infit (FluxCalObsVector& observations)
 }
 
 //! Integrate an estimate of the backend
-void FluxCalManager::integrate (Signal::Source type,
-				const MEAL::Complex2* xform)
+void FluxCalManager::integrate (Signal::Source type, const MEAL::Complex2* xform)
 {
   FluxCalObsVector& observations = get_observations (type);
   
@@ -244,8 +243,7 @@ void FluxCalManager::integrate (Signal::Source type,
   observations.back()->backend->integrate (xform);
 }
 
-void FluxCalManager::integrate (const Jones< Estimate<double> >& correct,
-				const SourceObservation& data)
+void FluxCalManager::integrate (const Jones< Estimate<double> >& correct, const SourceObservation& data)
 {
   FluxCalObsVector& observations = get_observations (data.source);
 
@@ -260,8 +258,7 @@ void FluxCalManager::integrate (const Jones< Estimate<double> >& correct,
 }
 
 
-void FluxCalManager::submit (CoherencyMeasurementSet& measurements,
-			     const SourceObservation& data)
+void FluxCalManager::submit (CoherencyMeasurementSet& measurements, const SourceObservation& data)
 {
   FluxCalObsVector& observations = get_observations (data.source);
    

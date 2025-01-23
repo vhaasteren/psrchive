@@ -178,8 +178,7 @@ SystemCalibrator::StepFinder* SystemCalibrator::get_step_finder ()
   return step_finder;
 }
 
-Calibrator::Info*
-SystemCalibrator::get_Info () const
+Calibrator::Info* SystemCalibrator::get_Info () const
 {
   export_prepare ();
 
@@ -190,7 +189,6 @@ void SystemCalibrator::set_refcal_through_frontend (bool flag)
 {
   refcal_through_frontend = flag;
 }
-
 
 MJD SystemCalibrator::get_epoch () const
 {
@@ -1016,8 +1014,8 @@ void SystemCalibrator::submit_calibrator_data () try
       measurements.push_back( state );
 
       if (verbose > 2)
-	cerr << "SystemCalibrator::submit_calibrator_data ichan="
-	     << ichan << " submit_calibrator_data" << endl;
+        cerr << "SystemCalibrator::submit_calibrator_data ichan="
+            << ichan << " submit_calibrator_data" << endl;
 	
       submit_calibrator_data( measurements, data );
 
@@ -1025,27 +1023,27 @@ void SystemCalibrator::submit_calibrator_data () try
 
       if ( data.response != zero )
       {
-	if (verbose > 2)
-	  cerr << "SystemCalibrator::submit_calibrator_data ichan="
-	       << ichan << " integrate_calibrator_data" << endl;
-      
-	integrate_calibrator_data( data );
+        if (verbose > 2)
+          cerr << "SystemCalibrator::submit_calibrator_data ichan="
+              << ichan << " integrate_calibrator_data" << endl;
+
+        integrate_calibrator_data( data );
       }
 
       if ( data.xform )
       {
-	if (verbose > 2)
-	  cerr << "SystemCalibrator::submit_calibrator_data ichan="
-	       << ichan << " integrate_calibrator_solution" << endl;
+        if (verbose > 2)
+          cerr << "SystemCalibrator::submit_calibrator_data ichan="
+              << ichan << " integrate_calibrator_solution" << endl;
 
-	integrate_calibrator_solution( data );
+        integrate_calibrator_solution( data );
       }
     }
     catch (Error& error)
     {
       cerr << "SystemCalibrator::submit_calibrator_data ichan="
-	   << ichan << " integrate_calibrator_solution error\n"
-	   << error << endl;
+           << ichan << " integrate_calibrator_solution error\n"
+           << error << endl;
 
       calibrator_estimate[ichan].add_data_failures ++;
       
@@ -1278,7 +1276,7 @@ void SystemCalibrator::integrate_calibrator_data(const SourceObservation& data)
   Jones< Estimate<double> > apply = data.response;
 
   if (refcal_through_frontend)
-    apply = invert_basis * data.response;
+    apply = invert_basis * apply;
 
   if (verbose)
     cerr << "SystemCalibrator::integrate_calibrator_data"
