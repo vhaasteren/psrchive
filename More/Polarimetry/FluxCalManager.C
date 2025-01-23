@@ -93,25 +93,19 @@ void Calibration::FluxCalManager::add_backend (FluxCalObservation* obs)
 {
   obs->backend = new BackendEstimate;
 
-  Reference::To<MEAL::Complex2> model;
+  if (!backend)
+    throw Error (InvalidState, "Calibration::FluxCalManager::add_backend", "no backend");
 
-  if (backend)
-  {
-    model = backend->clone(); 
-    obs->backend->set_response (model);
-  }
+  Reference::To<MEAL::Complex2> model = backend->clone(); 
+  obs->backend->set_response (model);
 
-  if (!cal_backend_only && model)
-  {
-    Reference::To< MEAL::ProductRule<MEAL::Complex2> > fcal_path;
-    fcal_path = new MEAL::ProductRule<MEAL::Complex2>;
-    fcal_path->add_model (model);
-    fcal_path->add_model ( frontend );
-    model = fcal_path;
-  }
+  Reference::To< MEAL::ProductRule<MEAL::Complex2> > fcal_path;
+  fcal_path = new MEAL::ProductRule<MEAL::Complex2>;
+  fcal_path->add_model (model);
+  fcal_path->add_model (frontend);
+  model = fcal_path;
 
-  if (model)
-    composite->add_transformation (model);
+  composite->add_transformation (model);
 
   obs->backend->path_index 
     = composite->get_equation()->get_transformation_index ();
@@ -222,15 +216,6 @@ void Calibration::FluxCalManager::model_on_minus_off (bool flag)
                 "observations already added; set this flag before adding");
 
   subtract_off_from_on = flag;
-}
-
-void Calibration::FluxCalManager::set_cal_backend_only (bool flag)
-{
-  if (on_observations.size() > 0 || off_observations.size() > 0)
-    throw Error (InvalidState, "FluxCalManager::set_cal_backend_only",
-                "observations already added; set this flag before adding");
-
-  cal_backend_only = flag;
 }
 
 void FluxCalManager::set_StokesV_infit (FluxCalObsVector& observations)

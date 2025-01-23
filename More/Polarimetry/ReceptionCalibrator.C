@@ -485,7 +485,6 @@ void ReceptionCalibrator::prepare_calibrator_estimate (Signal::Source source)
         continue;
 
       fluxcal[ichan] = new Calibration::FluxCalManager( model[ichan] );
-      fluxcal[ichan]->set_cal_backend_only( !refcal_through_frontend );
       fluxcal[ichan]->model_multiple_source_states( multiple_flux_calibrators );
       fluxcal[ichan]->model_on_minus_off( model_fluxcal_on_minus_off );
     }
@@ -629,8 +628,7 @@ void ReceptionCalibrator::integrate_calibrator_data
     if (previous)
      apply = previous->get_response (data.ichan);
 
-    if (refcal_through_frontend)
-      apply = invert_basis * apply;
+    apply = invert_basis * apply;
 
     if (fluxcal[data.ichan])
       fluxcal[data.ichan]->integrate (apply, data);
