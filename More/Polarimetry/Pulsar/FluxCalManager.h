@@ -94,6 +94,9 @@ namespace Calibration
     void allow_StokesV_to_vary (bool flag = true);
     void model_multiple_source_states (bool flag = true);
     void model_on_minus_off (bool flag = true);
+
+    //! Set true when the cal signal is coupled after the feed
+    void set_cal_backend_only (bool flag = true);
     
   protected:
 
@@ -133,9 +136,12 @@ namespace Calibration
 
   private:
 
-    bool multiple_source_states;
-    bool subtract_off_from_on;
-    bool StokesV_may_vary;
+    bool multiple_source_states = false;
+    bool subtract_off_from_on = false;
+    bool StokesV_may_vary = false;
+
+    //! The calibrator is transformed by only the variable_backend
+    bool cal_backend_only = false;
 
     mutable std::string not_constrained_reason;
   };

@@ -485,7 +485,7 @@ void ReceptionCalibrator::prepare_calibrator_estimate (Signal::Source source)
         continue;
 
       fluxcal[ichan] = new Calibration::FluxCalManager( model[ichan] );
-
+      fluxcal[ichan]->set_cal_backend_only( !refcal_through_frontend );
       fluxcal[ichan]->model_multiple_source_states( multiple_flux_calibrators );
       fluxcal[ichan]->model_on_minus_off( model_fluxcal_on_minus_off );
     }
@@ -729,12 +729,12 @@ void ReceptionCalibrator::initialize ()
 
   if (previous_cal)
   {
-    cerr << "Pulsar::ReceptionCalibrator::initialize using previous solution"
-	 << endl;
+    cerr << "Pulsar::ReceptionCalibrator::initialize using previous solution" << endl;
     for (unsigned ichan=0; ichan<model.size(); ichan++)
-      calibrator_estimate[ichan].source
-	-> set_stokes( (Stokes< Estimate<double> >)
-		       previous_cal->get_stokes (ichan) );
+    {
+      Stokes< Estimate<double> > calS = previous_cal->get_stokes (ichan);
+      calibrator_estimate[ichan].source-> set_stokes( calS );
+    }
   }
  
   SystemCalibrator::solve_prepare ();

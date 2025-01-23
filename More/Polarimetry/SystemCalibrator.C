@@ -788,8 +788,7 @@ void SystemCalibrator::add_calibrator (const Archive* data)
 }
 
 //! Add the ReferenceCalibrator observation to the set of constraints
-void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
-  try 
+void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p) try 
 {
   unsigned nchan = get_nchan ();
 
@@ -871,17 +870,17 @@ void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
     {
       if ( solution->get_transformation_valid (ichan) )
       {
-       if (verbose > 2)
-         cerr << "SystemCalibrator::add_calibrator ichan="
-              << ichan << " saving response" << endl;
+        if (verbose > 2)
+          cerr << "SystemCalibrator::add_calibrator ichan="
+                << ichan << " saving response" << endl;
 
-       response[ichan] = solution->get_response(ichan);
+        response[ichan] = solution->get_response(ichan);
 
-       if (verbose > 2)
-         cerr << "SystemCalibrator::add_calibrator ichan="
-              << ichan << " saving transformation" << endl;
+        if (verbose > 2)
+          cerr << "SystemCalibrator::add_calibrator ichan="
+                << ichan << " saving transformation" << endl;
 
-       xform[ichan] = solution->get_transformation(ichan);
+        xform[ichan] = solution->get_transformation(ichan);
       }
       else if (verbose > 2)
        cerr << "SystemCalibrator::add_calibrator ichan="
@@ -899,7 +898,7 @@ void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
 
     if (verbose)
       cerr << "SystemCalibrator::add_calibrator nchan=" << nchan
-	<< " outlier_threshold=" << cal_outlier_threshold << endl;
+           << " outlier_threshold=" << cal_outlier_threshold << endl;
     
     ReferenceCalibrator::get_levels (integration, nchan, cal_hi, cal_lo,
 				     cal_outlier_threshold);
@@ -912,10 +911,10 @@ void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
     {
       if (integration->get_weight (ichan) == 0 || !model[ichan]->get_valid())
       {
-	if (verbose > 2)
-	  cerr << "SystemCalibrator::add_calibrator ichan="
-	       << ichan << " flagged invalid" << endl;
-	continue;
+        if (verbose > 2)
+          cerr << "SystemCalibrator::add_calibrator ichan="
+               << ichan << " flagged invalid" << endl;
+        continue;
       }
 
       // transpose [ipol][ichan] output of ReferenceCalibrator::get_levels
@@ -924,8 +923,8 @@ void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
 
       for (unsigned ipol = 0; ipol<npol; ipol++)
       {
-	calibtor[ipol] = cal_hi[ipol][ichan] - cal_lo[ipol][ichan];
-	baseline[ipol] = cal_lo[ipol][ichan];
+        calibtor[ipol] = cal_hi[ipol][ichan] - cal_lo[ipol][ichan];
+        baseline[ipol] = cal_lo[ipol][ichan];
       }
 
       SourceObservation data;
@@ -960,8 +959,8 @@ void SystemCalibrator::add_calibrator (const ReferenceCalibrator* p)
 
       if ( xform[ichan] )
       {
-	data.response = response[ichan];
-	data.xform = xform[ichan];
+        data.response = response[ichan];
+        data.xform = xform[ichan];
       }
       
       calibrator_data.back().push_back (data);
@@ -1025,7 +1024,7 @@ void SystemCalibrator::submit_calibrator_data () try
       {
         if (verbose > 2)
           cerr << "SystemCalibrator::submit_calibrator_data ichan="
-              << ichan << " integrate_calibrator_data" << endl;
+               << ichan << " integrate_calibrator_data" << endl;
 
         integrate_calibrator_data( data );
       }
@@ -1034,7 +1033,7 @@ void SystemCalibrator::submit_calibrator_data () try
       {
         if (verbose > 2)
           cerr << "SystemCalibrator::submit_calibrator_data ichan="
-              << ichan << " integrate_calibrator_solution" << endl;
+               << ichan << " integrate_calibrator_solution" << endl;
 
         integrate_calibrator_solution( data );
       }

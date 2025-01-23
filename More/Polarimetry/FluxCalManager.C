@@ -29,7 +29,7 @@ Calibration::FluxCalManager::FluxCalManager (SignalPath* path) try
 
   //
   // It must be possible to separate the frontend and backend
-  // transformations , so that the temporal variations applied to
+  // transformations, so that the temporal variations applied to
   // pulsar and reference source are not applied to the flux
   // calibrator
   //
@@ -93,19 +93,25 @@ void Calibration::FluxCalManager::add_backend (FluxCalObservation* obs)
 {
   obs->backend = new BackendEstimate;
 
-  Reference::To< MEAL::ProductRule<MEAL::Complex2> > fcal_path;
-  fcal_path = new MEAL::ProductRule<MEAL::Complex2>;
+  Reference::To<MEAL::Complex2> model;
 
   if (backend)
   {
-    MEAL::Complex2* clone = backend->clone(); 
-    obs->backend->set_response (clone);
-    fcal_path->add_model (clone);
+    model = backend->clone(); 
+    obs->backend->set_response (model);
   }
 
-  fcal_path->add_model ( frontend );
+  if (!cal_backend_only && model)
+  {
+    Reference::To< MEAL::ProductRule<MEAL::Complex2> > fcal_path;
+    fcal_path = new MEAL::ProductRule<MEAL::Complex2>;
+    fcal_path->add_model (model);
+    fcal_path->add_model ( frontend );
+    model = fcal_path;
+  }
 
-  composite->add_transformation ( fcal_path );
+  if (model)
+    composite->add_transformation (model);
 
   obs->backend->path_index 
     = composite->get_equation()->get_transformation_index ();
@@ -204,7 +210,7 @@ void Calibration::FluxCalManager::model_multiple_source_states (bool flag)
 {
   if (on_observations.size() > 0 || off_observations.size() > 0)
     throw Error (InvalidState, "FluxCalManager::model_multiple_source_states",
-		 "observations already added; set this flag before adding");
+                "observations already added; set this flag before adding");
 
   multiple_source_states = flag;
 }
@@ -213,9 +219,18 @@ void Calibration::FluxCalManager::model_on_minus_off (bool flag)
 {
   if (on_observations.size() > 0 || off_observations.size() > 0)
     throw Error (InvalidState, "FluxCalManager::model_on_minus_off",
-		 "observations already added; set this flag before adding");
+                "observations already added; set this flag before adding");
 
   subtract_off_from_on = flag;
+}
+
+void Calibration::FluxCalManager::set_cal_backend_only (bool flag)
+{
+  if (on_observations.size() > 0 || off_observations.size() > 0)
+    throw Error (InvalidState, "FluxCalManager::set_cal_backend_only",
+                "observations already added; set this flag before adding");
+
+  cal_backend_only = flag;
 }
 
 void FluxCalManager::set_StokesV_infit (FluxCalObsVector& observations)
