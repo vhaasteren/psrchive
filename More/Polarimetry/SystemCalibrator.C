@@ -1477,8 +1477,7 @@ void SystemCalibrator::init_model (unsigned ichan)
   if (response)
   {
     if (verbose > 2)
-      cerr << "SystemCalibrator::init_model response name="
-	   << response->get_name() << endl;
+      cerr << "SystemCalibrator::init_model response name=" << response->get_name() << endl;
     model[ichan]->set_response( response->clone() );
   }
 
