@@ -388,7 +388,7 @@ void psrpca::process (Archive* archive)
   else if (first)
     cerr << "psrpca::process loading files ..." << endl;
   first = false;
-  
+
   archive->fscrunch();
   if ( which_pol == 0 && !full_stokes_pca )
   {
@@ -570,6 +570,9 @@ void psrpca::checkStatus(culaStatus status)
 
 void psrpca::fit_data( Reference::To<Profile> std_prof )
 {
+  cerr << "psrpca::fit_data subtracting template from observations with"
+          " apply_shift=" << apply_shift << " apply_scale=" << apply_scale << " apply_offset=" << apply_offset << endl;
+
   double scale, offset, snr;
   if ( total_count < nbin )
     cerr << "WARNING: psrpca::fit_data - not enough observations provided, "
@@ -664,7 +667,8 @@ void psrpca::fit_data( Reference::To<Profile> std_prof )
     else
     {
       offset = -1; // TODO why am I postponing the offset calculation? I think the only reason is not to store 4 offsets, still, pretty dumb
-      cerr << "Baseline calculation postponed as full stokes mode is on" << endl;
+      if (verbose)
+        cerr << "Baseline calculation postponed as full stokes mode is on" << endl;
     }
 
     if ( prof_to_std )
