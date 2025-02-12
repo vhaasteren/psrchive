@@ -132,6 +132,10 @@ using namespace std;
 // variables act like Reference::To pointers.
 %feature("ref")   Reference::Able "pointer_tracker_add($this);"
 %feature("unref") Reference::Able "pointer_tracker_remove($this);"
+
+%feature("ref")   Pulsar::ProfileShiftFit "pointer_tracker_add($this);"
+%feature("unref") Pulsar::ProfileShiftFit "pointer_tracker_remove($this);"
+
 %header %{
 std::vector< Reference::To<Reference::Able> > _pointer_tracker;
 void pointer_tracker_add(Reference::Able *ptr) {
