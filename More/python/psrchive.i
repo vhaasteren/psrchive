@@ -125,6 +125,7 @@ using namespace std;
 %newobject Pulsar::Integration::total;
 %newobject Pulsar::Profile::clone;
 %newobject Pulsar::Predictor::clone;
+%newobject as_psrfits;
 
 // Track any pointers handed off to python with a global list
 // of Reference::To objects.  Prevents the C++ routines from
@@ -331,10 +332,10 @@ Pulsar::Archive* as_psrfits (Pulsar::Archive* archive)
 {
     auto fits = dynamic_cast<Pulsar::FITSArchive*> (archive);
     if (!fits)
-    {    
+    {
         fits = new Pulsar::FITSArchive;
         fits->copy(*archive);
-    }
+    } 
     return fits;
 }
 
@@ -999,3 +1000,5 @@ def rotate_phase(self,phase): return self._rotate_phase_swig(phase)
         return self->Pulsar::ColdPlasma<Calibration::Faraday,Pulsar::DeFaraday>::get_reference_wavelength();
     }
 }
+
+
