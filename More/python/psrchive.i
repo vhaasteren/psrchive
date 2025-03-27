@@ -139,16 +139,20 @@ using namespace std;
 
 %header %{
 std::vector< Reference::To<Reference::Able> > _pointer_tracker;
-void pointer_tracker_add(Reference::Able *ptr) {
-    _pointer_tracker.push_back(ptr);
+void pointer_tracker_add(Reference::Able *ptr)
+{
+  _pointer_tracker.push_back(ptr);
 }
-void pointer_tracker_remove(Reference::Able *ptr) {
-    std::vector< Reference::To<Reference::Able> >::iterator it;
-    for (it=_pointer_tracker.begin(); it<_pointer_tracker.end(); it++) 
-        if ((*it).ptr() == ptr) {
-            _pointer_tracker.erase(it);
-            break;
-        }
+void pointer_tracker_remove(Reference::Able *ptr)
+{
+  auto it = _pointer_tracker.begin();
+  while (it<_pointer_tracker.end()) 
+  {
+    if ((*it).ptr() == ptr)
+      _pointer_tracker.erase(it);
+    else 
+      it++;
+  }
 }
 %}
 
@@ -340,6 +344,17 @@ Pulsar::Archive* as_psrfits (Pulsar::Archive* archive)
 }
 
 %}
+#endif
+
+#if NEEDED && (SWIG_VERSION >= 0x040000)
+
+Pulsar::Archive* Archive_load (const std::string& name)
+{
+  return Pulsar::Archive::load(name);
+}
+
+%newobject Archive_load;
+
 #endif
 
 // Python-specific extensions to the classes:
