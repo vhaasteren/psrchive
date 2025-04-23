@@ -14,6 +14,8 @@
 #include "Pulsar/Check.h"
 #include "Pulsar/Profile.h"
 
+#include "psrchive_version.h"
+
 #include "dirutil.h"
 #include "strutil.h"
 
@@ -78,6 +80,8 @@ psredit::psredit ()
   Pulsar::Archive::Check::disable ("DeFaradayed");
 
   add( new Pulsar::UnloadOptions );
+
+  set_commit_hash(PSRCHIVE_COMMIT_HASH);
 }
 
 void psredit::add_options (CommandLine::Menu& menu)
