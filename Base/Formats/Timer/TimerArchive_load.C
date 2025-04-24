@@ -516,7 +516,7 @@ void Pulsar::TimerArchive::backend_load (FILE* fptr)
 
 void Pulsar::TimerArchive::psr_load (FILE* fptr)
 {
-  if (hdr.nbytespoly > 0) {
+  if (hdr.nbytespoly > 0) try {
     if (verbose > 2)
       cerr << "TimerArchive::psr_load "
 	   << hdr.nbytespoly << " bytes in polyco" << endl;
@@ -532,6 +532,10 @@ void Pulsar::TimerArchive::psr_load (FILE* fptr)
       else
         cerr << "TimerArchive::psr_load failed to read predictor" << endl;
     }
+  }
+  catch (Error& errror)
+  {
+    cerr << "TimerArchive::psr_load WARNING failed to load predictor" << endl;
   }
   else if (verbose > 2)
     cerr << "TimerArchive::psr_load no predictor" << endl;
