@@ -14,7 +14,7 @@ include_HEADERS = interpolate.h median_smooth.h \
 	QuaternionFT.h
 
 libpsrfft_la_SOURCES = test_libraries.h shift.C derivative.C fccf.f ffft.f \
-	FTransformAgent.C FTransform.C FTransformBench.C QuaternionFT.C
+	FTransformAgent.C FTransform.C FTransformBench.C interpolate.C QuaternionFT.C
 
 FFT_BENCH =
 
@@ -41,12 +41,12 @@ TESTS = test_frexp test_enum test_normalization test_interpolate \
 
 check_PROGRAMS = $(TESTS) test_QuaternionFT
 
-test_enum_SOURCES		= test_enum.C
+test_enum_SOURCES		    = test_enum.C
 test_normalization_SOURCES	= test_normalization.C
 test_interpolate_SOURCES	= test_interpolate.C
 test_real_complex_SOURCES	= test_real_complex.C
 test_QuaternionFT_SOURCES	= test_QuaternionFT.C
-test_FTransformBench_SOURCES	= test_FTransformBench.C
+test_FTransformBench_SOURCES= test_FTransformBench.C
 
 bench: ./install_bench ./fft_bench ./fft_speed
 	csh -f ./install_bench $(FFT_BENCH)

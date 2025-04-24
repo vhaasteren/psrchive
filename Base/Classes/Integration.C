@@ -667,7 +667,7 @@ catch (Error& error)
   \pre  This method should only be called through the Archive class
   \post The calling Archive method should update state to Signal::Intensity
  */    
-void Pulsar::Integration::pscrunch()
+void Pulsar::Integration::pscrunch() try
 {
   Signal::State state = get_state();
 
@@ -694,6 +694,10 @@ void Pulsar::Integration::pscrunch()
   if (orphaned)
     orphaned->set_state( Signal::pscrunch(state) );
 } 
+catch (Error& error)
+{
+  throw error += "Integration::pscrunch";
+}
 
 MJD Pulsar::Integration::get_start_time () const
 {
