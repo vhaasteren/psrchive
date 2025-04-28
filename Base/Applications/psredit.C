@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *   Copyright (C) 2004-2009 by Willem van Straten
+ *   Copyright (C) 2004 - 2025 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -14,7 +14,7 @@
 #include "Pulsar/Check.h"
 #include "Pulsar/Profile.h"
 
-#include "psrchive_version.h"
+#include "config/psrchive_version.h"
 
 #include "dirutil.h"
 #include "strutil.h"

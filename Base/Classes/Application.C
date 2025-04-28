@@ -14,7 +14,7 @@
 #include "Pulsar/ProcHistory.h"
 
 #include "Pulsar/psrchive.h"
-#include "psrchive_version.h"
+#include "config/psrchive_version.h"
 
 #include "strutil.h"
 #include "dirutil.h"
