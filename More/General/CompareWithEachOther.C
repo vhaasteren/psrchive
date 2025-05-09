@@ -10,6 +10,7 @@
 
 #include "BinaryStatistic.h"
 #include "UnaryStatistic.h"
+#include "statutil.h"
 
 using namespace Pulsar;
 using namespace std;

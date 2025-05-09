@@ -23,7 +23,7 @@ namespace Pulsar {
   public:
 
     //! Constructor
-    SourceInfo (const std::vector<Calibration::SourceEstimate>& source);
+    SourceInfo (const std::vector< Reference::To<Calibration::SourceEstimate> >& );
     
     //! Return the title
     std::string get_title () const;
@@ -56,7 +56,7 @@ namespace Pulsar {
   protected:
     
     //! The SourceEstimate to be plotted
-    const std::vector<Calibration::SourceEstimate>& source;
+    const std::vector< Reference::To<Calibration::SourceEstimate> >& source;
 
     //! Plot all Stokes parameters in one panel
     bool together;

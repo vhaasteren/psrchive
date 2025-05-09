@@ -495,6 +495,10 @@ namespace Pulsar
 
     //! Template method searches for an Extension of the specified type
     template<class ExtensionType>
+    bool has () const;
+
+    //! Template method searches for an Extension of the specified type
+    template<class ExtensionType>
     const ExtensionType* get () const;
 
     //! Template method searches for an Extension of the specified type

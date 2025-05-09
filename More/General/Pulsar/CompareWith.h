@@ -98,7 +98,6 @@ namespace Pulsar {
     //! Flags for subset of sub-integrations to be computed
     std::vector<bool> compute_mask;
 
-
     //! File to which auxiliary data will be printed
     FILE* fptr;
 

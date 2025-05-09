@@ -130,6 +130,17 @@ unsigned PolnCalibratorExtension::get_nparam () const
   return nparam;
 }
 
+void PolnCalibratorExtension::set_ndim (unsigned ndim)
+{
+  for (unsigned ichan=0; ichan < response.size(); ichan++)
+    response[ichan].set_ndim(ndim);
+}
+
+unsigned PolnCalibratorExtension::get_ndim () const
+{
+  return ndim;
+}
+
 bool PolnCalibratorExtension::get_has_covariance () const
 {
   return has_covariance;
@@ -252,8 +263,7 @@ PolnCalibratorExtension::Transformation::get_param_name (unsigned i) const
 
 //! Set the name of the specified model parameter
 void
-PolnCalibratorExtension::Transformation::set_param_name (unsigned i,
-							 const string& n)
+PolnCalibratorExtension::Transformation::set_param_name (unsigned i, const string& n)
 {
   names[i] = n;
 }
@@ -268,8 +278,7 @@ PolnCalibratorExtension::Transformation::get_param_description (unsigned i)
 
 //! Set the description of the specified model parameter
 void
-PolnCalibratorExtension::Transformation::set_param_description 
-(unsigned i, const string& n)
+PolnCalibratorExtension::Transformation::set_param_description (unsigned i, const string& n)
 {
   descriptions[i] = n;
 }
@@ -358,12 +367,88 @@ void PolnCalibratorExtension::Transformation::set_nfit (unsigned n)
   nfit = n;
 }
 
+unsigned PolnCalibratorExtension::Transformation::get_ndim() const
+{
+  return ndim;
+}
+
+void PolnCalibratorExtension::Transformation::set_ndim (unsigned n)
+{
+  ndim = n;
+}
+
 double PolnCalibratorExtension::Transformation::get_reduced_chisq () const
 {
   if (nfree > 0)
     return chisq / nfree;
   else
     return 0.0;
+}
+
+double PolnCalibratorExtension::Transformation::get_log_det_curvature () const
+{
+  return log_det_curvature;
+}
+
+void PolnCalibratorExtension::Transformation::set_log_det_curvature (double val)
+{
+  log_det_curvature = val;
+}
+
+double PolnCalibratorExtension::Transformation::get_log_cond_curvature () const
+{
+  return log_cond_curvature;
+}
+
+void PolnCalibratorExtension::Transformation::set_log_cond_curvature (double val)
+{
+  log_cond_curvature = val;
+}
+
+double PolnCalibratorExtension::Transformation::get_Akaike_information_criterion() const
+{
+  if (nfree == 0)
+    return 0;
+
+  // AICc (with small number correction)
+  // assumes normally distributed residuals, for which chisq = -2 log(likelihood) + C,
+  // where C is a constant defined by the estimated uncertainties of the data
+  return chisq + 2*nfit * (1.0 + (nfit + 1.0) / (nfree - 1.0));
+}
+
+double PolnCalibratorExtension::Transformation::get_Bayesian_information_criterion() const
+{
+  if (nfree == 0)
+    return 0;
+
+  double ndat = nfree + nfit;
+  return chisq + nfit * log(ndat);
+}
+
+double PolnCalibratorExtension::Transformation::get_geometric_information_criterion() const
+{
+  if (nfree == 0)
+    return 0;
+
+  double ndat = nfree + nfit;
+  double ndim_dat = 4; // four Stokes parameters at each point
+  double N = ndat / ndim_dat;
+
+  // Equation (7) of Kanatani (1998)
+  return chisq + 2*nfit + 2*N*ndim;
+}
+
+double PolnCalibratorExtension::Transformation::get_stochastic_information_complexity() const
+{
+  if (nfree == 0)
+    return 0;
+
+#if _DEBUG
+  cerr << "PolnCalibratorExtension::Transformation::get_stochastic_information_complexity: log(det(curv))=" << log_det_curvature << endl;
+#endif
+
+  double ndat = nfree + nfit;
+  return chisq + nfit * log(ndat) + log_det_curvature;
 }
 
 //! Get the covariance matrix of the model paramters
@@ -453,9 +538,9 @@ void PolnCalibratorExtension::Transformation::set_covariance
       if (i==j)
       {
 #ifdef _DEBUG
-	cerr << j << " " << covar[icovar] << endl;
+        cerr << j << " " << covar[icovar] << endl;
 #endif
-	set_variance (j,covar[icovar]);
+        set_variance (j,covar[icovar]);
       }
       icovar++;
     }

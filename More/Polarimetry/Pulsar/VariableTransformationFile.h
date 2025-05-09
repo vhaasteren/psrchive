@@ -6,25 +6,25 @@
  *
  ***************************************************************************/
 
-#ifndef __Pulsar_ManualVariableTransformation_h
-#define __Pulsar_ManualVariableTransformation_h
+#ifndef __Pulsar_VariableTransformationFile_h
+#define __Pulsar_VariableTransformationFile_h
 
-#include "Pulsar/VariableTransformation.h"
+#include "Pulsar/KnownVariableTransformation.h"
 #include "Pulsar/ManualPolnCalibrator.h"
 
 namespace Pulsar {
 
-  //! Adapts a VariableTransformation to a ManualPolnCalibrator
-  class ManualVariableTransformation : public VariableTransformation
+  //! Adapts a VariableTransformationManager to a ManualPolnCalibrator
+  class VariableTransformationFile : public KnownVariableTransformation
   {
     Reference::To<ManualPolnCalibrator> calibrator;
 
   public:
 
-    ManualVariableTransformation (ManualPolnCalibrator*);
+    VariableTransformationFile (ManualPolnCalibrator*);
 
     //! Get the transformation
-    virtual Jones<double> get_transformation ();
+    LabelledJones<double> get_transformation () override;
   };
 }
 

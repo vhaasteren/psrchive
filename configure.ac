@@ -148,12 +148,14 @@ SWIN_LIB_MKL
 SWIN_LIB_IPP
 PSR_LIB_SPLINTER
 PSR_LIB_ARMADILLO
+PSR_LIB_YAMLCPP
 
 #
 # Set up for automatic package installation
 #
 SWIN_DOWNLOAD
 AC_CONFIG_FILES([packages/Makefile
+	packages/yaml-cpp.csh
 	packages/armadillo.csh
 	packages/splinter.csh
 	packages/cfitsio.csh
@@ -199,7 +201,6 @@ SWIN_LIB_CFITSIO
 SWIN_LIB_CULA
 SWIN_LIB_PUMA
 SWIN_LIB_TEMPO2
-SWIN_LIB_MPI
 SWIN_LIB_READLINE
 SWIN_LIB_GSL
 SWIN_LIB_HEALPIX

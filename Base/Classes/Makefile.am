@@ -5,6 +5,7 @@ nobase_include_HEADERS = \
 	Pulsar/psrchive.h \
 	Pulsar/Agent.h \
 	Pulsar/Archive.h \
+	Pulsar/ArchiveEditor.h \
 	Pulsar/ArchiveExpert.h \
 	Pulsar/ArchiveExtension.h \
 	Pulsar/ArchiveInterface.h \
@@ -21,17 +22,17 @@ nobase_include_HEADERS = \
 	Pulsar/Container.h \
 	Pulsar/Correction.h \
 	Pulsar/DataExtension.h \
-	Pulsar/Editor.h \
 	Pulsar/ExampleArchive.h \
 	Pulsar/FITSAlias.h \
 	Pulsar/FourthMoments.h \
 	Pulsar/Integration.h \
+	Pulsar/IntegrationEditor.h \
 	Pulsar/IntegrationExpert.h \
 	Pulsar/IntegrationExtension.h \
 	Pulsar/IntegrationManagerExpert.h \
 	Pulsar/IntegrationManager.h \
 	Pulsar/IntegrationMeta.h \
-	Pulsar/IntegrationTI.h \
+        Pulsar/IntegrationInterface.h \
 	Pulsar/ManagedStrategies.h \
 	Pulsar/MoreProfiles.h \
 	Pulsar/PhaseResolvedHistogram.h \
@@ -50,6 +51,7 @@ nobase_include_HEADERS = \
 libClasses_la_SOURCES = \
 	Agent.C \
 	Archive.C \
+	ArchiveEditor.C \
 	ArchiveInterface.C \
 	ArchiveMatch.C \
 	Archive_correct.C \
@@ -73,19 +75,19 @@ libClasses_la_SOURCES = \
 	CalibratorTypeInterface.C \
 	Check.C \
 	Config.C \
-	Editor.C \
 	ExampleArchive.C \
 	FITSAlias.C \
 	FourthMoments.C \
 	Integration.C \
+	IntegrationEditor.C \
 	IntegrationManager.C \
 	IntegrationMeta.C \
 	Integration_combine.C \
 	Integration_insert.C \
 	Integration_remove.C \
-	Integration_mixable.C \
-	Integration_resize.C \
-	IntegrationTI.C \
+        Integration_mixable.C \
+        Integration_resize.C \
+        IntegrationInterface.C \
 	ManagedStrategies.C \
 	MoreProfiles.C \
 	PhaseResolvedHistogram.C \

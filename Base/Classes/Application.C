@@ -42,7 +42,7 @@ Pulsar::Application::Application (const string& n, const string& d)
 //! Add options to the application
 void Pulsar::Application::add (Options* f)
 {
-  f->application = this;
+  f->application.set(this);
   options.push_back( f );
 }
 

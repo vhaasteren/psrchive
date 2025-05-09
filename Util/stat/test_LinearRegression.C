@@ -1,13 +1,14 @@
 /***************************************************************************
  *
- *   Copyright (C) 2023 by Willem van Straten
+ *   Copyright (C) 2024 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
 
-#include "ChiSquared.h"
+#include "LinearRegression.h"
 #include "BoxMuller.h"
 #include "random.h"
+#include "Error.h"
 
 #include <iostream>
 #include <vector>
@@ -18,6 +19,9 @@ using namespace std;
 static const unsigned ncoef = 2;  // scale and offset
 
 double normalized_difference[ncoef] = { 0,0 };
+
+bool subtract_weighted_mean_abscissa = false;
+double covariance = 0.0;
 
 static bool verbose = false;
 
@@ -41,9 +45,9 @@ void runtest () try
   double in_scale = input_values[0];
   double in_offset = input_values[1];
 
-  double x_min = -1.0;
-  double x_max = 1.0;
-  unsigned ndat = 200;
+  double x_min = -5.0;
+  double x_max = 10.0;
+  unsigned ndat = 60;
   double x_step = (x_max - x_min) / (ndat+1);
 
   std::vector<double> xval(ndat);  // x-ordinate of data
@@ -64,16 +68,26 @@ void runtest () try
     wt[i] = 1.0/(sigma*sigma);
   }
 
-  Estimate<double> scale, offset;
-  weighted_linear_fit (scale, offset, yval, xval, wt);
+  LinearRegression fit;
+  fit.subtract_weighted_mean_abscissa = subtract_weighted_mean_abscissa;
+  fit.weighted_least_squares (yval, xval, wt);
+
+  Estimate<double> scale = fit.scale;
+  Estimate<double> offset = fit.offset;
 
   if (verbose)
     cerr << "scale=" << scale << " offset=" << offset << endl;
 
   double diff = input_values[0] - scale.val;
   normalized_difference[0] += diff * diff / scale.var;
+
+  if (subtract_weighted_mean_abscissa)
+    input_values[1] += scale.val * fit.weighted_mean_abscissa;
+
   diff = input_values[1] - offset.val;
   normalized_difference[1] += diff * diff / offset.var;
+
+  covariance += fit.covariance;
 }
 catch (const Error& error) {
   cerr << error << endl;
@@ -82,12 +96,13 @@ catch (...) {
   cerr << "Unhandled exception" << endl;
 }
 
-int main ()
-{
-  unsigned ntest = 100000;
-  double tolerance = 0.02;
+unsigned ntest = 100000;
+double tolerance = 0.02;
 
-  cerr << "running " << ntest << " linear least-squares fits" << endl;
+int run_multiple_tests()
+{
+  covariance = 0.0;
+  normalized_difference[0] = normalized_difference[1] = 0;
 
   for (unsigned i=0; i<ntest; i++)
     runtest ();
@@ -102,6 +117,31 @@ int main ()
       cerr << "FAIL: uncertainty-normalized error is not close enough to 1" << endl;
       return -1;
     }
+  }
+
+  cerr << "covariance = " << covariance << endl;
+  return 0;
+}
+
+int main ()
+{
+  cerr << "running " << ntest << " linear least-squares fits" << endl;
+  
+  if (run_multiple_tests() < 0)
+    return -1;
+
+  cerr << "running " << ntest << " linear least-squares fits with subtract_weighted_mean_abscissa = true" << endl;
+
+  subtract_weighted_mean_abscissa = true;
+
+  if (run_multiple_tests() < 0)
+    return -1;
+
+  // covariance expected to be zero
+  if (covariance > 1e15)
+  {
+    cerr << "FAIL: covariance = " << covariance << " expected to be closer to zero" << endl;
+    return -1;
   }
 
   cerr << "Test Passed! (all uncertainty-normalized errors are close to 1)" << endl;

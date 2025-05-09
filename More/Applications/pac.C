@@ -34,6 +34,10 @@
 #include "Pulsar/BackendCorrection.h"
 #include "Pulsar/FrontendCorrection.h"
 #include "Pulsar/ProjectionCorrection.h"
+
+#include "Pulsar/ConfigurableProjectionExtension.h"
+#include "Pulsar/ConfigurableProjection.h"
+
 #include "Pulsar/ReflectStokes.h"
 #include "Pulsar/BackendFeed.h"
 #include "Pulsar/VariableBackend.h"
@@ -52,7 +56,7 @@ using namespace std;
 using namespace Pulsar;
 
 // A command line tool for calibrating Pulsar::Archives
-const char* args = "A:aBbC:cDd:Ee:fFGghiIJ:j:K:k:lLM:m:Nn:O:op:PqQ:Rr:sSt:Tu:UvVwWxXyY:Z";
+const char* args = "A:aBbC:cDd:Ee:fFGghIJ:j:K:k:lLM:m:Nn:O:op:PqQ:Rr:sSt:Tu:UvVwWxXyY:Z";
 
 void usage ()
 {
@@ -61,7 +65,6 @@ void usage ()
     "  -q             Quiet mode\n"
     "  -v             Verbose mode\n"
     "  -V             Very verbose mode\n"
-    "  -i             Show revision information\n"
     "\n"
     "Database options: \n"
     "  -d database    Read calibration database summary \n"   
@@ -125,6 +128,41 @@ void usage ()
 
 // cut down the calibrator solution to only the feed
 void keep_only_feed( Pulsar::PolnCalibrator* );
+
+// the database from which calibrators will be selected
+Reference::To<Database> dbase;
+
+// Combine pcal with fluxcal stokes into a new HybridCalibrator
+PolnCalibrator* get_hybrid_from_fluxcal (PolnCalibrator* pcal, const Archive* arch)
+{
+  ReferenceCalibrator* refcal = 0;
+  refcal = dynamic_cast<ReferenceCalibrator*> (pcal);
+  if (!refcal)
+    throw Error (InvalidState, "pcm",
+                 "PolnCalibrator is not a ReferenceCalibrator");
+
+  // Find appropriate fluxcal from DB
+  Reference::To<FluxCalibrator> flux_cal;
+  try
+  {
+    flux_cal = dbase->generateFluxCalibrator(arch);
+  }
+  catch (Error& error)
+  {
+    error << " -- closest match: \n\n"
+          << dbase->get_closest_match_report ();
+    throw error;
+  }
+
+  Reference::To<HybridCalibrator> hybrid_cal;
+  hybrid_cal = new HybridCalibrator;
+  hybrid_cal->set_reference_input( flux_cal->get_CalibratorStokes(),
+                                   flux_cal->get_filenames() );
+
+  hybrid_cal->set_reference_observation( refcal );
+
+  return hybrid_cal.release();
+}
 
 int main (int argc, char *argv[]) try
 {    
@@ -217,13 +255,14 @@ int main (int argc, char *argv[]) try
       break;
 
     case 'V':
-      verbose = true;
-      Archive::set_verbosity(3);
+      {
+	cerr << "pac: increasing verbosity" << endl;
+        verbose = true;
+	static unsigned verbosity = 2;
+	verbosity ++;
+        Archive::set_verbosity(verbosity);
+      }
       break;
-
-    case 'i':
-      cout << "$Id: pac.C,v 1.109 2011/02/17 07:43:53 straten Exp $" << endl;
-      return 0;
 
     case 'k':
       database_filename = optarg;
@@ -500,9 +539,6 @@ int main (int argc, char *argv[]) try
   // the calibrator constructed from the specified archive
   Reference::To<PolnCalibrator> model_calibrator;
 
-  // the database from which calibrators will be selected
-  Reference::To<Database> dbase;
-
   if ( !model_file.empty() ) try
   {
     cerr << "pac: Loading calibrator from " << model_file << endl;
@@ -683,6 +719,8 @@ int main (int argc, char *argv[]) try
 
     bool successful_polncal = false;
 
+    Reference::To<ConfigurableProjection> projection;
+
     if (do_polncal && arch->get_poln_calibrated() )
     {
       cout << "pac: " << filenames[i] << " already poln calibrated" << endl;
@@ -720,35 +758,7 @@ int main (int argc, char *argv[]) try
         if (verbose)
           cout << "pac: Calculating fluxcal Stokes params" << endl;
 
-        ReferenceCalibrator* refcal = 0;
-        refcal = dynamic_cast<ReferenceCalibrator*> (pcal_engine.get());
-        if (!refcal)
-          throw Error (InvalidState, "pcm",
-                       "PolnCalibrator is not a ReferenceCalibrator");
-
-        // Find appropriate fluxcal from DB 
-        Reference::To<FluxCalibrator> flux_cal;
-        try
-        {
-          flux_cal = dbase->generateFluxCalibrator(arch);
-        }
-        catch (Error& error)
-        {
-          error << " -- closest match: \n\n"
-                << dbase->get_closest_match_report ();
-          throw error;
-        }
-
-        // Combine already-selected pcal_engine with fluxcal stokes
-        // into a new HybridCalibrator
-        Reference::To<HybridCalibrator> hybrid_cal;
-        hybrid_cal = new HybridCalibrator;
-        hybrid_cal->set_reference_input( flux_cal->get_CalibratorStokes(),
-                                         flux_cal->get_filenames() );
-
-        hybrid_cal->set_reference_observation( refcal );
-
-        pcal_engine = hybrid_cal;
+        pcal_engine = get_hybrid_from_fluxcal (pcal_engine, arch);
       }
       catch (Error& error)
       {
@@ -785,6 +795,15 @@ int main (int argc, char *argv[]) try
         }
       }
 
+      const Archive* calarch = pcal_engine->get_Archive ();
+      auto cpe = calarch->get<ConfigurableProjectionExtension>();
+      if (cpe)
+      {
+        cerr << "pac: using configurable projection (disabling frontend correction)" << endl;
+        projection = new ConfigurableProjection(cpe);
+        do_frontend = false;
+      }
+
       pcal_engine->set_backend_correction( do_backend );
       pcal_engine->calibrate (arch);
 
@@ -808,25 +827,44 @@ int main (int argc, char *argv[]) try
     else
       cerr << "pac: Frontend corrections disabled." << endl;
 
+    bool do_special_projection = projection || ! projection_file.empty();
+
+    Receiver* receiver = arch->get<Receiver>();
+
+    if ( do_special_projection )
+    {
+      // correct the basis before applying the projection
+      BasisCorrection basis_correction;
+      if ( basis_correction.required (arch) )
+      {
+        cerr << "pac: Performing basis correction" << endl;
+        arch->transform( inv( basis_correction(arch) ) );
+
+        if (receiver)
+          receiver->set_basis_corrected (true);
+      }
+    }
+
+    if ( projection )
+    {
+      cerr << "pac: Applying configurable projection transformation" << endl;
+      projection->calibrate(arch);
+
+      if (receiver)
+        receiver->set_projection_corrected (true);
+    }
+
     if ( ! projection_file.empty() )
     {
       cerr << "pac: Loading projection transformations from "
 	   << projection_file << endl;
 
-      Receiver* receiver = arch->get<Receiver>();
-
-      BasisCorrection basis_correction;
-      if ( basis_correction.required (arch) )
-      {
-	arch->transform( inv( basis_correction(arch) ) );
-	receiver->set_basis_corrected (true);
-      }
-      
       Reference::To<ManualPolnCalibrator> calibrator;
       calibrator = new ManualPolnCalibrator (projection_file);
       calibrator->calibrate (arch);
 
-      receiver->set_projection_corrected (true);
+      if (receiver)
+        receiver->set_projection_corrected (true);
     }
     
     if (ionosphere)

@@ -1,7 +1,7 @@
 //-*-C++-*-
 /***************************************************************************
  *
- *   Copyright (C) 2008 - 2016 by Willem van Straten
+ *   Copyright (C) 2008 - 2022 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -27,12 +27,20 @@ namespace Pulsar
   class ReferenceCalibrator;
   class FluxCalibrator;
   class CalibratorStokes;
-  class VariableTransformation;
+  class VariableTransformationManager;
 
   //! PolnCalibrator with estimated calibrator Stokes parameters
   /*! The SystemCalibrator is the virtual base class of polarization
     calibrators that determine both the instrumental response and the
-    input Stokes parameters of the reference signal.
+    input Stokes parameters of a reference signal (e.g. noise diode).
+
+    Each SystemCalibrator instance manages the observations of a
+    single pulsar, its reference source (e.g. noise diode), and a flux
+    calibrator.
+
+    Multiple pulsars are managed by multiple SystemCalibrator
+    instances that share a reception model and a common set of
+    polarimetric transformations.
   */
 
   class SystemCalibrator : public PolnCalibrator
@@ -54,9 +62,19 @@ namespace Pulsar
     //! Destructor
     virtual ~SystemCalibrator ();
 
+    //! Share reception model and common transformations of other instance
+    /*! Common transformations are experienced by all sources. */
+    virtual void share (SystemCalibrator* other);
+
     //! Return the Calibrator information
     Calibrator::Info* get_Info () const;
 
+    //! Set the name associated with this SystemCalibrator instance
+    void set_name (const std::string& name);
+
+    //! Get the name associated with this SystemCalibrator instance
+    std::string get_name () const;
+    
     //! Return the reference epoch of the calibration experiment
     MJD get_epoch () const;
 
@@ -102,6 +120,9 @@ namespace Pulsar
     //! Set the response to a previous solution (for the first guess)
     void set_previous_solution (const PolnCalibrator*);
 
+    //! Set the calibrator Stokes parameters to a previous solution (for the first guess)
+    void set_previous_cal (const CalibratorStokes*);
+
     //! Set the response parameters to be held fixed
     void set_response_fixed (const std::vector<unsigned>&);
 
@@ -113,11 +134,11 @@ namespace Pulsar
     virtual void set_impurity( MEAL::Real4* );
 
     //! Set the projection transformation
-    virtual void set_projection( VariableTransformation* );
+    virtual void set_projection( VariableTransformationManager* );
 
-    //! Set the ionospheric rotation measure applied to all observations
-    virtual void set_ionospheric_rotation_measure (double rm);
-    
+    //! Set the ionospheric and interstellar Faraday rotation transformation
+    virtual void set_faraday_rotation( VariableTransformationManager* );
+
     //! Set the time variation of absolute gain
     virtual void set_gain( MEAL::Univariate<MEAL::Scalar>* );
 
@@ -216,6 +237,9 @@ namespace Pulsar
     //! Report on the number of failed attempts to add data
     virtual void set_report_input_failed (bool flag = true);
 
+    //! Report on the data and model before and after the fit
+    virtual void set_report_data_and_model (bool flag = true);
+
     //! Set the threshold used to reject outliers when computing CAL levels
     void set_cal_outlier_threshold (float f) { cal_outlier_threshold = f; }
 
@@ -249,6 +273,10 @@ namespace Pulsar
     //! Get the status of the model
     virtual bool get_solved () const;
 
+    //! Return true if the model for the specified channel is valid
+    virtual bool get_valid (unsigned ichan) const;
+    virtual void set_valid (unsigned ichan, bool value, const std::string& reason);
+
     //! Returns true if at least one channel returns get_valid == true
     virtual bool has_valid () const;
 
@@ -271,14 +299,31 @@ namespace Pulsar
     //! Return the SignalPath for the specified channel
     virtual const Calibration::SignalPath* get_model (unsigned ichan) const;
 
+    //! Ensure that the pulsar observation can be added to the data set
+    /*! By default, will throw exception */
+    virtual bool match (const Archive*, bool throw_exception = true);
+
+    std::string get_mismatch_reason () const { return mismatch_reason; }
+
     //! Solution unloading policy
     class Unloader;
 
   protected:
 
+    friend class SystemCalibratorManager;
+    bool match_check_nchan;
+    std::string mismatch_reason;
+  
+    //! SystemCalibrator with whom common reception model is shared
+    /* and common polarimetric transformations */
+    Reference::To<SystemCalibrator> partner;
+    void setup_sharing (unsigned ichan);
+    
     friend class SystemCalibratorPlotter;
     friend class MatrixTemplateMatching;
 
+    std::string instance_name;
+    
     //! Prepare the model
     virtual void prepare (const Archive* data);
 
@@ -301,11 +346,11 @@ namespace Pulsar
     Reference::To<const FluxCalibrator> flux_calibrator;
     
     //! The projection transformation (overrides ProjectionCorrection)
-    Reference::To<VariableTransformation> projection;
+    Reference::To<VariableTransformationManager> projection;
 
-    //! The ionospheric rotation measure applied to all observations
-    double ionospheric_rotation_measure;
-    
+    //! The ionospheric and interstellar Faraday rotation transformation
+    Reference::To<VariableTransformationManager> faraday_rotation;
+
     //! The CalibratorStokesExtension of the Archive passed during construction
     mutable Reference::To<const CalibratorStokes> calibrator_stokes;
 
@@ -345,12 +390,14 @@ namespace Pulsar
     //! Initialize the SignalPath of the specified channel
     virtual void init_model (unsigned ichan);
 
+    typedef Reference::To<Calibration::SourceEstimate> SourceEstimate;
+    
     //! Initialize a vector of SourceEstimate instances
-    virtual void init_estimates ( std::vector<Calibration::SourceEstimate>&,
+    virtual void init_estimates ( std::vector<SourceEstimate>&,
 				  unsigned ibin = 0 );
 
     //! Report on input data failure rates
-    virtual void print_input_failed (const std::vector<Calibration::SourceEstimate>&);
+    virtual void print_input_failed (const std::vector<SourceEstimate>&);
     std::vector<std::ofstream*> input_failed;
     virtual void close_input_failed ();
 
@@ -359,6 +406,9 @@ namespace Pulsar
 
     //! Create the calibrator estimate
     virtual void create_calibrator_estimate ();
+
+    //! Copy the calibrator estimates from sharing partner
+    virtual void copy_calibrator_estimate ();
 
     //! Flag set when data have been integrated with measurement equation
     bool data_submitted;
@@ -378,12 +428,9 @@ namespace Pulsar
 
     //! Load any postponed calibrators and those set by set_calibrators
     virtual void load_calibrators ();
-
+    
     Reference::To<StepFinder> step_finder;
     
-    //! Ensure that the pulsar observation can be added to the data set
-    virtual void match (const Archive*);
-
     //! Pulsar data loaded but not submitted or integrated
     std::vector< std::vector<Calibration::CoherencyMeasurementSet> > pulsar_data;
 
@@ -411,7 +458,7 @@ namespace Pulsar
     Reference::To<Processor> calibrator_preprocessor;
 
     //! Uncalibrated estimate of calibrator polarization
-    std::vector<Calibration::SourceEstimate> calibrator_estimate;
+    std::vector< Reference::To<Calibration::SourceEstimate> > calibrator_estimate;
     
     //! Epoch of the first observation
     MJD start_epoch;
@@ -434,9 +481,6 @@ namespace Pulsar
     //! True if noise diode illuminates feed; false if coupled after OMT
     bool refcal_through_frontend;
 
-    //! Set the initial guess in solve_prepare
-    bool set_initial_guess;
-
     //! Ensure that first guess of calibrator Stokes parameters is physical
     bool guess_physical_calibrator_stokes;
     
@@ -457,6 +501,9 @@ namespace Pulsar
 
     //! Report the number of input failures
     bool report_input_failed;
+
+    //! Report on the data and model before and after the fit
+    bool report_data_and_model;
 
     //! Threshold used to reject outliers when computing CAL levels
     double cal_outlier_threshold;
@@ -494,12 +541,20 @@ namespace Pulsar
     unsigned get_data_fail;
     unsigned get_data_call;
 
-    //! A previous solution, if availabe
+    //! Previous solution of the frontend from which to copy initial guess
     Reference::To<const PolnCalibrator> previous;
+
+    //! Previous solution of the calibrator Stokes parameters from which to copy initial guess
     Reference::To<const CalibratorStokes> previous_cal;
 
+    //! Load any previous solutions
+    virtual void load_previous ();
+
+    //! Flag set after previous solutions are loaded
+    bool previous_loaded = false;
+
     //! Flag set after the first pulsar observation is added
-    bool has_pulsar;
+    bool has_pulsar = false;
 
     //! Transformation that inverts the receptor basis
     Jones<double> invert_basis;

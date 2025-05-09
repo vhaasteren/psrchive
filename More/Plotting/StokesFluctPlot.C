@@ -15,6 +15,7 @@
 #include "Pulsar/LastSignificant.h"
 
 #include "Pulsar/ProfileStatistic.h"
+#include "statutil.h"
 
 #include <cpgplot.h>
 

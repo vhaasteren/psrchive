@@ -11,7 +11,7 @@
 #ifndef __Pulsar_DoPCalibrator_H
 #define __Pulsar_DoPCalibrator_H
 
-#include "Pulsar/SingleAxisCalibrator.h"
+#include "Pulsar/SingleAxisCalibratorInfo.h"
 
 namespace Pulsar {
 

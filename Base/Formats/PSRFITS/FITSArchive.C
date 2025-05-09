@@ -30,6 +30,7 @@
 #include "Pulsar/FluxCalibratorExtension.h"
 #include "Pulsar/CalibratorStokes.h"
 #include "Pulsar/CalibrationInterpolatorExtension.h"
+#include "Pulsar/ConfigurableProjectionExtension.h"
 #include "Pulsar/IntegrationOrder.h"
 #include "Pulsar/CoherentDedispersion.h"
 #include "Pulsar/SpectralKurtosis.h"
@@ -740,7 +741,10 @@ void Pulsar::FITSArchive::load_header (const char* filename) try
   
   // Load the calibration interpolator
   load_CalibrationInterpolatorExtension (read_fptr);
-  
+
+  // Load the configurable projection
+  load_ConfigurableProjectionExtension (read_fptr);
+ 
   // Load the parameters from the SUBINT HDU
   load_FITSSUBHdrExtension( read_fptr );
 
@@ -1130,6 +1134,8 @@ void Pulsar::FITSArchive::unload_file (const char* filename) const try
   unload <PolnCalibratorExtension> (fptr, "FEEDPAR");
 
   unload <CalibrationInterpolatorExtension> (fptr, "PCMINTER");
+
+  unload <ConfigurableProjectionExtension> (fptr, "CFGPROJ");
 
   unload <CrossCovarianceMatrix> (fptr, "COV_MAT");
 

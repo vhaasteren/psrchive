@@ -1376,7 +1376,8 @@ double do_maxmthd (double minrm, double maxrm, unsigned rmsteps, Pulsar::Archive
         float diffchisq = chisq - nchisq;
         chisq = nchisq;
         not_improving = 0;
-        if (diffchisq/chisq < threshold && diffchisq > 0) {
+        if (diffchisq/chisq < threshold && diffchisq > 0)
+        {
           if (verbose)
             cerr << "No big diff in chisq = " << diffchisq << endl;
           break;

@@ -13,6 +13,7 @@
 
 #include "Pulsar/ArrivalTime.h"
 #include "Pulsar/MatrixTemplateMatching.h"
+#include "Pulsar/MeanArrivalTime.h"
 
 #include "Pulsar/PhaseGradShift.h"
 #include "Pulsar/SincInterpShift.h"
@@ -145,6 +146,7 @@ bool positive_shifts = false;
 unsigned ntest_uncertainty = 0;
 Pulsar::SmoothSinc* sinc = 0;
 Reference::To<ArrivalTime> arrival;
+Reference::To<MeanArrivalTime> mean_arrival_time;
 
 Archive* load_standard (const string& filename);
 
@@ -167,6 +169,8 @@ void usage ()
     "\n"
     "Fitting options:\n"
     "  -a stdfiles      Automatically select standard from specified group\n"
+    "  -P               Do not fscrunch the standard (frequency-dependent template)\n"
+    "  -I nsubband      Output nsubband TOAs with delta-DM (implies -P)\n"
     "  -D               Denoise standard \n"
     "  -d               Output only positively delayed arrival times \n"
     "  -e cfg1[,cfgN]   Estimator configuration option[s] \n"
@@ -178,10 +182,10 @@ void usage ()
     "                   (use of this option implies SIS) \n"
     "\n"
     "Matrix template matching options: \n"
+    "  -p               Enable matrix template matching \n"
     "  -c               Choose the maximum harmonic \n"
     "  -n harmonics     Use up to the specified number of harmonics \n"
     "  -o               Output best-fit matrix model parameters \n"
-    "  -p               Enable matrix template matching \n"
     "\n"
     "Algorithm Selection:\n"
     "  -A name          Select shift algorithm [default: PGS] \n"
@@ -275,7 +279,7 @@ int main (int argc, char** argv) try
 #define PLOT_ARGS
 #endif
 
-  const char* args = "a:A:bcC:Dde:E:f:Fg:G:hj:J:K:m:M:n:opPqRrS:s:TuU:vVxX:z:" PLOT_ARGS;
+  const char* args = "a:A:bcC:Dde:E:f:Fg:G:hI:j:J:K:m:M:n:opPqRrS:s:TuU:vVxX:z:" PLOT_ARGS;
 
   int gotc = 0;
 
@@ -362,6 +366,12 @@ int main (int argc, char** argv) try
     case 'h':
       usage ();
       return 0;
+
+    case 'I':
+      mean_arrival_time = new MeanArrivalTime;
+      mean_arrival_time->set_num_subbands(atoi(optarg));
+      full_freq = true;
+      break;
 
     case 'j':
       separate (optarg, jobs, ",");
@@ -498,6 +508,13 @@ int main (int argc, char** argv) try
     return -1;
   } 
   
+  if (mean_arrival_time)
+  {
+    cerr << "pat: setting output format to tempo2 IPTA" << endl;
+    outFormat = "tempo2";
+    outFormatFlags = "IPTA";
+  }
+
   if (!outFormat.empty()) arrival->set_format (outFormat);
   arrival->set_format_flags (outFormatFlags);
   arrival->set_attributes (commands);
@@ -514,6 +531,9 @@ int main (int argc, char** argv) try
     full_poln->set_choose_maximum_harmonic (choose_maximum_harmonic);
     full_poln->set_unload_matrix_model(output_matrix_model_parameters);
   }
+
+  if (full_freq && mean_arrival_time)
+    arrival->set_mean_estimator(mean_arrival_time);
 
   if (!stdFile.empty() && !std_multiple && !gaussian)
     stdarch = load_standard (stdFile);
@@ -652,7 +672,7 @@ int main (int argc, char** argv) try
 
     if (output_profile_residuals)
     {
-      Archive* residual = arrival->get_residual ();
+      Reference::To<Archive> residual = arrival->get_residual ();
       string filename = arch->get_filename() + ".resid";
       residual->unload (filename);
     }

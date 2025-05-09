@@ -23,6 +23,7 @@
 
 #include "Horizon.h"
 #include "Pauli.h"
+#include "BoxMuller.h"
 
 #include <iostream>
 #include <algorithm>
@@ -61,12 +62,21 @@ unsigned nobs = 12;
 // number of calibrator observations
 unsigned ncal = 1;
 
+// noise added to data
+float noise = 0.0;
+
 // two models: Hamaker or Britton
 bool hamaker = true;
 
 // plot things
 bool verbose = false;
 bool vverbose= false;
+
+// test the Geometric Akaike Information Criterion
+// 1 - fit variations when there are none
+// 2 - fit variations when there are some
+
+int test_GIC = 0;
 
 void usage ()
 {
@@ -82,10 +92,13 @@ void usage ()
        << difficulty << ")\n"
     "  -f x maximum fractional polarization of sources (default="
        << max_poln << ")\n"
+    "  -G n test the Geometric Akaike Information Criterion\n"
     "  -i N number of iterations (default="
        << nloop << ")\n"
     "  -l x hour angle range (default="
        << ha_max << ")\n"
+    "  -n x standard deviation of noise (default="
+       << noise << ")\n"
     "  -o N number of observations (default="
        << nobs << ")\n"
     "  -s N number of source states (default="
@@ -188,13 +201,15 @@ int compare (Jones<double> model_receiver, Jones<double> receiver, float max)
 // as a function of axis, starting at axis_min and ending at axis_max
 //
 void observe (vector<Calibration::CoherencyMeasurementSet>& observations,
-	      vector< Stokes<double> >& states, float variance,
-	      MEAL::Complex2& signal_path,
-	      MEAL::Axis<double>& axis, 
-	      double axis_min, double axis_max,
+              vector< Stokes<double> >& states, float variance,
+              MEAL::Complex2& signal_path,
+              MEAL::Axis<double>& axis, 
+              double axis_min, double axis_max,
               unsigned path_index,
-	      unsigned start_index)
+              unsigned start_index)
 {
+  BoxMuller gasdev;
+
   float obs_step = 1.0;
 
   if (observations.size() > 1)
@@ -203,8 +218,8 @@ void observe (vector<Calibration::CoherencyMeasurementSet>& observations,
   // the time between each calibrator observation
   float axis_step = (axis_max - axis_min) / obs_step;
 
-  for (unsigned iobs = 0; iobs < observations.size(); iobs++) {
-
+  for (unsigned iobs = 0; iobs < observations.size(); iobs++)
+  {
     // form the rotation matrix about the V-axis
     float abscissa = axis_min + float(iobs) * axis_step;
 
@@ -217,14 +232,18 @@ void observe (vector<Calibration::CoherencyMeasurementSet>& observations,
     //if (vverbose)
       //cerr << "iobs=" << iobs << " xform=" << xform << endl;
 
-    for (unsigned istate = 0; istate < states.size(); istate++) {
-
+    for (unsigned istate = 0; istate < states.size(); istate++)
+    {
       Stokes<double> value = transform( states[istate], xform );
       Stokes< Estimate<double> > stokes;
 
-      for (unsigned ipol=0; ipol<4; ipol++) {
-	stokes[ipol].val = value[ipol];
-	stokes[ipol].var = variance;
+      for (unsigned ipol=0; ipol<4; ipol++)
+      {
+        if (noise > 0.0)
+          value[ipol] += noise * gasdev();
+
+        stokes[ipol].val = value[ipol];
+        stokes[ipol].var = variance;
       }
 
       // form a measurement
@@ -233,23 +252,70 @@ void observe (vector<Calibration::CoherencyMeasurementSet>& observations,
 
       // add the measurement to this coordinate
       observations[iobs].push_back (state);
-
     }
-
   }
-
 }
 
 
 float min_fracpoln_fail = 1.0;
 float max_fracpoln_fail = 0.0;
 
+MEAL::Axis<double> hour_angle;
+
+Calibration::SingleAxisPolynomial* add_single_axis_polynomial (MEAL::ProductRule<MEAL::Complex2>& signal_path)
+{
+  // add a time-varying transformation to the signal path  
+  auto backend = new Calibration::SingleAxisPolynomial (ncoef);
+  signal_path.add_model (backend);
+
+  // must be fixed at t=0 (or else covariant with system)
+  backend->set_infit (0, false);
+
+  // make the backend vary as a function of hour angle
+  backend->set_argument (0, &hour_angle);
+
+  return backend;
+}
+
+float AIC = 0.0;
+float GIC = 0.0;
+float SIC = 0.0;
+
+void calculate_criteria(const Calibration::ReceptionModel::Solver* solver, unsigned ndim)
+{
+  cerr << "chisq=" << solver->get_chisq() << " nfree=" << solver->get_nfree() << " n_infit=" << solver->get_nparam_infit() << " ndat=" << solver->get_ndat_constraint() << endl;
+  cerr << "log_det=" << solver->get_log_det_curvature() << " log_cond=" << solver->get_log_cond_curvature() << endl;
+
+  AIC = solver->get_chisq() + 2.0 * solver->get_nparam_infit();
+
+  float N = solver->get_ndat_constraint() * 0.25;
+  GIC = AIC + 2.0 * ndim * N;
+
+  SIC = solver->get_chisq() + solver->get_log_det_curvature();
+
+  cerr << "AIC=" << AIC << " GIC=" << GIC << " SIC=" << SIC << endl;
+}
+
+float min_AIC, max_AIC = 0.0;
+float min_GIC, max_GIC = 0.0;
+float min_SIC, max_SIC = 0.0;
+
+void update_min_max (float& min, float& max, float val)
+{
+  if (min == 0.0 || val < min)
+    min = val;
+  if (max == 0.0 || val > max)
+    max = val;
+}
+
+double mean_AIC = 0.0;
+double mean_GIC = 0.0;
+double mean_SIC = 0.0;
+
 int runtest (Calibration::Parallactic& parallactic)
 {
-  // create an hour angle axis and connect parallactic.set_hour_angle to it
-  MEAL::Axis<double> hour_angle;
-  hour_angle.signal.connect (&parallactic,
-			     &Calibration::Parallactic::set_hour_angle);
+  // connect parallactic.set_hour_angle to hour_angle axis
+  hour_angle.signal.connect (&parallactic, &Calibration::Parallactic::set_hour_angle);
 
   // the randomly-generated receiver
   Jones<double> receiver;
@@ -258,20 +324,18 @@ int runtest (Calibration::Parallactic& parallactic)
   // a fake variance for now (add noise later)
   float variance = 1e-4;
 
+  if (noise > 0.0)
+    variance = noise * noise;
+
   // the transformation through which the polarized signals are propagated
   MEAL::ProductRule<MEAL::Complex2> signal_path;
 
-  if (ncoef) {
-    
-    // add a time-varying transformation to the signal path
-    Calibration::SingleAxisPolynomial* backend = 0;
-    
-    backend = new Calibration::SingleAxisPolynomial (ncoef);
-    signal_path.add_model (backend);
+  if (ncoef && test_GIC == 2)
+  {
+    cerr << "Adding SingleAxisPolynomial with ncoef=" << ncoef << " to true signal path" << endl;
+    auto backend = add_single_axis_polynomial (signal_path);
 
-    // make the backend vary as a function of hour angle
-    backend->set_argument (0, &hour_angle);
-
+    backend->random(difficulty / 1000.0, ha_max);
   }
 
   // a constant transformation equal to the receiver
@@ -293,8 +357,7 @@ int runtest (Calibration::Parallactic& parallactic)
 
   vector< Stokes<double> > source (1, calibrator);
 
-  observe (calibrator_obs, source, variance, signal_path, hour_angle,
-	   ha_min, ha_max, 0, 0);
+  observe (calibrator_obs, source, variance, signal_path, hour_angle, ha_min, ha_max, 0, 0);
 
 
   // ///////////////////////////////////////////////////////////////////////
@@ -318,7 +381,8 @@ int runtest (Calibration::Parallactic& parallactic)
   source.resize (nstates);
 
   float intensity = 10;
-  for (unsigned istate = 0; istate < nstates; istate++) {
+  for (unsigned istate = 0; istate < nstates; istate++)
+  {
     random_value (source[istate], intensity, max_poln);
 
     if (vverbose)
@@ -329,8 +393,7 @@ int runtest (Calibration::Parallactic& parallactic)
   if (ncal)
     start_index = 1;
 
-  observe (source_obs, source, variance, signal_path, hour_angle,
-	   ha_min, ha_max, 1, start_index);
+  observe (source_obs, source, variance, signal_path, hour_angle, ha_min, ha_max, 1, start_index);
 
 
   // ///////////////////////////////////////////////////////////////////////
@@ -344,8 +407,8 @@ int runtest (Calibration::Parallactic& parallactic)
   // the best guess for each of the source states
   vector< Calibration::MeanCoherency > source_guess (nstates);
 
-  for (unsigned iobs = 0; iobs < nobs; iobs++) {
-
+  for (unsigned iobs = 0; iobs < nobs; iobs++)
+  {
     source_obs[iobs].set_coordinates();
 
     Jones<Estimate<double> > para = parallactic.evaluate ();
@@ -353,30 +416,27 @@ int runtest (Calibration::Parallactic& parallactic)
     // if (vverbose)
       // cerr << "iobs=" << iobs << " para=" << para << endl;
 
-    for (unsigned istate = 0; istate < nstates; istate++) {
-
+    for (unsigned istate = 0; istate < nstates; istate++)
+    {
       // get the observation
       Stokes< Estimate<double> > state = source_obs[iobs][istate].get_stokes();
 
       if (vverbose)
-	cerr << "state["<<istate<<"]=" << state << endl;
+        cerr << "state["<<istate<<"]=" << state << endl;
 
       // deparallactify
       state = transform( state, herm (para) );
 
       // add to the observed average
       source_guess[istate].integrate (state);
-
     }
-
   }
-
 
   // the model of the receiver and source state, and measurements
   Calibration::ReceptionModel model;
 
-  if (ncal) {
-
+  if (ncal)
+  {
     // ///////////////////////////////////////////////////////////////////////
     //
     // add the calibrator constraint to the model
@@ -396,7 +456,6 @@ int runtest (Calibration::Parallactic& parallactic)
       cerr << "add MEAL::Coherency to ReceptionModel" << endl;
     
     model.add_input (state);
-
   }
 
   // ///////////////////////////////////////////////////////////////////////
@@ -404,8 +463,8 @@ int runtest (Calibration::Parallactic& parallactic)
   // add the source constraints to the model
   //
 
-  for (unsigned istate = 0; istate < nstates; istate++) {
-
+  for (unsigned istate = 0; istate < nstates; istate++)
+  {
     source_model[istate] = new MEAL::PhysicalCoherency;
 
     // update the best first guess
@@ -417,7 +476,6 @@ int runtest (Calibration::Parallactic& parallactic)
 
     // add to the model
     model.add_input (source_model[istate]);
-
   }
 
   // ///////////////////////////////////////////////////////////////////////
@@ -428,19 +486,10 @@ int runtest (Calibration::Parallactic& parallactic)
   MEAL::ProductRule<MEAL::Complex2>* path;
   path = new MEAL::ProductRule<MEAL::Complex2>;
 
-  if (ncoef) {
-
-    // add a time-varying transformation
-    Calibration::SingleAxisPolynomial* backend;
-    backend = new Calibration::SingleAxisPolynomial (ncoef);
-
-    // must be fixed at t=0 (or else covariant with system)
-    backend->set_infit (0, false);
-
-    path->add_model (backend);
-
-    // make the backend vary as a function of hour angle
-    backend->set_argument (0, &hour_angle);
+  if (ncoef && !test_GIC)
+  {
+    cerr << "Adding SingleAxisPolynomial with ncoef=" << ncoef << " to model signal path" << endl;
+    add_single_axis_polynomial (*path);
   }
 
   // ///////////////////////////////////////////////////////////////////////
@@ -511,18 +560,67 @@ int runtest (Calibration::Parallactic& parallactic)
   // solve the model!
   //
 
-  model.get_solver()->set_convergence_chisq (variance*variance);
+  if (noise == 0.0)
+  {
+    // original fake variance kludge
+    model.get_solver()->set_convergence_chisq (variance*variance);
+  }
 
   try
   {
-    if (verbose)
-      cerr << "runtest call MeasurementEquation::solve" << endl;
+    if (verbose || test_GIC)
+      cerr << "runtest call Calibration::ReceptionModel::solve" << endl;
     model.solve ();
   }
   catch (Error& error)
   {
     cerr << error << endl;
     return -1;
+  }
+ 
+  float AIC_0 = 0.0;
+  float GIC_0 = 0.0;
+  float SIC_0 = 0.0;
+
+  if (ncoef && test_GIC)
+  {
+    calculate_criteria(model.get_solver(), 0);
+
+    AIC_0 = AIC;
+    GIC_0 = GIC;
+    SIC_0 = SIC;
+    
+    cerr << "Adding SingleAxisPolynomial with ncoef=" << ncoef << " to model signal path after first solution" << endl;
+    add_single_axis_polynomial (*path);
+
+    cerr << "Calling Calibration::ReceptionModel::solve again" << endl;
+
+    try
+    {
+      cerr << "runtest call Calibration::ReceptionModel::solve" << endl;
+      model.solve ();
+    }
+    catch (Error& error)
+    {
+      cerr << error << endl;
+      return -1;
+    }
+
+    calculate_criteria(model.get_solver(), 1);
+
+    float delta_AIC = AIC - AIC_0;
+    update_min_max (min_AIC, max_AIC, delta_AIC);
+    mean_AIC += delta_AIC;
+
+    float delta_GIC = GIC - GIC_0;
+    update_min_max (min_GIC, max_GIC, delta_GIC);
+    mean_GIC += delta_GIC;
+    
+    float delta_SIC = SIC - SIC_0;
+    update_min_max (min_SIC, max_SIC, delta_SIC);
+    mean_SIC += delta_SIC;
+
+    return 0;
   }
 
   float limit = error_tolerance * error_tolerance * variance;
@@ -574,38 +672,38 @@ int runtest (Calibration::Parallactic& parallactic)
 
       if (verbose)
       {
-	model.set_input_index (istate);
-  
-	for (unsigned iobs=0; iobs<nobs; iobs++)
-	{
-	  Calibration::CoherencyMeasurementSet& meas = source_obs[iobs];
-	  
-	  for (unsigned imeas=0; imeas<meas.size(); imeas++)
-	  {
-	    if (meas[imeas].get_input_index() == istate)
-	    {
-	      meas.set_coordinates ();
-	      
-	      vector< Jones<double> > grad;
-	      Stokes<double> observed_source;
-	      
-	      observed_source = coherency( model.evaluate (&grad) );
-	      
-	      cerr << "obsout["<<iobs<<"]=" << observed_source
-		   << "\n obsin["<<iobs<<"]=" 
-		   << meas[imeas].get_stokes() << endl;
-	    }
-	  } // for each measurement
-	} // for each observation
+        model.set_input_index (istate);
+        
+        for (unsigned iobs=0; iobs<nobs; iobs++)
+        {
+          Calibration::CoherencyMeasurementSet& meas = source_obs[iobs];
+          
+          for (unsigned imeas=0; imeas<meas.size(); imeas++)
+          {
+            if (meas[imeas].get_input_index() == istate)
+            {
+              meas.set_coordinates ();
+              
+              vector< Jones<double> > grad;
+              Stokes<double> observed_source;
+              
+              observed_source = coherency( model.evaluate (&grad) );
+              
+              cerr << "obsout["<<iobs<<"]=" << observed_source
+            << "\n obsin["<<iobs<<"]=" 
+            << meas[imeas].get_stokes() << endl;
+            }
+          } // for each measurement
+        } // for each observation
       } // if verbose
           
       float fracpoln = source[istate].abs_vect () / source[istate][0];
       
       if (fracpoln < min_fracpoln_fail)
-	min_fracpoln_fail = fracpoln;
+        min_fracpoln_fail = fracpoln;
       
       if (fracpoln > max_fracpoln_fail)
-	max_fracpoln_fail = fracpoln;
+        max_fracpoln_fail = fracpoln;
       
       error = true;
     }
@@ -624,7 +722,7 @@ int runtest (Calibration::Parallactic& parallactic)
 int main (int argc, char** argv)
 {
   int c = 0;
-  const char* args = "b:c:d:Df:hi:Oo:p:s:t:vVx";
+  const char* args = "b:c:d:f:G:hi:l:n:o:s:t:vV";
   while ((c = getopt(argc, argv, args)) != -1)
     switch (c) {
 
@@ -639,13 +737,17 @@ int main (int argc, char** argv)
     case 'd':
       difficulty = atof (optarg);
       if (difficulty * sqrt(3.0) > 1.0 || difficulty < 0.0)
-	cerr << "difficulty must be >0 and <" << sqrt(3.0) << endl;
+        cerr << "difficulty must be >0 and <" << sqrt(3.0) << endl;
       break;
 
     case 'f':
       max_poln = atof (optarg);
       if (max_poln > 1.0 || max_poln < 0.0)
-	cerr << "maximum fractional polarization must be >0 and <1" << endl;
+        cerr << "maximum fractional polarization must be >0 and <1" << endl;
+      break;
+
+    case 'G':
+      test_GIC = atoi (optarg);
       break;
 
     case 'i':
@@ -655,6 +757,10 @@ int main (int argc, char** argv)
     case 'l':
       ha_max = atof (optarg);
       ha_min = -ha_max;
+      break;
+
+    case 'n':
+      noise = atof (optarg);
       break;
 
     case 'o':
@@ -706,11 +812,9 @@ int main (int argc, char** argv)
        << " calibrator observation" << endl;
 
   if (ncoef)
-    cerr << "Including a backend with " << ncoef << " polynomial coefficients"
-	 << endl;
+    cerr << "Including a backend with " << ncoef << " polynomial coefficients" << endl;
 
-  cerr << "Hour angle ranges from " 
-       << ha_min << " to " << ha_max << " hours" << endl;
+  cerr << "Hour angle ranges from " << ha_min << " to " << ha_max << " hours" << endl;
 
   ha_min *= M_PI/12.0;
   ha_max *= M_PI/12.0;
@@ -725,20 +829,20 @@ int main (int argc, char** argv)
     for (unsigned i=0; i<nloop; i++)
     {
       if (vverbose)
-	cerr << "runtest " << i << endl;
+        cerr << "runtest " << i << endl;
 
       if (runtest (parallactic) < 0)
-	errors ++;
+        errors ++;
 
       int finished = (i*100)/nloop;
 
       if ((finished != reported_finished) || (errors != reported_errors))
       {
-	cerr << "Finished: " << finished << "% -- errors: " << errors << 
-	  " (" << float((errors*1000)/(i+1))/10.0 << "%)" << endl;
+        cerr << "Finished: " << finished << "% -- errors: " << errors << 
+          " (" << float((errors*1000)/(i+1))/10.0 << "%)" << endl;
 
-	reported_finished = finished;
-	reported_errors = errors;
+        reported_finished = finished;
+        reported_errors = errors;
       }
 
       hamaker = !hamaker;
@@ -749,12 +853,22 @@ int main (int argc, char** argv)
       float percent = ((errors*1000)/nloop)/10.0;
 
       cerr << "Failed " << errors << " out of " << nloop << " times" 
-	" (" << percent << "%)" << endl;
+              " (" << percent << "%)" << endl;
 
       if (percent > 5)
-	return -1;
+        return -1;
     }
 
+    if (test_GIC)
+    {
+      mean_AIC /= nloop;
+      mean_GIC /= nloop;
+      mean_SIC /= nloop;
+      
+      cout << "delta AIC min=" << min_AIC << "\t max=" << max_AIC << "\t mean=" << mean_AIC << endl;
+      cout << "delta GIC min=" << min_GIC << "\t max=" << max_GIC << "\t mean=" << mean_GIC << endl;
+      cout << "delta SIC min=" << min_SIC << "\t max=" << max_SIC << "\t mean=" << mean_SIC << endl;
+    }
   }
   catch (Error& error)
   {

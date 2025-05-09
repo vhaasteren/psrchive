@@ -1,7 +1,7 @@
 //-*-C++-*-
 /***************************************************************************
  *
- *   Copyright (C) 2004 by Willem van Straten
+ *   Copyright (C) 2004 - 2024 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -10,6 +10,8 @@
 
 #ifndef __Pulsar_DispersionDelay_H
 #define __Pulsar_DispersionDelay_H
+
+#include "Estimate.h"
 
 namespace Pulsar {
 
@@ -26,6 +28,11 @@ namespace Pulsar {
     digits of precision is in standard use by pulsar astronomers (page
     129 of Manchester and Taylor 1977).
   */
+
+  //! Dispersion constant \f$ K \f$ that appears in \f$ DM = K D = K dt / dnu{-2} \f$
+  /*! \f$ K \f$ has units of \f$ {\rm pc\,cm}^{-3} {\rm s}^{-1} {\rm MHz}{-2} \f$ */
+  const double dispersion_constant = 2.41e-4;
+
   class DispersionDelay {
 
   public:
@@ -67,6 +74,9 @@ namespace Pulsar {
     void set_measure (double dispersion_measure);
     //! Get the dispersion measure
     double get_measure () const;
+
+    // given an estimate of the slope \f$ dt / d lambda^2 \f$ in \f$ s m^{-2} \f$, return the DM
+    Estimate<double> get_dispersion_measure(const Estimate<double>& slope) const;
 
   protected:
 

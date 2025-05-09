@@ -159,7 +159,7 @@ namespace Pulsar {
     virtual void export_prepare () const;
 
     //! Ensure that the pulsar observation can be added to the data set
-    virtual void match (const Archive*);
+    virtual bool match (const Archive*, bool throw_exception = true);
 
     //! Add data from the specified sub-integration
     virtual void add_pulsar (const Archive* data, unsigned isub);

@@ -16,9 +16,13 @@ nobase_include_HEADERS = \
 	Pulsar/CoherencyMeasurement.h \
 	Pulsar/CoherencyMeasurementSet.h \
 	Pulsar/ComplexRVMFit.h \
+	Pulsar/ConfigurableProjection.h \
+	Pulsar/ConfigurableProjectionInfo.h \
 	Pulsar/ConstantGainInfo.h \
 	Pulsar/ConvertMJD.h \
+	Pulsar/DataAndModelReport.h \
 	Pulsar/Database.h \
+	Pulsar/DataSetManager.h \
 	Pulsar/DeltaPA.h \
 	Pulsar/DeltaRM.h \
 	Pulsar/Distortion.h \
@@ -43,8 +47,9 @@ nobase_include_HEADERS = \
 	Pulsar/IonosphereCalibrator.h \
 	Pulsar/IRIonosphere.h \
 	Pulsar/IXRInfo.h \
+	Pulsar/KnownVariableTransformation.h \
 	Pulsar/ManualPolnCalibrator.h \
-	Pulsar/ManualVariableTransformation.h \
+	Pulsar/VariableTransformationFile.h \
 	Pulsar/MeanCoherency.h \
 	Pulsar/MeanFeed.h \
 	Pulsar/MeanInstrument.h \
@@ -58,8 +63,10 @@ nobase_include_HEADERS = \
 	Pulsar/OffPulseCalibrator.h \
 	Pulsar/Parallactic.h \
 	Pulsar/PolarCalibrator.h \
+	Pulsar/PolarCalibratorInfo.h \
 	Pulsar/Polarization.h \
 	Pulsar/PolnCalibrator.h \
+	Pulsar/PolnCalibratorInfo.h \
 	Pulsar/PolnCalibratorExtensionUtils.h \
 	Pulsar/PolnCalExtFreqIntegrate.h \
 	Pulsar/PolnProfile.h \
@@ -85,6 +92,7 @@ nobase_include_HEADERS = \
 	Pulsar/SignalPath.h \
 	Pulsar/Simulation.h \
 	Pulsar/SingleAxisCalibrator.h \
+	Pulsar/SingleAxisCalibratorInfo.h \
 	Pulsar/SingleAxis.h \
 	Pulsar/SingleAxisPolynomial.h \
 	Pulsar/SingleAxisSolver.h \
@@ -96,18 +104,23 @@ nobase_include_HEADERS = \
 	Pulsar/StandardPrepare.h \
 	Pulsar/StandardSpectra.h \
 	Pulsar/StepsInfo.h \
-	Pulsar/StokesCovariance.h Pulsar/StokesCrossCovariance.h \
+	Pulsar/StokesCovariance.h \
+	Pulsar/StokesCrossCovariance.h \
 	Pulsar/SystemCalibrator.h \
+	Pulsar/SystemCalibratorManager.h \
 	Pulsar/SystemCalibratorStepFinder.h \
 	Pulsar/SystemCalibratorUnloader.h \
 	Pulsar/UnloadJones.h \
 	Pulsar/TemplateUncertainty.h \
 	Pulsar/TotalCovariance.h \
+	Pulsar/TransformationFactory.h \
 	Pulsar/VariableBackend.h \
 	Pulsar/VariableBackendEstimate.h \
+	Pulsar/VariableFaradayRotation.h \
 	Pulsar/VariableGain.h \
 	Pulsar/VariableProjectionCorrection.h \
 	Pulsar/VariableTransformation.h \
+	Pulsar/VariableTransformationManager.h \
 	Pulsar/VariationInfo.h
 
 libPolarimetry_la_SOURCES = \
@@ -127,9 +140,14 @@ libPolarimetry_la_SOURCES = \
 	CoherencyMeasurement.C \
 	CoherencyMeasurementSet.C \
 	ComplexRVMFit.C \
+	ConfigurableProjection.C \
+	ConfigurableProjectionInfo.C \
+	ConfigurableProjectionExt.C \
 	ConstantGainInfo.C \
 	ConvertMJD.C \
+	DataAndModelReport.C \
 	Database.C \
+	DataSetManager.C \
 	DeltaPA.C \
 	DeltaRM.C \
 	Distortion.C \
@@ -155,11 +173,12 @@ libPolarimetry_la_SOURCES = \
 	Instrument.C \
 	InstrumentInfo.C \
 	Integration_defaraday.C \
+        Integration_transform.C \
 	IonosphereCalibrator.C \
 	IRIonosphere.C \
 	IXRInfo.C \
+	KnownVariableTransformation.C \
 	ManualPolnCalibrator.C \
-	ManualVariableTransformation.C \
 	MeanCoherency.C \
 	MeanFeed.C \
 	MeanInstrument.C \
@@ -173,6 +192,7 @@ libPolarimetry_la_SOURCES = \
 	OffPulseCalibrator.C \
 	Parallactic.C \
 	PolarCalibrator.C \
+	PolarCalibratorInfo.C \
 	Polarization.C \
 	Polar_solve.C \
 	PolnCalibrator.C \
@@ -202,6 +222,7 @@ libPolarimetry_la_SOURCES = \
 	Simulation.C \
 	SingleAxis.C \
 	SingleAxisCalibrator.C \
+	SingleAxisCalibratorInfo.C \
 	SingleAxisPolynomial.C \
 	SingleAxisSolver.C \
 	SolverInfo.C \
@@ -214,15 +235,20 @@ libPolarimetry_la_SOURCES = \
 	StepsInfo.C \
 	StokesCovariance.C StokesCrossCovariance.C \
 	SystemCalibrator.C \
+	SystemCalibratorManager.C \
 	SystemCalibratorUnloader.C \
 	UnloadJones.C \
 	TemplateUncertainty.C \
 	TotalCovariance.C \
+	TransformationFactory.C \
 	VariableBackend.C \
 	VariableBackendEstimate.C \
+	VariableFaradayRotation.C \
 	VariableGain.C \
 	VariableProjectionCorrection.C \
 	VariableTransformation.C \
+	VariableTransformationFile.C \
+	VariableTransformationManager.C \
 	VariationInfo.C
 
 ##############################################################################
@@ -246,8 +272,6 @@ endif
 
 
 SUBDIRS = iri2001
-
-libPolarimetry_la_LIBADD = iri2001/libiri.la @GSL_LIBS@
 
 bin_PROGRAMS = rmrot simpol
 
@@ -281,6 +305,13 @@ test_ModeSeparation_SOURCES	= test_ModeSeparation.C
 test_copy_SOURCES		= test_copy.C
 test_IRIonosphere_SOURCES	= test_IRIonosphere.C
 
+if HAVE_YAMLCPP
+
+  check_PROGRAMS += test_yaml
+  test_yaml_SOURCES = test_yaml.C
+
+endif
+
 #############################################################################
 #
 
@@ -290,8 +321,9 @@ LDADD = libPolarimetry.la \
 	$(top_builddir)/Util/libpsrutil.la \
 	$(top_builddir)/Util/epsic/src/util/libutil.la 
 
+libPolarimetry_la_LIBADD = iri2001/libiri.la @GSL_LIBS@ @YAMLCPP_LIBS@
 
 include $(top_srcdir)/config/Makefile.include
 
-AM_CPPFLAGS += @GSL_CFLAGS@
+AM_CPPFLAGS += @GSL_CFLAGS@ @YAMLCPP_CFLAGS@
 

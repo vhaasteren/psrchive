@@ -12,13 +12,13 @@
 #define __Pulsar_ExtensionInterpreter_h
 
 #include "Pulsar/InterpreterExtension.h"
-#include "Pulsar/Editor.h"
+#include "Pulsar/ArchiveEditor.h"
 
 namespace Pulsar {
 
   class ExtensionInterpreter : public Interpreter::Extension {
 
-    Pulsar::Editor editor;
+    Pulsar::ArchiveEditor editor;
 
   public:
 

@@ -168,8 +168,10 @@ void Pulsar::Telescopes::set_telescope_info (Telescope *t, Archive *a)
 
         default: 
             // Unknown code, throw error after calling Telecope::set_coordinates
-            emsg = "Unrecognized telescope code (" + a->get_telescope() + ")";
-            warn << emsg << std::endl;
+            emsg = "Unrecognized telescope code '" + a->get_telescope() + "'";
+
+            warn << "Pulsar::Telescopes::set_telescope_info"
+		    " unrecognized telescope code '" << a->get_telescope() << "'" << std::endl;
             break;
     }
 

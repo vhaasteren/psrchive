@@ -8,6 +8,11 @@
 #include "Pulsar/ArchiveInterface.h"
 #include "Pulsar/StatisticsInterface.h"
 #include "Pulsar/PolnStatistics.h"
+
+#include "Pulsar/PolnCalibratorExtension.h"
+#include "Pulsar/ConfigurableProjectionExtension.h"
+#include "Pulsar/ConfigurableProjection.h"
+
 #include "substitute.h"
 #include "evaluate.h"
 #include "execute.h"
@@ -40,6 +45,20 @@ TextInterface::Parser* standard_interface (Archive* archive)
 
   // cerr << "standard_interface insert new Statistics::Interface" << endl;
   interface->insert( new Statistics::Interface(stats) );
+
+  auto pce = archive->get<PolnCalibratorExtension>();
+  auto cpe = archive->get<ConfigurableProjectionExtension>();
+
+  if (pce && cpe && pce->get_ndim() == 0) try
+  {
+    // cerr << "standard_interface: need to update PolnCalibratorExtension" << endl;
+    Reference::To<ConfigurableProjection> projection = new ConfigurableProjection(cpe);
+    pce->set_ndim(projection->get_ndim());
+  }
+  catch (Error& error)
+  {
+    // cerr << "standard_interface ignoring exception thrown while updating PolnCalibratorExtension" << endl;
+  }
 
   // cerr << "standard_interface Statistics::Interface::instances=" << Statistics::Interface::get_instance_count () << endl;
   return interface.release();

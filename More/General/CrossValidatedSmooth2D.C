@@ -6,8 +6,8 @@
  ***************************************************************************/
 
 #include "Pulsar/SplineSmooth.h"
-#include "UnaryStatistic.h"
 #include "EstimateStats.h"
+#include "statutil.h"
 #include "pairutil.h"
 
 #include <algorithm>

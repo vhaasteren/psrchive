@@ -15,7 +15,7 @@
 #include "Warning.h"
 #include "true_math.h"
 
-//#define _DEBUG 1
+// #define _DEBUG 1
 #include "debug.h"
 
 #include <algorithm>
@@ -42,6 +42,8 @@ static Warning warn;
 //! Default constructor
 TimeDomainCovariance::TimeDomainCovariance ()
 {
+  DEBUG("TimeDomainCovariance ctor this=" << this);
+
   eigen_decomposed = false;
   subtract_mean = true;
   first_bin = 0;
@@ -50,6 +52,8 @@ TimeDomainCovariance::TimeDomainCovariance ()
 
 void TimeDomainCovariance::reset ()
 {
+  DEBUG("TimeDomainCovariance::reset this=" << this);
+
   wt_sum = 0.0;
   wt_sum2 = 0.0;
   count = 0;
@@ -66,6 +70,8 @@ void TimeDomainCovariance::reset ()
 
 void TimeDomainCovariance::set_rank ( unsigned value )
 {
+  DEBUG("TimeDomainCovariance::set_rank rank=" << value);
+
   if ( rank == 0 )
     rank = value;
   else
@@ -84,6 +90,8 @@ unsigned TimeDomainCovariance::get_rank ()
 
 void TimeDomainCovariance::set_count ( unsigned value )
 {
+  DEBUG("TimeDomainCovariance::set_count count=" << value);
+
   count = value;
 }
 
@@ -94,6 +102,8 @@ unsigned TimeDomainCovariance::get_count ()
 
 void TimeDomainCovariance::add_Profile ( const Profile* p )
 {
+  DEBUG("TimeDomainCovariance::add_Profile this=" << this << " Profile=" << p);
+
   float wt = p->get_weight() ;
 
   add_Profile ( p, wt );
@@ -101,18 +111,25 @@ void TimeDomainCovariance::add_Profile ( const Profile* p )
 
 void TimeDomainCovariance::add_Profile ( const Profile* p, float wt )
 {
+  DEBUG("TimeDomainCovariance::add_Profile this=" << this << " Profile=" << p << " wt=" << wt);
+
   if (finalized)
-    throw Error (InvalidState, "TimeDomainCovariance::addProfile",
-		 "already finalized");
+    throw Error (InvalidState, "TimeDomainCovariance::addProfile", "already finalized");
   
   if (wt == 0.0 )
     return;
 
   if (rank == 0)
+  {
+    DEBUG("TimeDomainCovariance::add_Profile this=" << this << " set rank to nbin=" << p->get_nbin());
     set_rank ( p->get_nbin () );
+  }
+
   else if (rank != p->get_nbin () )
+  {
     throw Error (InvalidParam, "TimeDomainCovariance::addProfile",
 		 "nbin=%u != rank=%u", p->get_nbin(), rank);
+  }
 
   if (!true_math::finite(wt))
     throw Error (InvalidParam, "TimeDomainCovariance::addProfile", "non-finite weight=%f", wt);
@@ -232,14 +249,16 @@ const double* TimeDomainCovariance::get_eigenvalues_pointer ()
 
 void TimeDomainCovariance::finalize ()
 {
+  DEBUG("TimeDomainCovariance::finalize this=" << this);
+
   if ( finalized )
     return;
 
   if (rank == 0)
-    throw Error (InvalidState, "TimeDomainCovariance::finalize", "no data");
+    throw Error (InvalidState, "TimeDomainCovariance::finalize", "no data (rank == 0)");
 
   if (wt_sum == 0.0)
-    throw Error (InvalidState, "TimeDomainCovariance::finalize", "no valid data");
+    throw Error (InvalidState, "TimeDomainCovariance::finalize", "no valid data (weighted sum == 0)");
 
   if (!true_math::finite(wt_sum))
     throw Error (InvalidState, "TimeDomainCovariance::finalize", "non-finite weight sum=%lf", wt_sum);
@@ -259,7 +278,7 @@ void TimeDomainCovariance::finalize ()
     DEBUG("TimeDomainCovariance::finalize subtracting mean");
     for (unsigned i=0; i<rank; i++)
       for (unsigned j=0; j<rank; j++)
-	covariance_matrix[i*rank + j] -= mean[i]*mean[j];
+        covariance_matrix[i*rank + j] -= mean[i]*mean[j];
   }
 
   for (unsigned i=0; i<rank; i++)
@@ -272,6 +291,8 @@ void TimeDomainCovariance::finalize ()
 
 void TimeDomainCovariance::eigen ()
 {
+  DEBUG("TimeDomainCovariance::eigen this=" << this);
+
   if (eigen_decomposed)
     return;
 
@@ -356,6 +377,8 @@ void TimeDomainCovariance::eigen ()
 
 void TimeDomainCovariance::choose_bins ( unsigned val_1, unsigned val_2 )
 {
+  DEBUG("TimeDomainCovariance::choose_bins this=" << this << " val_1=" << val_1 << " val_2=" << val_2);
+
   if (val_1 < val_2)
   { 
     first_bin = val_1;

@@ -14,9 +14,8 @@
 #include "Pulsar/StandardOptions.h"
 #include "Pulsar/UnloadOptions.h"
 
-#include "UnaryStatistic.h"
 #include "EstimateStats.h"
-#include "Error.h"
+#include "statutil.h"
 
 #include <vector>
 

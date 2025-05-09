@@ -9,23 +9,34 @@
 #ifndef __Pulsar_VariableProjectionCorrection_h
 #define __Pulsar_VariableProjectionCorrection_h
 
-#include "Pulsar/VariableTransformation.h"
+#include "Pulsar/KnownVariableTransformation.h"
 #include "Pulsar/ProjectionCorrection.h"
 
 namespace Pulsar {
 
-  //! Adapts a VariableTransformation to a ProjectionCorrection
-  class VariableProjectionCorrection : public VariableTransformation
+  //! Adapts a KnonwnVariableTransformation to a ProjectionCorrection
+  class VariableProjectionCorrection : public KnownVariableTransformation
   {
     mutable ProjectionCorrection correction;
-    mutable Jones<double> transformation;
+    mutable LabelledJones<double> feed_projection;
+    mutable LabelledJones<double> antenna_projection;
+    mutable LabelledJones<double> transformation;
 
     void build () const;
 
   public:
 
+    //! Get the projection correction
+    ProjectionCorrection* get_correction () { return &correction; }
+    
+    //! Get the feed rotation
+    LabelledJones<double> get_feed_projection ();
+
+    //! Get the antenna projection
+    LabelledJones<double> get_antenna_projection ();
+
     //! Get the transformation
-    Jones<double> get_transformation ();
+    LabelledJones<double> get_transformation () override;
 
     //! Return true if the transformation is required
     bool required () const;

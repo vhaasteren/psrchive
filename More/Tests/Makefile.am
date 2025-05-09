@@ -53,7 +53,7 @@ nobase_include_HEADERS = model_profile.h	\
 	Pulsar/PhaseWeightFunction.h		\
 	Pulsar/ProfileWeightFunction.h		\
 	Pulsar/Plotter.h			\
-	Pulsar/IntegrationTI.h			\
+	Pulsar/IntegrationInterface.h			\
 	Pulsar/BaselineWindow.h			\
 	Pulsar/Pulsar.h				\
 	Pulsar/ReflectStokes.h			\
@@ -125,7 +125,7 @@ libpsrchive_la_SOURCES =			\
 	Integration_new_PolnProfile.C		\
 	Integration_remove_baseline.C		\
 	Integration_resize.C			\
-	IntegrationTI.C				\
+	IntegrationInterface.C				\
 	Integration_toas.C			\
 	Integration_total.C			\
 	Integration_transform.C			\
@@ -350,16 +350,6 @@ endif
 
 SUBDIRS += .
 
-if HAVE_QT
-if HAVE_PGPLOT
-SUBDIRS += GUI
-endif
-endif
-
-if HAVE_QTDRIV
-SUBDIRS += rhythm
-endif
-
 # ######################################################################
 #
 # PGPLOT specific code
@@ -479,5 +469,5 @@ libpsrchive_la_LIBADD += @FFT_LIBS@ @CFITSIO_LIBS@ @FLIBS@
 
 include $(top_srcdir)/config/Makefile.local
 
-# AM_CPPFLAGS += @PGPLOT_CFLAGS@ @CFITSIO_CFLAGS@ @MPI_CFLAGS@
+# AM_CPPFLAGS += @PGPLOT_CFLAGS@ @CFITSIO_CFLAGS@
 

@@ -5,18 +5,18 @@
  *
  ***************************************************************************/
 
-#include "Pulsar/ManualVariableTransformation.h"
+#include "Pulsar/VariableTransformationFile.h"
 #include "Pulsar/Integration.h"
 
 using namespace Pulsar;
 using namespace std;
 
-ManualVariableTransformation::ManualVariableTransformation (ManualPolnCalibrator* _calibrator)
+VariableTransformationFile::VariableTransformationFile (ManualPolnCalibrator* _calibrator)
 {
   calibrator = _calibrator;
 }
 
-Jones<double> ManualVariableTransformation::get_transformation ()
+LabelledJones<double> VariableTransformationFile::get_transformation ()
 {
   const Integration* the_subint = archive->get_Integration(subint);
   MJD epoch = the_subint->get_epoch();
@@ -24,10 +24,11 @@ Jones<double> ManualVariableTransformation::get_transformation ()
 
   ManualPolnCalibrator::Entry best_match = calibrator->match(epoch, freq);
 
-  Jones<double> retval = best_match.get_response();
-
+  LabelledJones<double> retval = best_match.get_response();
+  retval.label = "from file";
+  
 #if 0
-  cerr << "ManualVariableTransformation::get_transformation"
+  cerr << "VariableTransformationFile::get_transformation"
        << " subint=" << subint << " data epoch=" << epoch.printdays(13) 
        << " chan=" << chan << " data freq=" << freq << endl
        << " cal epoch=" << best_match.ref_epoch.printdays(13)

@@ -12,6 +12,7 @@
 #include "Pulsar/SolverInfo.h"
 #include "Pulsar/IXRInfo.h"
 #include "Pulsar/ConstantGainInfo.h"
+#include "Pulsar/ConfigurableProjectionInfo.h"
 
 #include "Pulsar/Archive.h"
 
@@ -30,6 +31,7 @@ Pulsar::CalibratorInfo::CalibratorInfo ()
   reduced_chisq = false;
   intrinsic_crosspol_ratio = false;
   constant_gain = false;
+  configurable_projection = false;
 
   outlier_threshold = 0.0;
   subint.set_integrate( true );
@@ -57,6 +59,17 @@ void Pulsar::CalibratorInfo::prepare (const Archive* data)
 
   else if (constant_gain)
     info = new ConstantGainInfo (new FluxCalibrator(data));
+
+  else if (configurable_projection)
+  {
+    auto ext = data->get<ConfigurableProjectionExtension>();
+    if (!ext)
+      throw Error (InvalidParam, "Pulsar::CalibratorInfo::prepare", 
+                   "archive has no ConfigurableProjectionExtension");
+
+    auto projection = new ConfigurableProjection (ext);
+    info = new ConfigurableProjection::Info (projection);
+  }
 
   else
     info = CalibratorParameter::get_Info (data, subint, outlier_threshold);
@@ -184,6 +197,10 @@ Pulsar::CalibratorInfo::Interface::Interface (CalibratorInfo* instance)
   add( &CalibratorInfo::get_calibrator_stokes,
        &CalibratorInfo::set_calibrator_stokes,
        "cal", "Plot the calibrator Stokes parameters" );
+
+  add( &CalibratorInfo::get_configurable_projection,
+       &CalibratorInfo::set_configurable_projection,
+       "proj", "Plot the configurable projection parameters" );
 
   add( &CalibratorInfo::get_calibrator_stokes_degree,
        &CalibratorInfo::set_calibrator_stokes_degree,

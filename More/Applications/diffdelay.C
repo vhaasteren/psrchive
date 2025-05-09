@@ -11,7 +11,7 @@
 #include "Pulsar/PolnCalibratorExtension.h"
 #include "Pulsar/SingleAxisCalibrator.h"
 
-#include "ChiSquared.h"
+#include "LinearRegression.h"
 
 using namespace std;
 using namespace Pulsar;
@@ -109,8 +109,11 @@ void diffdelay::process (Pulsar::Archive* archive)
   Estimate<double> fit_phi0 = 0;
   Estimate<double> fit_tau = 0;
 
-  weighted_linear_fit (fit_tau, fit_phi0, yval, freq_offset, wt);
-
+  LinearRegression fit;
+  fit.weighted_least_squares (yval, freq_offset, wt);
+  fit_tau = fit.scale;
+  fit_phi0 = fit.offset;
+   
   cout << archive->get_filename() << " tau= " << fit_tau*1e3 << " ns" << endl;
 }
 

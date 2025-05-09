@@ -29,7 +29,7 @@ void Pulsar::HasArchive::set_Archive (const Archive* est)
 	 << " est=" << est << endl;
 #endif
 
-  archive = est;
+  archive.set(est);
 
   integration = 0;
   profile = 0;
@@ -47,14 +47,14 @@ const Pulsar::Archive* Pulsar::HasArchive::get_Archive () const
 const Pulsar::Integration* Pulsar::HasArchive::get_Integration () const
 {
   if (!integration)
-    integration = Pulsar::get_Integration (archive, isubint);
+    integration.set(Pulsar::get_Integration (archive, isubint));
   return integration;
 }
 
 const Pulsar::Profile* Pulsar::HasArchive::get_Profile () const
 {
   if (!profile)
-    profile = Pulsar::get_Profile (get_Integration(), ipol, ichan);
+    profile.set(Pulsar::get_Profile (get_Integration(), ipol, ichan));
   return profile;
 }
 

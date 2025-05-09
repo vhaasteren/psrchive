@@ -29,8 +29,7 @@ namespace Pulsar {
 
   public:
 
-    Expert (Integration* inst)
-    { instance = inst; }
+    Expert (Integration* inst) : instance(inst) { }
 
     //! Set the number of pulsar phase bins
     void set_nbin (unsigned numbins)

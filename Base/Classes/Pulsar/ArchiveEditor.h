@@ -1,13 +1,13 @@
 //-*-C++-*-
 /***************************************************************************
  *
- *   Copyright (C) 2011 by Willem van Straten
+ *   Copyright (C) 2011 - 2024 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
 
-#ifndef __Pulsar_Editor_h
-#define __Pulsar_Editor_h
+#ifndef __Pulsar_ArchiveEditor_h
+#define __Pulsar_ArchiveEditor_h
 
 #include "TextEditor.h"
 
@@ -16,7 +16,7 @@ namespace Pulsar {
   class Archive;
 
   //! Edit the metadata in a pulsar archive
-  class Editor : public TextEditor<Archive>
+  class ArchiveEditor : public TextEditor<Archive>
   {
 
   public:

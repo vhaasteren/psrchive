@@ -82,12 +82,12 @@ void Pulsar::TimeIntegrate::transform (Archive* archive) try
 
     if (Archive::verbose > 2)
       cerr << "Pulsar::TimeIntegrate::transform isub=" << isub 
-	   << " start=" << start << " stop=" << stop << endl;
+          << " start=" << start << " stop=" << stop << endl;
 
     if (isub == start && stop == start + 1)
     {
       if (Archive::verbose > 2)
-	cerr << "Pulsar::TimeIntegrate::transform skipping" << endl;
+        cerr << "Pulsar::TimeIntegrate::transform skipping" << endl;
       continue;
     }
     
@@ -175,57 +175,57 @@ void Pulsar::TimeIntegrate::transform (Archive* archive) try
       }
       catch (Error& error)
       {
-	//
+        //
         // creation may fail if the ephemeris is only a place holder for 
-	// attributes.  propagate the error only if there is an existing model
-	//
+        // attributes.  propagate the error only if there is an existing model
+        //
         if (archive->has_model())
           throw error;
 
-	if (Archive::verbose)
-	  warning << "Pulsar::TimeIntegrate::transform"
-                     " could not update pulse phase predictor" << endl;
+        if (Archive::verbose)
+          warning << "Pulsar::TimeIntegrate::transform"
+                          " could not update pulse phase predictor" << endl;
       }
       
       if (archive->has_model())
       {
-	const Predictor* model = archive->get_model();
+        const Predictor* model = archive->get_model();
 
-	// get the time of the first subint to be integrated into isub
-	MJD firstmjd = archive->get_Integration (start) -> get_epoch ();
-	// get the phase at the time of the first subint
-	Phase first_phase = model->phase(firstmjd);
-	
-	// get the phase at the midtime of the result
-	Phase mid_phase = model->phase (epoch);
-	// get the period at the midtime of the result
-	double period = 1.0 / model->frequency (epoch);
-	
-	// set the phase at the midtime equal to that of the first subint
-	Phase desired (mid_phase.intturns(), first_phase.fracturns());
+        // get the time of the first subint to be integrated into isub
+        MJD firstmjd = archive->get_Integration (start) -> get_epoch ();
+        // get the phase at the time of the first subint
+        Phase first_phase = model->phase(firstmjd);
 
-	epoch = model->iphase (desired, &epoch);
-  
-	if (Archive::verbose > 2)
-	{
-	  cerr << "TimeIntegrate::transform epoch=" << epoch 
-               << " phase=" << model->phase(epoch) << endl;
+        // get the phase at the midtime of the result
+        Phase mid_phase = model->phase (epoch);
+        // get the period at the midtime of the result
+        double period = 1.0 / model->frequency (epoch);
 
-	  cerr << "TimeIntegrate::transform period"
-	    " old=" << result->get_folding_period() << 
-	    " new=" << period << 
-	    " diff=" << result->get_folding_period() - period << endl;
-	}
-	
-	result->set_folding_period (period);
+        // set the phase at the midtime equal to that of the first subint
+        Phase desired (mid_phase.intturns(), first_phase.fracturns());
+
+        epoch = model->iphase (desired, &epoch);
+
+        if (Archive::verbose > 2)
+        {
+          cerr << "TimeIntegrate::transform epoch=" << epoch
+                    << " phase=" << model->phase(epoch) << endl;
+
+          cerr << "TimeIntegrate::transform period"
+            " old=" << result->get_folding_period() <<
+            " new=" << period <<
+            " diff=" << result->get_folding_period() - period << endl;
+        }
+
+        result->set_folding_period (period);
       }
       else
       {
         /*
-	  If no model exists, then it is not possible to recompute an 
-	  aribtrary epoch. Instead, use the epoch of a subint near
-	  the middle of the range integrated (saved above as alt_epoch).
-	*/
+          If no model exists, then it is not possible to recompute an 
+          aribtrary epoch. Instead, use the epoch of a subint near
+          the middle of the range integrated (saved above as alt_epoch).
+        */
 
         if (Archive::verbose > 2)
           cerr << "TimeIntegrate::transform using alt_epoch=" << alt_epoch
@@ -247,49 +247,46 @@ void Pulsar::TimeIntegrate::transform (Archive* archive) try
     for (unsigned ichan=0; ichan < archive_nchan; ichan++)
     {
       if (Archive::verbose > 2) 
-	cerr << "Pulsar::TimeIntegrate::transform weighted_frequency chan="
-	     << ichan << endl;
+        cerr << "Pulsar::TimeIntegrate::transform weighted_frequency chan=" << ichan << endl;
       
       double reference_frequency = 0.0;
       
       reference_frequency = archive->weighted_frequency (ichan, start, stop);
       
       if (Archive::verbose > 2) 
-	cerr << "Pulsar::TimeIntegrate::transform ichan=" << ichan
-	     << " new frequency=" << reference_frequency << endl;
+        cerr << "Pulsar::TimeIntegrate::transform ichan=" << ichan
+            << " new frequency=" << reference_frequency << endl;
       
       for (unsigned iadd=start; iadd < stop; iadd++)
       {
-	Integration* subint = archive->get_Integration (iadd);
+        Integration* subint = archive->get_Integration (iadd);
 
-	double dm = subint->get_effective_dispersion_measure();
-	if (dm != 0)
-	  subint->expert()->dedisperse (ichan, ichan+1,
-					reference_frequency);
-	
-	double rm = subint->get_effective_rotation_measure();
-	if (archive_npol == 4 && rm != 0)
-	  subint->expert()->defaraday (ichan, ichan+1,
-				       reference_frequency);
+        double dm = subint->get_effective_dispersion_measure();
+        if (dm != 0)
+          subint->expert()->dedisperse (ichan, ichan+1, reference_frequency);
 
-	subint->set_centre_frequency (ichan, reference_frequency);
+        double rm = subint->get_effective_rotation_measure();
+        if (archive_npol == 4 && rm != 0)
+          subint->expert()->defaraday (ichan, ichan+1, reference_frequency);
+
+        subint->set_centre_frequency (ichan, reference_frequency);
       }
       
       if (Archive::verbose > 2) 
-	cerr << "Pulsar::TimeIntegrate::transform sum profiles" << endl;
+        cerr << "Pulsar::TimeIntegrate::transform sum profiles" << endl;
       
       for (unsigned ipol=0; ipol < archive_npol; ++ipol)
       {
-	Profile* avg = archive->get_Profile (isub, ipol, ichan);
-	Profile* add = archive->get_Profile (start, ipol, ichan);
-	
-	*(avg) = *(add);
-	
-	for (unsigned jsub=start+1; jsub<stop; jsub++)
+        Profile* avg = archive->get_Profile (isub, ipol, ichan);
+        Profile* add = archive->get_Profile (start, ipol, ichan);
+
+        *(avg) = *(add);
+
+        for (unsigned jsub=start+1; jsub<stop; jsub++)
         {
-	  add = archive->get_Profile (jsub, ipol, ichan);
-	  avg->average (add);
-	}
+          add = archive->get_Profile (jsub, ipol, ichan);
+          avg->average (add);
+        }
       } // for each poln
     } // for each channel
     
@@ -304,13 +301,17 @@ void Pulsar::TimeIntegrate::transform (Archive* archive) try
       Integration* cur = archive->get_Integration (iadd);
 
       if (iadd == start)
-	// transfer the Extensions from the start Integration to the result
-	for (unsigned iext = 0; iext < cur->get_nextension(); iext++)
-	  result->add_extension( cur->get_extension(iext) );
+      {
+        // transfer the Extensions from the start Integration to the result
+        for (unsigned iext = 0; iext < cur->get_nextension(); iext++)
+          result->add_extension( cur->get_extension(iext) );
+      }
       else
-	// integrate the Extensions into the result
-	for (unsigned iext = 0; iext < result->get_nextension(); iext++)
-	  result->get_extension(iext)->integrate (cur);
+      {
+        // integrate the Extensions into the result
+        for (unsigned iext = 0; iext < result->get_nextension(); iext++)
+          result->get_extension(iext)->integrate (cur);
+      }
     }
 
     // //////////////////////////////////////////////////////////////////////
@@ -332,7 +333,6 @@ void Pulsar::TimeIntegrate::transform (Archive* archive) try
 
   archive->resize (output_nsub);
 }
-
 catch (Error& err)
 {
   throw err += "Pulsar::TimeIntegrate::transform";

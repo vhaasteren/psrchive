@@ -39,7 +39,7 @@ namespace Pulsar {
   public:
     
     //! flag controls the amount output to stderr by Integration methods
-    static bool verbose;
+    static unsigned verbose;
 
     //! Maximum centre frequency difference in Integration::mixable
     static double match_max_frequency_difference;
@@ -303,11 +303,11 @@ namespace Pulsar {
     //! Returns a const pointer to the Profile given by the specified indeces
     const Profile* get_Profile (unsigned ipol, unsigned ichan) const;
 
-    //! Returns a pointer to a new PolnProfile instance
+    //! Returns a pointer to a new PolnProfile containing references to Profiles
     PolnProfile* new_PolnProfile (unsigned ichan);
 
-    //! Returns a const pointer to a new PolnProfile instance
-    const PolnProfile* new_PolnProfile (unsigned ichan) const;
+    //! Returns a pointer to a new PolnProfile containing clones of Profiles
+    PolnProfile* new_PolnProfile (unsigned ichan) const;
 
     //! Return the Stokes 4-vector for the frequency channel and phase bin
     Stokes<float> get_Stokes (unsigned ichan, unsigned ibin) const;

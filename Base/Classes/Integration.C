@@ -10,7 +10,7 @@
 #include "Pulsar/IntegrationExtension.h"
 #include "Pulsar/IntegrationExpert.h"
 #include "Pulsar/IntegrationMeta.h"
-#include "Pulsar/IntegrationTI.h"
+#include "Pulsar/IntegrationInterface.h"
 #include "Pulsar/Profile.h"
 
 #include "Pulsar/AuxColdPlasma.h"
@@ -24,7 +24,7 @@
 
 using namespace std;
 
-bool Pulsar::Integration::verbose = false;
+unsigned Pulsar::Integration::verbose = 0;
 
 //! Return the number of extensions available
 unsigned Pulsar::Integration::get_nextension () const
@@ -280,7 +280,7 @@ void Pulsar::Integration::adopt (const Archive* archive)
     cerr << "Pulsar::Integration::adopt new parent" << endl;
 
   orphaned = 0;
-  parent = archive;
+  parent.set(archive);
 }
 
 void Pulsar::Integration::range_check (unsigned ipol, unsigned ichan) const
@@ -361,6 +361,12 @@ double Pulsar::Integration::get_centre_frequency (unsigned ichan) const
   if (ichan>=get_nchan() || get_npol() < 1)
     return 0;
 
+  if (profiles.size() == 0)
+    return 0;
+
+  if (profiles[0].size() <= ichan)
+    return 0;
+ 
   return profiles[0][ichan]->get_centre_frequency();
 }
 
@@ -507,8 +513,7 @@ double Pulsar::Integration::get_effective_dispersion_measure () const try
   if (! get_auxiliary_dispersion_corrected())
   {
     if (verbose)
-      cerr << "Integration::get_effective_dispersion_measure"
-              " aux dm not corrected" << endl;
+      cerr << "Integration::get_effective_dispersion_measure aux dm not corrected" << endl;
 
     const AuxColdPlasmaMeasures* aux = get<AuxColdPlasmaMeasures>();
     if (aux)

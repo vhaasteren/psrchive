@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *   Copyright (C) 2005-2018 by Willem van Straten
+ *   Copyright (C) 2005-2022 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -23,6 +23,9 @@
 
 #include "templates.h"
 
+// #define _DEBUG 1
+#include "debug.h"
+
 #include <iostream>
 #include <algorithm>
 #include <assert.h>
@@ -30,8 +33,6 @@
 using namespace std;
 using namespace MEAL;
 using namespace Calibration;
-
-// #define _DEBUG 1
 
 bool SignalPath::verbose = false;
 
@@ -46,7 +47,8 @@ SignalPath::SignalPath (Pulsar::Calibrator::Type* _type)
 
   valid = true;
   built = false;
-
+  sharing = false;
+  
   time_variations_engaged = true;
   step_after_cal = false;
   constant_pulsar_gain = false;
@@ -57,8 +59,26 @@ SignalPath::SignalPath (Pulsar::Calibrator::Type* _type)
 
 void SignalPath::copy (SignalPath* other)
 {
-  cerr << "SignalPath::copy this=" << this << " other=" << other << endl;
+  DEBUG("SignalPath::copy this=" << this << " other=" << other);
   equation->copy_fit( other->equation );
+}
+
+void SignalPath::share (SignalPath* other)
+{
+  if (sharing)
+    throw Error (InvalidState, "SignalPath::share",
+                 "already sharing");
+
+  DEBUG("SignalPath::share this=" << this << " that=" << other);
+
+  equation = other->equation;
+  response = other->response;
+  impurity = other->impurity;
+  projection = other->projection;
+  faraday_rotation = other->faraday_rotation;
+
+  sharing = true;
+  other->sharing = true;
 }
 
 void SignalPath::set_valid (bool f, const char* reason)
@@ -67,14 +87,18 @@ void SignalPath::set_valid (bool f, const char* reason)
 
   if (!valid && reason)
   {
+    invalid_reason = reason;
     if (verbose)
       cerr << "SignalPath::set_valid reason: " << reason << endl;
-    invalid_reason = reason;
   }
 }
 
 void SignalPath::set_response (MEAL::Complex2* x)
 {
+  if (sharing)
+    throw Error (InvalidState, "SignalPath::set_response",
+		 "cannot set response when sharing with another SignalPath");
+  
   response = x;
 }
 
@@ -105,6 +129,10 @@ SignalPath::get_response_variation (unsigned iparam) const
 
 void SignalPath::set_impurity (MEAL::Real4* x)
 {
+  if (sharing)
+    throw Error (InvalidState, "SignalPath::set_impurity",
+		 "cannot set impurity when sharing with another SignalPath");
+
   impurity = x;
 }
 
@@ -119,6 +147,24 @@ void SignalPath::set_basis (MEAL::Complex2* x)
   // if the instrument has already been constructed, add the basis to it
   if (instrument && basis)
     *instrument *= basis;
+}
+
+void SignalPath::set_projection (MEAL::Variable<MEAL::Complex2>* proj)
+{
+  if (sharing)
+    throw Error (InvalidState, "SignalPath::set_projection",
+		 "cannot set projection when sharing with another SignalPath");
+
+  projection = proj;
+}
+
+void SignalPath::set_faraday_rotation (MEAL::Variable<MEAL::Complex2>* rot)
+{
+  if (sharing)
+    throw Error (InvalidState, "SignalPath::set_faraday_rotation",
+                 "cannot set Faraday rotation when sharing with another SignalPath");
+
+  faraday_rotation = rot;
 }
 
 void SignalPath::set_solver (ReceptionModel::Solver* s)
@@ -147,8 +193,7 @@ Calibration::ReceptionModel* SignalPath::get_equation ()
 }
 
 //! Get the measurement equation solver
-const Calibration::ReceptionModel*
-SignalPath::get_equation () const
+const Calibration::ReceptionModel* SignalPath::get_equation () const
 {
   return equation;
 }
@@ -159,9 +204,7 @@ void SignalPath::set_equation (Calibration::ReceptionModel* e)
     throw Error (InvalidState, "SignalPath::set_equation",
 		 "equation already set; cannot be reset after construction");
 
-#ifdef _DEBUG
-  cerr << "SignalPath::set_equation " << e << endl;
-#endif
+  DEBUG("SignalPath::set_equation " << e);
 
   equation = e;
 }
@@ -236,9 +279,10 @@ void SignalPath::build () try
 
   if (!equation)
   {
-    if (verbose)
-      cerr << "SignalPath::build new ReceptionModel" << endl;
     equation = new Calibration::ReceptionModel;
+    if (verbose)
+      cerr << "SignalPath::build new ReceptionModel"
+	" ptr=" << (void*) equation << endl;
   }
 
   if (solver)
@@ -273,17 +317,6 @@ void SignalPath::build () try
   if (constant_pulsar_gain)
     instrument->set_infit (0, false);
 
-  if (!celestial)
-  {
-    //
-    // use the known transformation from the sky to the receptors
-    //
-    MEAL::Value<MEAL::Complex2>* sky = new MEAL::Value<MEAL::Complex2>;
-    projection.signal.connect (sky, &MEAL::Value<MEAL::Complex2>::set_value);
-
-    celestial = sky;
-  }
-  
   built = true;
 
   // backends are added after things are built, start with the first one
@@ -339,11 +372,19 @@ void SignalPath::add_psr_path (VariableBackendEstimate* backend)
   IndexedProduct* product = backend->get_psr_response();
   
   psr_path -> add_model( product );
-  psr_path -> add_model( celestial );
+
+  if (projection)
+    psr_path -> add_model( projection->get_transformation() );
+
+  if (faraday_rotation)
+    psr_path -> add_model( faraday_rotation->get_transformation() );
 
   add_transformation ( psr_path );
 
-  product->set_index ( equation->get_transformation_index () );
+  unsigned xform_index = equation->get_transformation_index ();
+  DEBUG("SignalPath::add_psr_path this=" << this << " name=" << name << " index=" << xform_index);
+
+  product->set_index ( xform_index );
 
   if (verbose)
     cerr << "SignalPath::add_psr_path index="
@@ -438,9 +479,7 @@ void SignalPath::fix_orientation ()
 
 void SignalPath::update () try
 {
-#if _DEBUG
-  cerr << "SignalPath::update" << endl;
-#endif
+  DEBUG("SignalPath::update");
   
   if (!built)
     return;
@@ -473,7 +512,7 @@ void SignalPath::update () try
           throw Error (InvalidState, "SignalPath::update",
                        "unexpected backend[%u].infit(%u) = true", i, iparam);
 
-	backends[i]->get_backend()->set_param ( iparam, identity[iparam] );
+        backends[i]->get_backend()->set_param ( iparam, identity[iparam] );
       }
     }
     else
@@ -486,7 +525,6 @@ void SignalPath::update () try
         if (! backends[i]->get_backend()->get_infit (iparam))
           throw Error (InvalidState, "SignalPath::update",
                        "unexpected backend[%u].infit(%u) = false", i, iparam);
-
       }
       response->set_param ( iparam, identity[iparam] );
     }
@@ -625,9 +663,7 @@ catch (Error& error)
 
 void SignalPath::set_reference_epoch (const MJD& epoch)
 {
-#ifdef _DEBUG
-  cerr << "SignalPath::set_reference_epoch " << epoch << endl;
-#endif
+  DEBUG("SignalPath::set_reference_epoch " << epoch);
 
   convert.set_reference_epoch( epoch );
 
@@ -805,7 +841,7 @@ void SignalPath::add_calibrator_epoch (const MJD& epoch)
   {
     if (verbose)
       cerr << "SignalPath::add_calibrator_epoch"
-	" add_polncal_backend" << endl;
+              " add_polncal_backend" << endl;
 
     add_cal_path (backend);
   }
@@ -921,8 +957,8 @@ VariableBackendEstimate* SignalPath::max_weight_backend ()
   {
     if (backends[i]->get_weight() > maxweight)
       {
-	maxweight = backends[i]->get_weight();
-	backend = backends[i];
+        maxweight = backends[i]->get_weight();
+        backend = backends[i];
       }
   }
 

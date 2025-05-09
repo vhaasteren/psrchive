@@ -8,7 +8,7 @@
 #include "Pulsar/Application.h"
 #include "Pulsar/UnloadOptions.h"
 
-#include "Pulsar/Editor.h"
+#include "Pulsar/ArchiveEditor.h"
 #include "Pulsar/ArchiveInterface.h"
 #include "Pulsar/ArchiveExtension.h"
 #include "Pulsar/Check.h"
@@ -22,7 +22,7 @@
 #include <unistd.h>
 
 using namespace std;
-using Pulsar::Editor;
+using Pulsar::ArchiveEditor;
 
 //! Pulsar Archive Editing application
 class psredit: public Pulsar::Application
@@ -52,7 +52,7 @@ protected:
   void add_options (CommandLine::Menu&);
 
   //! The editor
-  Pulsar::Editor editor;
+  Pulsar::ArchiveEditor editor;
 };
 
 int main (int argc, char** argv)
@@ -91,16 +91,16 @@ void psredit::add_options (CommandLine::Menu& menu)
   // blank line in help
   menu.add ("");
 
-  arg = menu.add (&editor, &Editor::add_commands, 'c', "command[s]");
+  arg = menu.add (&editor, &ArchiveEditor::add_commands, 'c', "command[s]");
   arg->set_help ("one or more commands, separated by commas");
 
-  arg = menu.add (&editor, &Editor::add_script, 'C', "filename");
+  arg = menu.add (&editor, &ArchiveEditor::add_script, 'C', "filename");
   arg->set_help ("read commands from file");
 
-  arg = menu.add (&editor, &Editor::add_extensions, 'a', "extension[s]");
+  arg = menu.add (&editor, &ArchiveEditor::add_extensions, 'a', "extension[s]");
   arg->set_help ("one or more extensions to be added, separated by commas");
 
-  arg = menu.add (&editor, &Editor::remove_extensions, 'r', "extension[s]");
+  arg = menu.add (&editor, &ArchiveEditor::remove_extensions, 'r', "extension[s]");
   arg->set_help ("one or more extensions to be removed, separated by commas");
 
   arg = menu.add (this, &psredit::detailed_help, 'H');

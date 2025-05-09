@@ -20,9 +20,9 @@ else
   fi
 fi
 
-$GREP_COMMAND $* `find Util Base More -name "*.[hfcC]"`
+$GREP_COMMAND "$*" `find Util Base More -name "*.[hfcC]"`
 
-$GREP_COMMAND $* `find Util Base More -name Makefile.am`
+$GREP_COMMAND "$*" `find Util Base More -name Makefile.am`
 
-$GREP_COMMAND $* `find Util Base More -name "*.tex"`
+$GREP_COMMAND "$*" `find Util Base More -name "*.tex"`
 
