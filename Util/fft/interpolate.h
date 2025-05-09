@@ -34,9 +34,6 @@ namespace fft {
     std::vector< std::complex<float> > dom1 (in.size());
     std::vector< std::complex<float> > dom2 (out.size());
 
-    auto f_dom1 = reinterpret_cast<float*>(dom1.data());
-    auto f_dom2 = reinterpret_cast<float*>(dom2.data());
-
     DatumTraits<T> datum_traits;
 
     unsigned ndim = datum_traits.ndim();

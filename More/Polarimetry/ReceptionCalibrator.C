@@ -740,8 +740,8 @@ void ReceptionCalibrator::solve_prepare () try
     cerr << "Pulsar::ReceptionCalibrator::initialize using previous solution" << endl;
     for (unsigned ichan=0; ichan<model.size(); ichan++)
     {
-      Stokes< Estimate<double> > calS = previous_cal->get_stokes (ichan);
-      calibrator_estimate[ichan].source-> set_stokes( calS );
+      Stokes<Estimate<double>> calS = previous_cal->get_stokes (ichan);
+      calibrator_estimate[ichan]->source->set_stokes( calS );
     }
   }
  
