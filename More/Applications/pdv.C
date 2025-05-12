@@ -463,7 +463,7 @@ void OutputDataAsText( Reference::To< Pulsar::Archive > archive )
 	  }
 	}
   }
-  catch ( Error e )
+  catch ( Error& e )
   {
 	 cerr << e << endl;
   }
@@ -889,7 +889,7 @@ void DisplaySubints( vector<string> filenames, vector<string> parameters )
 			}
 			cout << endl;
 		 }
-		 catch( Error e )
+		 catch( Error& e )
 		 {
 			cerr << e << endl;
 			break;
@@ -1042,7 +1042,7 @@ void PrintSNR( vector<string> filenames )
 		 ts << tostring<double>(snr);
 		 ts << endl;
 	  }
-	  catch( Error e )
+	  catch( Error& e )
 	  {
 		 cerr << "Failed to extract snr from archive " << (*it) << endl;
 		 cerr << e << endl;
@@ -1132,7 +1132,7 @@ void ProcessArchive( string filename )
 		 FracPol( archive );
    }
 }
-catch( Error e )
+catch( Error& e )
 {
    cerr << e << endl;
 }
