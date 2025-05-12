@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([PSRCHIVE],[2025-04-24],[psrchive-developers@lists.sourceforge.net])
+AC_INIT([PSRCHIVE],[2025-05-13],[psrchive-developers@lists.sourceforge.net])
 
 # Dependencies
 PKG_PROG_PKG_CONFIG
