@@ -78,14 +78,14 @@ namespace Pulsar {
     //! Get the number of abscissa / dimensions in the model
     unsigned get_ndim () const;
 
-    //! Get if the covariances of the transformation parameters
+    //! Return true if the covariances of the model parameters are available
     bool get_has_covariance () const;
-    //! Set if the covariances of the transformation parameters
+    //! Set true when the covariances of the model parameters are available
     void set_has_covariance (bool);
 
-    //! Get if the covariances of the transformation parameters
+    //! Return true if information about the solution is available
     bool get_has_solver () const;
-    //! Set if the covariances of the transformation parameters
+    //! Return true if information about the solution is available
     void set_has_solver (bool);
 
     //! Return true if the transformation for the specified channel is valid
