@@ -320,15 +320,29 @@ catch (Error& error) {
 
 string Pulsar::ProfileInterpreter::correlate (const string& args) try
 {
+  if (!correlator)
+    correlator = new Correlate;
+
   if (args.empty())
   {
     // if no archive name is specified, then auto-correlate
-    foreach (get(), get(), new Correlate);
+    foreach (get(), get(), correlator.get());
   }
   else
   {
-    string name = setup<string> (args);
-    foreach (get(), getmap(name), new Correlate);
+    if (args == "normalize=false")
+    {
+      correlator->set_normalize(false);
+    }
+    else if (args == "normalize=true")
+    {
+      correlator->set_normalize(true);
+    }
+    else
+    {
+      string name = setup<string> (args);
+      foreach (get(), getmap(name), correlator.get());
+    }
   }
 
   return response (Good);
