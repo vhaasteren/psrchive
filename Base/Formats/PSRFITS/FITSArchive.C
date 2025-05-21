@@ -760,7 +760,9 @@ void Pulsar::FITSArchive::load_header (const char* filename) try
 
   // Load the pulse phase predictor
   load_Predictor (read_fptr);
-  hdr_model = model;
+
+  if (has_model())
+    hdr_model = get_model();
 
   if (correct_P236_reference_epoch)
     P236_reference_epoch_correction ();

@@ -68,8 +68,8 @@ void Pulsar::TimerArchive::load (FILE* fptr)
 
   unpack_extensions ();
 
-  ephemeris = 0;
-  model = 0;
+  ephemeris = nullptr;
+  set_predictor (nullptr);
 
   if (get_type() == Signal::Pulsar)
     psr_load (fptr);
@@ -521,12 +521,14 @@ void Pulsar::TimerArchive::psr_load (FILE* fptr)
       cerr << "TimerArchive::psr_load "
 	   << hdr.nbytespoly << " bytes in polyco" << endl;
 
-    model = factory<Pulsar::Predictor> (fptr, hdr.nbytespoly);
+    set_predictor(factory<Pulsar::Predictor> (fptr, hdr.nbytespoly));
 
-    if (verbose > 2) {
-      if (model) {
+    if (verbose > 2)
+    {
+      if (has_model())
+      {
         cerr << "TimerArchive::psr_load read predictor:" << endl;
-        model->unload (stderr);
+        get_model()->unload (stderr);
         cerr << "TimerArchive::psr_load end of predictor" << endl;
       }
       else

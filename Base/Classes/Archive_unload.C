@@ -61,39 +61,9 @@ void Pulsar::Archive::unload (const char* filename) const
 
   TemporaryFile temp (unload_to_filename);
 
-  Reference::To<Predictor> model_backup;
-
-  if (model)
+  if (model && unload_cull_predictor)
   {
-    model_backup = model->clone();
-
-    if (verbose > 2)
-    {
-      cerr << "Pulsar::Archive::unload paring down predictor=" << endl;
-      model->unload (stderr);
-    }
-
-    Reference::To<Predictor> pared_down = model->clone();
-
-    if (verbose > 2)
-    {
-      cerr << "Pulsar::Archive::unload paring down clone=" << endl;
-      pared_down->unload (stderr);
-    }
-
-    vector<MJD> epochs( get_nsubint() );
-    for (unsigned isub=0; isub < get_nsubint(); isub++)
-      epochs[isub] = get_Integration(isub)->get_epoch();
-
-    pared_down->keep (epochs);
-
-    if (verbose > 2)
-    {
-      cerr << "Pulsar::Archive::unload pared down result=" << endl;
-      pared_down->unload (stderr);
-    }
-
-    const_cast<Archive*>(this)->model = pared_down;
+    create_unload_model();
   }
 
   try
@@ -109,14 +79,11 @@ void Pulsar::Archive::unload (const char* filename) const
   }
   catch (Error& error)
   {
-    if (model_backup)
-      const_cast<Archive*>(this)->model = model_backup;
-
+    unload_model = nullptr;
     throw error += "Pulsar::Archive::unload";
   }
 
-  if (model_backup)
-    const_cast<Archive*>(this)->model = model_backup;
+  unload_model = nullptr;
 
   // rename the temporary file with the requested filename
   int ret = rename (temp.get_filename().c_str(), unload_to_filename.c_str());
@@ -139,6 +106,40 @@ void Pulsar::Archive::unload (const char* filename) const
   const_cast<Archive*>(this)->unload_filename = unload_to_filename;
   const_cast<Archive*>(this)->__load_filename = unload_to_filename;
 }
+
+void Pulsar::Archive::create_unload_model() const
+{
+  unload_model = model->clone();
+
+  if (verbose > 2)
+  {
+    cerr << "Pulsar::Archive::create_unload_model paring down predictor=" << endl;
+    model->unload (stderr);
+    cerr << "Pulsar::Archive::create_unload_model paring down clone=" << endl;
+    unload_model->unload (stderr);
+  }
+
+  vector<MJD> epochs( get_nsubint() );
+  for (unsigned isub=0; isub < get_nsubint(); isub++)
+    epochs[isub] = get_Integration(isub)->get_epoch();
+
+  unload_model->keep (epochs);
+
+  if (verbose > 2)
+  {
+    cerr << "Pulsar::Archive::create_unload_model pared down result=" << endl;
+    unload_model->unload (stderr);
+  }
+}
+
+Pulsar::Option<bool> Pulsar::Archive::unload_cull_predictor
+(
+ "Archive::unload_cull_predictor",
+ true,
+ "Default policy for unloading phase predictor coefficients",
+ "When unloading a file, cull the predictor down to only those \n"
+ "sets of coefficients required to describe sub-integrations."
+);
 
 Pulsar::Option<bool> Pulsar::Archive::no_clobber
 (

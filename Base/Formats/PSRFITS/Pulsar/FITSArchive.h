@@ -239,8 +239,7 @@ namespace Pulsar
     double predicted_phase;
 
     //! The polyco parsed from the PSRFITS file
-    Reference::To<Predictor> hdr_model;
-    
+    Reference::To<const Predictor> hdr_model;
 
     // //////////////////////////////////////////////////////////////////////
 

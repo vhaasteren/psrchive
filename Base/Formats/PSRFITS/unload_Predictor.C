@@ -25,7 +25,7 @@ void unload_polyco (fitsfile*, const polyco*, double pred_phs, bool verbose);
 
 void Pulsar::FITSArchive::unload_Predictor (fitsfile* fptr) const
 {
-  const polyco* t1model = dynamic_cast<const polyco*> (model.ptr());
+  auto t1model = dynamic_cast<const polyco*> (get_model());
   if (t1model)
     unload_polyco (fptr, t1model, predicted_phase, verbose > 2);
   else
@@ -33,8 +33,7 @@ void Pulsar::FITSArchive::unload_Predictor (fitsfile* fptr) const
 
 #ifdef HAVE_TEMPO2
 
-  const Tempo2::Predictor* t2model;
-  t2model = dynamic_cast<const Tempo2::Predictor*> (model.ptr());
+  auto t2model = dynamic_cast<const Tempo2::Predictor*> (get_model());
   if (t2model)
     unload_T2Predictor (fptr, t2model, verbose > 2);
   else

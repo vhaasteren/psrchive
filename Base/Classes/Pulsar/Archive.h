@@ -602,6 +602,9 @@ namespace Pulsar
     //! Name of class to which data are converted if unload_file unimplemented
     static Option<std::string> unload_class;
 
+    //! Default policy for culling predictor coefficients when unloading
+    static Option<bool> unload_cull_predictor;
+
     //! Default policy for overwriting archive files
     static Option<bool> no_clobber;
 
@@ -644,11 +647,13 @@ namespace Pulsar
 
     //@}
 
+    //! Set the phase predictor attribute without any computation
+    /*! In Base/ it is not possible to call set_model(apply=false) because
+        Archive::set_model is defined in More/ */
+    void set_predictor (Predictor* model);
+
     //! The pulsar ephemeris, as used by TEMPO
     Reference::To<Parameters> ephemeris;
-
-    //! The pulsar phase model, as created using TEMPO
-    Reference::To<Predictor> model;
 
     //! Return the given Integration ready for use
     Integration* use_Integration (Integration*);
@@ -695,6 +700,15 @@ namespace Pulsar
 
     //! Strategies used by all Profile instances contained by this instance
     mutable Reference::To<StrategySet> strategy;
+
+    //! The pulsar phase model, as created using TEMPO
+    Reference::To<Predictor> model;
+
+    //! A pared down copy of the phase model, used when unloading
+    mutable Reference::To<Predictor> unload_model;
+
+    //! Create the pared down copy of the phase model
+    void create_unload_model() const;
 
     //! Store the name of the file from which the current instance was loaded
     /*! Although the logical name of the file may be changed with
