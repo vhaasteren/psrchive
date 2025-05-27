@@ -98,8 +98,7 @@ void Pulsar::PolnProfileStats::select_profile (const Profile* total) try
    }
 
 //! Set the on-pulse and baseline regions
-void Pulsar::PolnProfileStats::set_regions (const PhaseWeight& on,
-					    const PhaseWeight& off) try
+void Pulsar::PolnProfileStats::set_regions (const PhaseWeight& on, const PhaseWeight& off) try
 {
   stats->set_regions (on, off);
   regions_set = true;
@@ -111,8 +110,7 @@ void Pulsar::PolnProfileStats::set_regions (const PhaseWeight& on,
    }
 
 //! Set the on-pulse and baseline regions
-void Pulsar::PolnProfileStats::get_regions (PhaseWeight& on, 
-					    PhaseWeight& off) const try
+void Pulsar::PolnProfileStats::get_regions (PhaseWeight& on, PhaseWeight& off) const try
 {
   stats->get_regions (on, off);
 }

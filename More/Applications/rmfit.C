@@ -1204,6 +1204,10 @@ double do_maxmthd (double minrm, double maxrm, unsigned rmsteps, Pulsar::Archive
 
   Reference::To<Pulsar::Archive> backup = data->clone();
 
+  // use the same off-pulse baseline phase bins for all trial RM values
+  Reference::To<Pulsar::Archive> total = data->total();
+  poln_stats->select_profile( total->get_Integration(0)->get_Profile(0,0) );
+
   double max_snr = 0.0;
   double max_L = 0.0;
   
@@ -1219,6 +1223,9 @@ double do_maxmthd (double minrm, double maxrm, unsigned rmsteps, Pulsar::Archive
       Wvs, 26 September 2007: Then again, perhaps round-off error
       can build up over many iterations.
     */
+
+    if (step > 0)
+      data = backup->clone();
     
     data->set_rotation_measure( rm );
     data->defaraday ();
@@ -1249,8 +1256,6 @@ double do_maxmthd (double minrm, double maxrm, unsigned rmsteps, Pulsar::Archive
       profile->get_linear (&linear);
       max_snr = linear.snr();
     }
-    
-    data = backup->clone();
   }
   
   ofstream os ("rm_spectrum.txt");
@@ -1268,7 +1273,7 @@ double do_maxmthd (double minrm, double maxrm, unsigned rmsteps, Pulsar::Archive
 
     for( unsigned i=0; i<rms.size(); i++){
       if( fluxes[i]-err[i] < ymin )
-	ymin = fluxes[i]-err[i];
+        ymin = fluxes[i]-err[i];
       if( fluxes[i]+err[i] > ymax )
 	ymax = fluxes[i]+err[i];
     }
