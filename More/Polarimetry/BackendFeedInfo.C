@@ -22,14 +22,14 @@ unsigned Pulsar::BackendFeedInfo::get_nclass () const
   return SingleAxisCalibrator::Info::get_nclass() + 2;
 }
 
-std::string Pulsar::BackendFeedInfo::get_param_name (unsigned iclass, unsigned iparam) const
+std::string Pulsar::BackendFeedInfo::get_param_name (unsigned iparam) const
 {
-  if (iclass < SingleAxisCalibrator::Info::get_nclass())
-    return SingleAxisCalibrator::Info::get_param_name(iclass,iparam);
+  if (iparam < SingleAxisCalibrator::Info::get_nparam())
+    return SingleAxisCalibrator::Info::get_param_name(iparam);
 
-  iclass -= SingleAxisCalibrator::Info::get_nclass();
+  iparam -= SingleAxisCalibrator::Info::get_nparam();
 
-  return get_param_name_feed (iclass,iparam);
+  return get_param_name_feed (iparam);
 }
 
 //! Return the name of the specified class

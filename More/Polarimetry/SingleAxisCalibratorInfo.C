@@ -20,15 +20,14 @@ string SingleAxisCalibrator::Info::get_title () const
   return "Polar Decomposition of Complex Gains";
 }
 
-//! Return the number of parameter classes
 unsigned SingleAxisCalibrator::Info::get_nclass () const
 {
   return 3; 
 }
 
-std::string SingleAxisCalibrator::Info::get_param_name (unsigned iclass, unsigned iparam) const
+std::string SingleAxisCalibrator::Info::get_param_name (unsigned iparam) const
 {
-  switch (iclass) {
+  switch (iparam) {
   case 0:
     return "\\fiG\\fr";  // italic "G"
   case 1:
@@ -43,7 +42,7 @@ std::string SingleAxisCalibrator::Info::get_param_name (unsigned iclass, unsigne
 //! Return the name of the specified class
 string SingleAxisCalibrator::Info::get_label (unsigned iclass) const
 {
-  string name = get_param_name(iclass, 0);
+  string name = get_param_name(iclass);
 
   switch (iclass) {
   case 0:

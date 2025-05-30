@@ -33,7 +33,7 @@ namespace Pulsar {
     unsigned get_nparam (unsigned iclass) const override;
 
     //! Return the PGPLOT-encoded name of the specified parameter
-    std::string get_param_name (unsigned iclass, unsigned iparam) const override;
+    std::string get_param_name (unsigned iparam) const override;
 
     //! Return the estimate of the specified parameter
     Estimate<float> get_param (unsigned ichan, unsigned iclass, unsigned iparam) const override;
@@ -42,7 +42,7 @@ namespace Pulsar {
     virtual std::string get_label_feed (unsigned iclass) const = 0;
 
     //! Return the PGPLOT-encoded name of the specified parameter of the feed component
-    virtual std::string get_param_name_feed (unsigned iclass, unsigned iparam) const = 0;
+    virtual std::string get_param_name_feed (unsigned iparam) const = 0;
     
     //! Return the estimate of the specified parameterof the feed component
     virtual Estimate<float> get_param_feed (unsigned ichan, unsigned iclass, unsigned iparam) const = 0;

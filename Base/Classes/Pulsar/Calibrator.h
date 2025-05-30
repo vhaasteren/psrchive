@@ -172,7 +172,7 @@ namespace Pulsar {
 
     //! Return the PGPLOT-encoded name of the specified parameter
     /*! This late addition is not implemented by every child. */
-    virtual std::string get_param_name (unsigned iclass, unsigned iparam) const { return ""; }
+    virtual std::string get_param_name (unsigned iparam) const { return ""; }
 
     /** @name Optional Graphing Features
      *  These optional attributes make the graph look nice

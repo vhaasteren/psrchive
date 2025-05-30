@@ -55,18 +55,18 @@ void add_with_comma_if_needed (string& total, const string& txt)
   total += txt;
 }
 
-string Pulsar::BrittonInfo::get_param_name_feed (unsigned iclass, unsigned iparam) const
+string Pulsar::BrittonInfo::get_param_name_feed (unsigned iparam) const
 {
   string subscript[2];
   subscript[0] = "\\gh"; // theta
   subscript[1] = "\\gx"; // chi
 
-  switch (iclass)
+  switch (iparam / 2)
   {
   case 0:
-    return "\\fi\\gd\\d" + subscript[iparam]  + "\\u\\fr";  // delta_{theta,chi}
+    return "\\fi\\gd\\d" + subscript[iparam % 2]  + "\\u\\fr";  // delta_{theta,chi}
   case 1:
-    return "\\fi\\gs\\d" + subscript[!iparam] + "\\u\\fr";  // sigma_{chi,theta}
+    return "\\fi\\gs\\d" + subscript[!(iparam % 2)] + "\\u\\fr";  // sigma_{chi,theta}
   default:
     return "";
   }
@@ -110,8 +110,7 @@ string Pulsar::BrittonInfo::get_label_feed (unsigned iclass) const
 
 //! Return the estimate of the specified parameter
 Estimate<float> 
-Pulsar::BrittonInfo::get_param_feed (unsigned ichan, unsigned iclass,
-				     unsigned iparam) const
+Pulsar::BrittonInfo::get_param_feed (unsigned ichan, unsigned iclass, unsigned iparam) const
 {
   if (iclass >= 2)
     return 0;

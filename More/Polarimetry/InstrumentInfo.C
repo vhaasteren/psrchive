@@ -55,12 +55,12 @@ string Pulsar::InstrumentInfo::get_title () const
   return "Parameterization: van Straten (2004) Equation 18";
 }
 
-string Pulsar::InstrumentInfo::get_param_name_feed (unsigned iclass, unsigned iparam) const
+string Pulsar::InstrumentInfo::get_param_name_feed (unsigned iparam) const
 {
   string index = "0";
-  index[0] += iparam;
+  index[0] += iparam / 2;
 
-  switch (iclass)
+  switch (iparam % 2)
   {
   case 0:
     return "\\fi\\ge\\fr\\d" + index + "\\u";
@@ -92,8 +92,7 @@ string Pulsar::InstrumentInfo::get_label_feed (unsigned iclass) const
 
 //! Return the estimate of the specified parameter
 Estimate<float> 
-Pulsar::InstrumentInfo::get_param_feed (unsigned ichan, unsigned iclass,
-					unsigned iparam) const
+Pulsar::InstrumentInfo::get_param_feed (unsigned ichan, unsigned iclass, unsigned iparam) const
 {
   const MEAL::Complex2* xform = calibrator->get_transformation (ichan);
 

@@ -8,6 +8,8 @@
 #include "Pulsar/CorrelationInfo.h"
 #include "Pulsar/PolnCalibratorInfo.h"
 
+#include <cassert>
+
 using namespace Pulsar;
 using namespace std;
 
@@ -26,15 +28,17 @@ CorrelationInfo::CorrelationInfo (unsigned idx, const PolnCalibrator* cal)
   if (!info)
     return;
 
+  unsigned nparam = 0;
+
   unsigned nclass = info->get_nclass();
   for (unsigned iclass=0; iclass < nclass; iclass++)
   {
-    unsigned nparam = info->get_nparam(iclass);
-    for (unsigned iparam=0; iparam < nparam; iparam++)
-    {
-      names.push_back( info->get_param_name(iclass, iparam) );
-    }
+    nparam += info->get_nparam(iclass);
   }
+
+  names.resize(nparam);
+  for (unsigned iparam=0; iparam < nparam; iparam++)
+    names[iparam] = info->get_param_name(iparam);
 }
 
 string CorrelationInfo::get_title () const
@@ -50,22 +54,19 @@ unsigned CorrelationInfo::get_nchan () const
   return poln_calibrator->get_nchan();
 }
 
-constexpr unsigned backend_param = 3;
+constexpr unsigned backend_nparam = 3;
 
 //! Return the number of parameter classes
 unsigned CorrelationInfo::get_nclass () const
 {
-  if (names.size() > backend_param)
+  if (names.size() > backend_nparam)
     return 2;
   else
     return 1;
 }
 
-std::string CorrelationInfo::get_param_name (unsigned iclass, unsigned iparam) const
+std::string CorrelationInfo::get_param_name (unsigned iparam) const
 {
-  if (iclass == 1)
-    iparam += backend_param;
-
   return names[iparam];
 } 
 
@@ -77,11 +78,11 @@ string CorrelationInfo::get_label (unsigned iclass) const
 
   if (iclass == 0)
   {
-    nparam = std::min(nparam, backend_param);
+    nparam = std::min(nparam, backend_nparam);
   }
   else
   {
-    start_param = backend_param;
+    start_param = backend_nparam;
   }
 
   if (start_param == index)
@@ -104,18 +105,35 @@ unsigned CorrelationInfo::get_nparam (unsigned iclass) const
 
   if (iclass == 0)
   {
-    nparam = backend_param;
-    if (index < backend_param)
+    nparam = backend_nparam;
+    if (index < backend_nparam)
       nparam --;
   }
   else
   {
-    nparam = names.size();
-    if (index >= backend_param)
+    nparam = names.size() - backend_nparam;
+    if (index >= backend_nparam)
       nparam --;
   }
 
+#if _DEBUG
+  cerr << "CorrelationInfo::get_nparam iclass=" << iclass << " nparam=" << nparam << endl;
+#endif
+
   return nparam;
+}
+
+template<typename T>
+T upper_triangular (const std::vector<T>& container, unsigned N, unsigned row, unsigned col)
+{
+  if (col < row)
+  {
+    std::swap(col,row);
+  }
+
+  unsigned idx = row * N + col - (row*(row+1))/2;
+
+  return container[idx];
 }
 
 Estimate<float> CorrelationInfo::get_param (unsigned ichan, unsigned iclass, unsigned iparam) const
@@ -135,13 +153,26 @@ Estimate<float> CorrelationInfo::get_param (unsigned ichan, unsigned iclass, uns
   if (covar.size() != expected_size)
     return 0.0;
 
+  unsigned base_iparam = 0;
+
   if (iclass == 1)
-    iparam += backend_param;
+  {
+    iparam += backend_nparam;
+    base_iparam = backend_nparam;
+  }
 
-  unsigned idx = index * nparam + iparam - index*(index+1)/2;
+  if (index >= base_iparam && iparam >= index)
+    iparam ++;
 
-  Estimate<float> result;
-  result.set_value(covar.at(idx));
-  result.set_error(result.val/10.0);
+  assert(iparam < nparam);
+
+  double varA = upper_triangular(covar, nparam, index, index);
+  double varB = upper_triangular(covar, nparam, iparam, iparam);
+  double covAB = upper_triangular(covar, nparam, index, iparam);
+  
+  if (varA == 0 || varB == 0)
+    return 0.0;
+
+  Estimate<float> result( covAB/sqrt(varA*varB) , 0.0001 );
   return result;
 }
