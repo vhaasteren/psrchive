@@ -56,7 +56,7 @@ string Pulsar::InstrumentInfo::get_title () const
 }
 
 //! Return the name of the specified class
-string Pulsar::InstrumentInfo::get_name_feed (unsigned iclass) const
+string Pulsar::InstrumentInfo::get_label_feed (unsigned iclass) const
 { 
   switch (iclass)
   {

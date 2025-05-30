@@ -28,7 +28,7 @@ namespace Pulsar {
     std::string get_title () const;
 
     //! Return the name of the specified class
-    std::string get_name_feed (unsigned iclass) const;
+    std::string get_label_feed (unsigned iclass) const;
     
     //! Return the estimate of the specified parameter
     Estimate<float> get_param_feed (unsigned ichan, unsigned iclass,

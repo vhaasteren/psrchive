@@ -30,7 +30,7 @@ unsigned PolarCalibrator::Info::get_nclass () const
 }
 
 //! Return the name of the specified class
-string PolarCalibrator::Info::get_name (unsigned iclass) const
+string PolarCalibrator::Info::get_label (unsigned iclass) const
 {
   switch (iclass) {
   case 0:

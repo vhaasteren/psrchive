@@ -27,10 +27,10 @@ namespace Pulsar {
     unsigned get_nclass () const;
     
     //! Return the name of the specified class
-    std::string get_name (unsigned iclass) const;
+    std::string get_label (unsigned iclass) const;
     
     //! Return the name of the specified class
-    virtual std::string get_name_feed (unsigned iclass) const = 0;
+    virtual std::string get_label_feed (unsigned iclass) const = 0;
     
     //! Return the number of parameters in the specified class
     unsigned get_nparam (unsigned iclass) const;

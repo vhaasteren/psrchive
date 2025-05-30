@@ -56,7 +56,7 @@ void add_with_comma_if_needed (string& total, const string& txt)
 }
 
 //! Return the name of the specified class
-string Pulsar::BrittonInfo::get_name_feed (unsigned iclass) const
+string Pulsar::BrittonInfo::get_label_feed (unsigned iclass) const
 {
   string differences;
 

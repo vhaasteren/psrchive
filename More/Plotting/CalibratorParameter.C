@@ -160,7 +160,7 @@ void Pulsar::CalibratorParameter::draw (const Archive* data)
 //! Return the label for the y-axis
 std::string Pulsar::CalibratorParameter::get_ylabel (const Archive* data)
 {
-  return info->get_name( iclass );
+  return info->get_label( iclass );
 }
 
 // Text interface to the CalibratorParameter class
@@ -174,13 +174,12 @@ public:
       set_instance (instance);
 
     add( &CalibratorParameter::get_class,
-	 &CalibratorParameter::set_class,
-	 "class", "Class of model parameters to plot" );
+         &CalibratorParameter::set_class,
+         "class", "Class of model parameters to plot" );
 
     add( &CalibratorParameter::get_subint,
-	 &CalibratorParameter::set_subint,
-	 "subint", "Sub-integration from which to derive calibrator" );
-
+         &CalibratorParameter::set_subint,
+         "subint", "Sub-integration from which to derive calibrator" );
   }
 };
 

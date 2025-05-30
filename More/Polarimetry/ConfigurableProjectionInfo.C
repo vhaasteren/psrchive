@@ -99,7 +99,7 @@ string Pulsar::ConfigurableProjection::Info::get_title () const
 }
 
 /*! The name of each parameter is unknown */
-string Pulsar::ConfigurableProjection::Info::get_name (unsigned iclass) const
+string Pulsar::ConfigurableProjection::Info::get_label (unsigned iclass) const
 {
   return names[iclass];
 }

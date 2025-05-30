@@ -54,7 +54,7 @@ unsigned Pulsar::SourceInfo::get_nclass () const
 }
 
 //! Return the name of the specified class
-std::string Pulsar::SourceInfo::get_name (unsigned iclass) const
+std::string Pulsar::SourceInfo::get_label (unsigned iclass) const
 {
   std::string label = "\\fiS'\\b\\d\\frk";
 

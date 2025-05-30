@@ -32,7 +32,7 @@ unsigned Pulsar::SolverInfo::get_nclass () const
 }
 
 //! Return the name of the specified class
-std::string Pulsar::SolverInfo::get_name (unsigned iclass) const
+std::string Pulsar::SolverInfo::get_label (unsigned iclass) const
 {
   return "\\gx\\u2\\d/N\\dfree";
 }
@@ -46,8 +46,7 @@ unsigned Pulsar::SolverInfo::get_nparam (unsigned iclass) const
 
 //! Return the estimate of the specified parameter
 Estimate<float> 
-Pulsar::SolverInfo::get_param (unsigned ichan, unsigned iclass,
-			       unsigned iparam) const
+Pulsar::SolverInfo::get_param (unsigned ichan, unsigned iclass, unsigned iparam) const
 {
   if (!poln_calibrator->get_transformation_valid(ichan))
     return 0.0;

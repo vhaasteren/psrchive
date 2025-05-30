@@ -27,7 +27,7 @@ unsigned SingleAxisCalibrator::Info::get_nclass () const
 }
 
 //! Return the name of the specified class
-string SingleAxisCalibrator::Info::get_name (unsigned iclass) const
+string SingleAxisCalibrator::Info::get_label (unsigned iclass) const
 {
   switch (iclass) {
   case 0:
