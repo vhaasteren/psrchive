@@ -42,8 +42,7 @@ namespace Pulsar {
     unsigned get_nparam (unsigned iclass) const;
     
     //! Return the estimate of the specified parameter
-    Estimate<float> get_param (unsigned ichan, unsigned iclass,
-			       unsigned iparam) const;
+    Estimate<float> get_param (unsigned ichan, unsigned iclass, unsigned iparam) const;
     
     //! Return the colour index
     int get_colour_index (unsigned iclass, unsigned iparam) const;

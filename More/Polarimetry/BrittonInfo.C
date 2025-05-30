@@ -55,7 +55,23 @@ void add_with_comma_if_needed (string& total, const string& txt)
   total += txt;
 }
 
-//! Return the name of the specified class
+string Pulsar::BrittonInfo::get_param_name_feed (unsigned iclass, unsigned iparam) const
+{
+  string subscript[2];
+  subscript[0] = "\\gh"; // theta
+  subscript[1] = "\\gx"; // chi
+
+  switch (iclass)
+  {
+  case 0:
+    return "\\fi\\gd\\d" + subscript[iparam]  + "\\u\\fr";  // delta_{theta,chi}
+  case 1:
+    return "\\fi\\gs\\d" + subscript[!iparam] + "\\u\\fr";  // sigma_{chi,theta}
+  default:
+    return "";
+  }
+}
+
 string Pulsar::BrittonInfo::get_label_feed (unsigned iclass) const
 {
   string differences;

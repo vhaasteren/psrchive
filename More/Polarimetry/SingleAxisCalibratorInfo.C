@@ -26,16 +26,32 @@ unsigned SingleAxisCalibrator::Info::get_nclass () const
   return 3; 
 }
 
-//! Return the name of the specified class
-string SingleAxisCalibrator::Info::get_label (unsigned iclass) const
+std::string SingleAxisCalibrator::Info::get_param_name (unsigned iclass, unsigned iparam) const
 {
   switch (iclass) {
   case 0:
-    return "\\fiG\\fr (\\fic\\fr\\d0\\u)";
+    return "\\fiG\\fr";  // italic "G"
   case 1:
-    return "\\gg (%)";
+    return "\\gg";       // gamma
   case 2:
-    return "\\gf (\\(2729))";
+    return "\\gf";       // phi
+  default:
+    return "";
+  }
+} 
+
+//! Return the name of the specified class
+string SingleAxisCalibrator::Info::get_label (unsigned iclass) const
+{
+  string name = get_param_name(iclass, 0);
+
+  switch (iclass) {
+  case 0:
+    return name + " (\\fic\\fr\\d0\\u)";  // calibrator flux density, c_0
+  case 1:
+    return name + " (%)";                 // percentage
+  case 2:
+    return name + " (\\(2729))";          // degrees
   default:
     return "";
   }

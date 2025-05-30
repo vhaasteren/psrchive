@@ -26,20 +26,24 @@ namespace Pulsar {
     Info (const PolnCalibrator* calibrator);
       
     //! Return the title
-    std::string get_title () const;
+    std::string get_title () const override;
 
     //! Return the number of parameter classes
-    unsigned get_nclass () const;
+    unsigned get_nclass () const override;
 
-    //! Return the name of the specified class
-    std::string get_label (unsigned iclass) const;
+    //! Return the PGPLOT-encoded label of the specified class
+    std::string get_label (unsigned iclass) const override;
     
     //! Return the number of parameters in the specified class
-    unsigned get_nparam (unsigned iclass) const;
+    unsigned get_nparam (unsigned iclass) const override;
 
+    //! Return the PGPLOT-encoded name of the specified parameter
+    std::string get_param_name (unsigned iclass, unsigned iparam) const override;
+
+    //! Return the estimate of the specified parameter
     Estimate<float> get_param (unsigned ichan, 
                                unsigned iclass,
-                               unsigned iparam) const;
+                               unsigned iparam) const override;
 
   };
 

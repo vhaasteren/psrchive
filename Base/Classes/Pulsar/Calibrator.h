@@ -161,7 +161,7 @@ namespace Pulsar {
     //! Return the number of parameter classes
     virtual unsigned get_nclass () const = 0;
 
-    //! Return the label of the specified class
+    //! Return the PGPLOT-encoded label of the specified class
     virtual std::string get_label (unsigned iclass) const = 0;
 
     //! Return the number of parameters in the specified class
@@ -169,6 +169,10 @@ namespace Pulsar {
 
     //! Return the estimate of the specified parameter
     virtual Estimate<float> get_param (unsigned ichan, unsigned iclass, unsigned iparam) const = 0;
+
+    //! Return the PGPLOT-encoded name of the specified parameter
+    /*! This late addition is not implemented by every child. */
+    virtual std::string get_param_name (unsigned iclass, unsigned iparam) const { return ""; }
 
     /** @name Optional Graphing Features
      *  These optional attributes make the graph look nice
