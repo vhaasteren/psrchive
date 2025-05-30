@@ -9,6 +9,7 @@
 
 #include "Pulsar/CalibratorStokes.h"
 #include "Pulsar/CalibratorStokesInfo.h"
+#include "Pulsar/CorrelationInfo.h"
 #include "Pulsar/SolverInfo.h"
 #include "Pulsar/IXRInfo.h"
 #include "Pulsar/ConstantGainInfo.h"
@@ -23,17 +24,6 @@ using namespace std;
 
 Pulsar::CalibratorInfo::CalibratorInfo ()
 {
-  // reserve 5% of the viewport height for space between panels
-  between_panels = 0.05;
-
-  calibrator_stokes = false;
-  calibrator_stokes_degree = false;
-  reduced_chisq = false;
-  intrinsic_crosspol_ratio = false;
-  constant_gain = false;
-  configurable_projection = false;
-
-  outlier_threshold = 0.0;
   subint.set_integrate( true );
 }
 
@@ -50,6 +40,9 @@ void Pulsar::CalibratorInfo::prepare (const Archive* data)
     stokes->set_degree (calibrator_stokes_degree);
     info = stokes;
   }
+
+  else if (correlation != -1)
+    info = new CorrelationInfo (correlation, new PolnCalibrator(data));
   
   else if (reduced_chisq)
     info = new SolverInfo (new PolnCalibrator(data));
@@ -206,6 +199,10 @@ Pulsar::CalibratorInfo::Interface::Interface (CalibratorInfo* instance)
        &CalibratorInfo::set_calibrator_stokes_degree,
        "calp", "Plot calibrator Stokes parameters w/ degree of polarization" );
 
+  add( &CalibratorInfo::get_correlation,
+       &CalibratorInfo::set_correlation,
+       "corr", "Plot the correlations of the specified parameter index" );
+       
   add( &CalibratorInfo::get_reduced_chisq,
        &CalibratorInfo::set_reduced_chisq,
        "gof", "Plot the model goodness-of-fit" );

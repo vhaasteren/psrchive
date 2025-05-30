@@ -19,32 +19,26 @@ std::string Pulsar::SolverInfo::get_title () const
   return "Goodness of Fit (Reduced \\gx\\u2\\d)";
 }
 
-//! Return the number of frequency channels
 unsigned Pulsar::SolverInfo::get_nchan () const
 {
   return poln_calibrator->get_nchan();
 }
 
-//! Return the number of parameter classes
 unsigned Pulsar::SolverInfo::get_nclass () const
 {
   return 1;
 }
 
-//! Return the name of the specified class
 std::string Pulsar::SolverInfo::get_label (unsigned iclass) const
 {
-  return "\\gx\\u2\\d/N\\dfree";
+  return "\\gx\\u2\\d/N\\dfree";  // chi^2 / N_{free}
 }
 
-
-//! Return the number of parameters in the specified class
 unsigned Pulsar::SolverInfo::get_nparam (unsigned iclass) const
 {
   return 1;
 }
 
-//! Return the estimate of the specified parameter
 Estimate<float> 
 Pulsar::SolverInfo::get_param (unsigned ichan, unsigned iclass, unsigned iparam) const
 {

@@ -20,6 +20,7 @@ nobase_include_HEADERS = \
 	Pulsar/ConfigurableProjectionInfo.h \
 	Pulsar/ConstantGainInfo.h \
 	Pulsar/ConvertMJD.h \
+    Pulsar/CorrelationInfo.h \
 	Pulsar/DataAndModelReport.h \
 	Pulsar/Database.h \
 	Pulsar/DataSetManager.h \
@@ -145,6 +146,7 @@ libPolarimetry_la_SOURCES = \
 	ConfigurableProjectionExt.C \
 	ConstantGainInfo.C \
 	ConvertMJD.C \
+    CorrelationInfo.C \
 	DataAndModelReport.C \
 	Database.C \
 	DataSetManager.C \
