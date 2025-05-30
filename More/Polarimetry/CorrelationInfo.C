@@ -135,5 +135,13 @@ Estimate<float> CorrelationInfo::get_param (unsigned ichan, unsigned iclass, uns
   if (covar.size() != expected_size)
     return 0.0;
 
-  return Estimate<float>(1,1);
+  if (iclass == 1)
+    iparam += backend_param;
+
+  unsigned idx = index * nparam + iparam - index*(index+1)/2;
+
+  Estimate<float> result;
+  result.set_value(covar.at(idx));
+  result.set_error(result.val/10.0);
+  return result;
 }
