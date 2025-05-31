@@ -1013,7 +1013,7 @@ void Pulsar::FITSArchive::unload_file (const char* filename) const try
     if (ext)
     {
       if (verbose > 2)
-	cerr << "FITSArchive::unload WidebandCorrelator extension" << endl;
+        cerr << "FITSArchive::unload WidebandCorrelator extension" << endl;
       unload (fptr, ext);
     }
   }
@@ -1024,11 +1024,11 @@ void Pulsar::FITSArchive::unload_file (const char* filename) const try
     if (backend)
     {
       if (verbose > 2)
-	cerr << "FITSArchive::unload " << backend->get_extension_name()
-	     << " BACKEND=" << backend->get_name() 
-	     << " BE_DCC=" << backend->get_downconversion_corrected()
-	     << " BE_PHASE=" << backend->get_argument() 
-	     << " BE_DELAY=" << backend->get_delay() << endl;
+        cerr << "FITSArchive::unload " << backend->get_extension_name()
+            << " BACKEND=" << backend->get_name() 
+            << " BE_DCC=" << backend->get_downconversion_corrected()
+            << " BE_PHASE=" << backend->get_argument() 
+            << " BE_DELAY=" << backend->get_delay() << endl;
       
       psrfits_update_key (fptr, "BACKEND",  backend->get_name());
       
@@ -1121,7 +1121,6 @@ void Pulsar::FITSArchive::unload_file (const char* filename) const try
   // order that they appear in the psrheader.fits template
   //
   // /////////////////////////////////////////////////////////////////
-  
 
   // Unload some of the other HDU's
   
