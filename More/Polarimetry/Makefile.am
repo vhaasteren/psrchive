@@ -287,7 +287,7 @@ simpol_SOURCES = simpol.C
 
 TESTS = test_copy test_Feed test_SingleAxis test_TotalCovariance \
 	test_Parallactic test_ReceptionComposite test_ReceptionEvaluate \
-	test_ReceptionModel test_Instrument test_hand_xyph
+	test_ReceptionModel test_Instrument test_hand_xyph test_permutation
 
 check_PROGRAMS = $(TESTS) test_IRIonosphere test_ModeSeparation
 
@@ -299,6 +299,7 @@ test_Parallactic_SOURCES	= test_Parallactic.C
 test_SingleAxis_SOURCES		= test_SingleAxis.C
 test_Instrument_SOURCES		= test_Instrument.C
 test_hand_xyph_SOURCES		= test_hand_xyph.C
+test_permutation_SOURCES        = test_permutation.C
 
 test_ReceptionModel_SOURCES	= test_ReceptionModel.C
 test_TotalCovariance_SOURCES	= test_TotalCovariance.C

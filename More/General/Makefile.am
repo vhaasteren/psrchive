@@ -331,19 +331,30 @@ nobase_include_HEADERS += Pulsar/SplineSmooth.h
 
 endif
 
+TESTS = test_Correlate
+
+test_Correlate_SOURCES = test_Correlate.C
+
+check_PROGRAMS = $(TESTS)
 
 #############################################################################
 #
+#############################################################################
+
+LDADD = libGeneral.la \
+    $(top_builddir)/Base/libpsrbase.la \
+    $(top_builddir)/Util/libpsrutil.la \
+    $(top_builddir)/Util/epsic/src/util/libutil.la
 
 include $(top_srcdir)/config/Makefile.include
 
 AM_CPPFLAGS += \
-        -I$(top_srcdir)/More/Timing \
-        -I$(top_srcdir)/More/Polarimetry \
-        -I$(top_srcdir)/More/MEAL \
-        -I$(top_srcdir)/More/RFIMitigation \
-	@PGPLOT_CFLAGS@ @TEMPO2_CFLAGS@ @CFITSIO_CFLAGS@ @GSL_CFLAGS@ \
-	@SPLINTER_CFLAGS@ @ARMADILLO_CFLAGS@
+    -I$(top_srcdir)/More/Timing \
+    -I$(top_srcdir)/More/Polarimetry \
+    -I$(top_srcdir)/More/MEAL \
+    -I$(top_srcdir)/More/RFIMitigation \
+    @PGPLOT_CFLAGS@ @TEMPO2_CFLAGS@ @CFITSIO_CFLAGS@ @GSL_CFLAGS@ \
+    @SPLINTER_CFLAGS@ @ARMADILLO_CFLAGS@
 
 libGeneral_la_LIBADD = @SPLINTER_LIBS@ @ARMADILLO_LIBS@
 
