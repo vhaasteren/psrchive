@@ -30,6 +30,8 @@ namespace UnaryStatistics {
     
     double get (const vector<double>& data)
     {
+      if (data.size() == 0)
+        throw Error (InvalidParam, "Maximum::get", "empty vector");
       return *std::max_element (data.begin(), data.end());
     }
     

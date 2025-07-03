@@ -482,6 +482,8 @@ void Pulsar::ProfileStats::build () const try
   get_baseline_estimator()->set_Profile (profile);
   get_baseline_estimator()->get_weight (baseline);
 
+  all->set_Profile (profile);
+
   built = true;
 
   if (Profile::verbose)
