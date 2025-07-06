@@ -20,14 +20,9 @@ std::pair<unsigned,unsigned> unset_indeces (0,0);
 Pulsar::PlotScale::PlotScale () :
   world (unset_world),
   range_norm (unset_range_norm),
-  world_external (unset_world)
+  world_external (unset_world),
+  index_range (unset_indeces)
 {
-  buf_norm = 0.0;
-  minval = 0.0;
-  maxval = 1.0;
-  minmaxvalset = false;
-  num_indeces = 0;
-  frozen = false;
 }
 
 void Pulsar::PlotScale::init (const Archive*)
