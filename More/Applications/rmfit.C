@@ -41,6 +41,7 @@ void usage ()
     "  -T sigma_L    Set the threshold used to select bins (default: " << selection_threshold << " sigma) \n"
     "  -P paas.m     Perform RM refinement for each profile component in model \n"
     "  -b [+/-][i-k] Include/exclude phase bins i through k (inclusive) \n"
+    "  -x ext        Set int:aux:rm and unload with new extension \n"
     "\n"
     "Quadratic fitting algorithm (Noutsos et al. 2008) options: \n"
     "\n"
@@ -201,6 +202,7 @@ static bool squared = false;
 // do not tscrunch and compute RM for each sub-integration
 // setting the aux:rm with the result
 static bool set_auxrm = false;
+static std::string new_auxrm_ext;
 
 int main (int argc, char** argv)
 {
@@ -260,7 +262,7 @@ int main (int argc, char** argv)
   // estimate an unique RM for each component in the model
   Reference::To<Pulsar::ComponentModel> component_model;
 
-  const char* args = "a:A:b:B:c:C:DeF:hi:j:JK:Ll:m:M:p:P:rR:sS:T:tu:U:vVw:WxYz:";
+  const char* args = "a:A:b:B:c:C:DeF:hi:j:JK:Ll:m:M:p:P:rR:sS:T:tu:U:vVw:Wx:Yz:";
 
   int gotc = 0;
 
@@ -479,6 +481,7 @@ int main (int argc, char** argv)
 
     case 'x':
       set_auxrm = true;
+      new_auxrm_ext = optarg;
       break;
 
     case 'Y':
@@ -681,9 +684,7 @@ int main (int argc, char** argv)
 
           if (set_auxrm)
           {
-            std::string filename = data->get_filename();
-            filename += ".auxrmfit";
-
+            std::string filename = replace_extension(data->get_filename(), new_auxrm_ext);
             cerr << "rmfit: unloading " << filename << " with auxiliary RM set for each sub-integration" << endl;
             data->unload(filename);
 
@@ -695,15 +696,18 @@ int main (int argc, char** argv)
             {
               Integration* subint = data->get_Integration(isubint);
               auto aux = subint->get<AuxColdPlasmaMeasures>();
-              assert (aux != nullptr);
-              double auxRM = aux->get_rotation_measure();
-              out << "int[" << isubint << "]:aux:rm=" << auxRM << endl;
+              if (aux)
+              {
+                double auxRM = aux->get_rotation_measure();
+                out << "int[" << isubint << "]:aux:rm=" << auxRM << endl;
+              }
             }
           }
 
           continue;
         }
-        catch (Error& error) { 
+        catch (Error& error)
+        {
           cerr << "rmfit: Error during refine" << error << endl; 
           return -1;
         } 
@@ -776,15 +780,12 @@ int main (int argc, char** argv)
 
     fbscr_RMs_var /= float(fbscr_RMs.size()-1);
     fbscr_RMs_var = sqrt(fbscr_RMs_var);
-
-
-
   }
   catch (Error& error)
-    { 
-      cerr << error << endl;
-      continue;
-    }
+  {
+    cerr << error << endl;
+    continue;
+  }
 
   if (mtm_std)
     return 0;
@@ -1103,8 +1104,17 @@ Reference::To<Pulsar::Archive> get_data(string filename)
   data -> dedisperse();
 
   if (!set_auxrm)
+  {
     data -> tscrunch();
-
+    Integration* subint = data->get_Integration(0);
+    auto aux = subint->get<AuxColdPlasmaMeasures>();
+    if (aux)
+    {
+      double auxRM = aux->get_rotation_measure();
+      cerr << "rmfit: setting auxiliary RM=" << auxRM << " to zero" << endl;
+      aux->set_rotation_measure(0);
+    }
+  }
   data -> remove_baseline();
   return data;
 }
