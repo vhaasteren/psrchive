@@ -123,17 +123,26 @@ int main(int argc, char ** argv) try
   if (nchan < 2)
     return 0;
 
-  kernel.set_rotation_measure (1.0);
-
   double bottom_of_band = centrefreq - 0.5*fabs(bw);
-  
+
   kernel.set_frequency (bottom_of_band + bw/nchan);
   pa_hi = kernel.get_rotation ();
 
   kernel.set_frequency (bottom_of_band);
   pa_lo = kernel.get_rotation ();
 
+  delta_PA = fabs(pa_hi - pa_lo) * 180.0 / M_PI;
+
+  cout << "\nPosition angle change across channel with lowest frequency: " << delta_PA << " deg\n";
+
+  kernel.set_rotation_measure (1.0);
+  kernel.set_frequency (bottom_of_band + bw/nchan);
+  pa_hi = kernel.get_rotation ();
+  kernel.set_frequency (bottom_of_band);
+  pa_lo = kernel.get_rotation ();
+
   delta_PA = fabs(pa_hi - pa_lo);
+
   cout << "\nWith " << nchan << " frequency channels:\n"
       "maximum RM (at delta-PA = pi):    " << M_PI/delta_PA << endl;
 
