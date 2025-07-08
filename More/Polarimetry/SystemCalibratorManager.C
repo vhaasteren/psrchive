@@ -191,6 +191,8 @@ void SystemCalibratorManager::precalibrate (Archive* data)
     }
   }
 
+  if (Archive::verbose > 1)
+    cerr << "SystemCalibratorManager::precalibrate calling SystemCalibrator::precalibrate" << endl;
   model->precalibrate (data);
 }
 

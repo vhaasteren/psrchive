@@ -14,6 +14,7 @@
 #include "Pulsar/VariableProjectionCorrection.h"
 #include "Pulsar/VariableFaradayRotation.h"
 #include "Pulsar/ConfigurableProjection.h"
+#include "Pulsar/AuxColdPlasma.h"
 
 #include "Pulsar/VariableBackendEstimate.h"
 #include "Pulsar/SystemCalibratorStepFinder.h"
@@ -377,8 +378,7 @@ void SystemCalibrator::add_diff_phase_step (const MJD& mjd)
 }
 
 //! Add a VariableBackend step at the specified MJD
-void SystemCalibrator::add_step (const MJD& mjd,
-					 Calibration::VariableBackend* backend)
+void SystemCalibrator::add_step (const MJD& mjd, Calibration::VariableBackend* backend)
 {
   if (model.size() == 0)
     throw Error (InvalidState, "SystemCalibrator::add_step",
@@ -563,8 +563,6 @@ void SystemCalibrator::add_pulsar (const Archive* data, unsigned isub) try
   if ( correct_interstellar_Faraday_rotation &&
        ( data->get_rotation_measure() != 0.0 ) )
   {
-    cerr << " correcting interstellar Faraday rotation - RM=" << data->get_rotation_measure () << endl;
-
     ism_faraday = new Faraday;
     ism_faraday->set_rotation_measure( data->get_rotation_measure() );
 
@@ -619,7 +617,7 @@ void SystemCalibrator::add_pulsar (const Archive* data, unsigned isub) try
     {
       // Faraday rotation
       faraday_rotation->set_chan (ichan);
-       measurements.add_coordinate
+      measurements.add_coordinate
          ( faraday_rotation->new_value (model[mchan]->get_faraday_rotation()) );
     }
 
@@ -1638,31 +1636,29 @@ void SystemCalibrator::init_model (unsigned ichan)
     if (response)
     {
       if (verbose > 2)
-	cerr << "SystemCalibrator::init_model response name=" << response->get_name() << endl;
+        cerr << "SystemCalibrator::init_model response name=" << response->get_name() << endl;
       model[ichan]->set_response( response->clone() );
     }
 
     if (impurity)
     {
       if (verbose > 2)
-	cerr << "SystemCalibrator::init_model impurity" << endl;
+        cerr << "SystemCalibrator::init_model impurity" << endl;
       model[ichan]->set_impurity( impurity->clone() );
     }
   
     if (projection)
     {
       if (verbose > 2)
-	cerr << "SystemCalibrator::init_model projection" << endl;
-      model[ichan]->set_projection
-        ( projection->get_transformation(ichan) );
+        cerr << "SystemCalibrator::init_model projection" << endl;
+      model[ichan]->set_projection( projection->get_transformation(ichan) );
     }
 
     if (faraday_rotation)
     {
       if (verbose > 2)
         cerr << "SystemCalibrator::init_model Faraday rotation" << endl;
-      model[ichan]->set_faraday_rotation
-        ( faraday_rotation->get_transformation(ichan) );
+      model[ichan]->set_faraday_rotation( faraday_rotation->get_transformation(ichan) );
     }
 
     for (auto rv : response_variation)
@@ -2226,8 +2222,13 @@ void SystemCalibrator::precalibrate (Archive* data)
   vector< Jones<float> > response (nchan);
 
   projection->set_archive (data);
-
   bool projection_corrected = false;
+
+  if (faraday_rotation)
+  {
+    faraday_rotation->set_archive (data);
+  }
+  bool faraday_rotation_corrected = false;
 
   BackendCorrection correct_backend;
   correct_backend (data);
@@ -2240,6 +2241,14 @@ void SystemCalibrator::precalibrate (Archive* data)
 
     if (projection->required ())
       projection_corrected = true;
+
+    if (faraday_rotation)
+    {
+      faraday_rotation->set_subint (isub);
+
+      if (faraday_rotation->required())
+        faraday_rotation_corrected = true;
+    }
 
     for (unsigned ichan=0; ichan<nchan; ichan++)
     {
@@ -2263,6 +2272,12 @@ void SystemCalibrator::precalibrate (Archive* data)
       projection->set_chan (ichan);
       projection->update();
 
+      if (faraday_rotation)
+      {
+        faraday_rotation->set_chan (ichan);
+        faraday_rotation->update();
+      }
+
       try
       {
         response[ichan] = get_transformation(data, isub, ichan)->evaluate();
@@ -2277,8 +2292,8 @@ void SystemCalibrator::precalibrate (Archive* data)
           cerr << "SystemCalibrator::precalibrate ichan=" << ichan
                 << endl << error.get_message() << endl;
 
-              integration->set_weight (ichan, 0.0);
-              response[ichan] = 0.0;
+        integration->set_weight (ichan, 0.0);
+        response[ichan] = 0.0;
         continue;
       }
 
@@ -2306,8 +2321,7 @@ void SystemCalibrator::precalibrate (Archive* data)
 
   if (!receiver)
   {
-    cerr << "SystemCalibrator::precalibrate WARNING: "
-      "cannot record corrections" << endl;
+    cerr << "SystemCalibrator::precalibrate WARNING: cannot record corrections" << endl;
     return;
   }
 
@@ -2316,13 +2330,18 @@ void SystemCalibrator::precalibrate (Archive* data)
     receiver->set_projection_corrected (true);
 
   receiver->set_basis_corrected (true);
+
+  if (faraday_rotation_corrected)
+  {
+    data->set_faraday_corrected (true);
+    auto aux = data->get<AuxColdPlasma>();
+    if (aux)
+      aux->set_birefringence_corrected(true);
+  }
 }
 
-
-
 MEAL::Complex2* 
-SystemCalibrator::get_transformation (const Archive* data,
-				      unsigned isubint, unsigned ichan)
+SystemCalibrator::get_transformation (const Archive* data, unsigned isubint, unsigned ichan)
 {
   const Integration* integration = data->get_Integration (isubint);
   MJD epoch = integration->get_epoch();
@@ -2347,7 +2366,6 @@ SystemCalibrator::get_transformation (const Archive* data,
   default:
     throw Error (InvalidParam, "SystemCalibrator::get_transformation",
 		 "unknown Archive type for " + data->get_filename() );
-    
   }
   
   ReceptionModel* equation = model[ichan]->get_equation();
