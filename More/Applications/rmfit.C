@@ -1585,9 +1585,11 @@ void do_refine (Pulsar::DeltaRM& delta_rm,
 
       double dRM = new_RM - data->get_rotation_measure();
       double auxRM = aux->get_rotation_measure();
+      new_rm += auxRM;
+
       aux->set_rotation_measure(auxRM + dRM);
 
-      cerr << "rmfit: set_auxrm header RM=" << data->get_rotation_measure() << " new RM=" << new_RM << " int[" << isubint << "]:aux:rm=" << auxRM << " new aux:rm=" << auxRM+dRM << endl;
+      cerr << "rmfit: set_auxrm header RM=" << data->get_rotation_measure() << " dRM=" << dRM << " int[" << isubint << "]:aux:rm=" << auxRM << " new aux:rm=" << auxRM+dRM << endl;
     }
     else
     {
@@ -1596,8 +1598,7 @@ void do_refine (Pulsar::DeltaRM& delta_rm,
   }
 
   cerr << "rmfit: converged in " << iterations << " iterations" << endl;
-  cerr << "       final rotation measure = " 
-       << delta_rm.get_rotation_measure() << endl;
+  cerr << "       final rotation measure = " << new_rm.get_value() << endl;
 
   if (log_results)
     rmresult (data, delta_rm.get_rotation_measure(), delta_rm.get_used_bins());
