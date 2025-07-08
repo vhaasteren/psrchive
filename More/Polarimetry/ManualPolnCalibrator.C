@@ -79,6 +79,8 @@ void Pulsar::ManualPolnCalibrator::load (const string& ascii_model_filename)
   }
   if (verbose > 2) cerr << "Pulsar::ManualPolnCalibrator::load " << entries.size() << " entries" <<endl;
   input.close();
+
+  filenames.push_back(ascii_model_filename);
 }
 
 // TODO GD !!
@@ -101,11 +103,6 @@ void Pulsar::ManualPolnCalibrator::calibrate (Archive* arch) try
 
   if (arch->get_npol() == 4)
   {
-    if (arch->get_state() != Signal::Coherence )
-    {
-      throw Error (InvalidState, "Pulsar::ManualPolnCalibrator::calibrate",
-                   "The archive needs to be in Coherence state");
-    }
     // Response need to be a vector of vector
     vector< vector<Jones<float> > > response(arch->get_nsubint(), vector< Jones<float> > (arch->get_nchan()));
     //response.resize(arch->get_nsubint());

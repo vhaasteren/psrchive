@@ -808,6 +808,19 @@ void pcm::set_impurity (const string& filename)
 void pcm::set_projection (const string& filename)
 {
   try {
+    cerr << "pcm: loading known projections from " << filename << endl;
+    ManualPolnCalibrator* cal = new ManualPolnCalibrator (filename);
+    projection = new VariableTransformationFile (cal);
+    return;
+  }
+  catch (Error& error)
+  {
+    if (verbose)
+      cerr << "pcm: failed to load known projections from " << filename << endl;
+  }
+
+  try {
+    cerr << "pcm: loading configurable projection from " << filename << endl;
     projection = new ConfigurableProjection (filename);
     cerr << "pcm: projection configuration loaded from " << filename << endl;
     return;
@@ -815,13 +828,8 @@ void pcm::set_projection (const string& filename)
   catch (Error& error)
   {
     if (verbose)
-      cerr << "pcm: failed to load ConfigurableProjection from " << filename << endl;
+      cerr << "pcm: failed to load configurable projection from " << filename << endl;
   }
-
-  cerr << "pcm: loading projection transformations from " << filename << endl;
-
-  ManualPolnCalibrator* cal = new ManualPolnCalibrator (filename);
-  projection = new VariableTransformationFile (cal);
 }
 
 flags foreach_calibrator;

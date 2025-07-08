@@ -82,6 +82,9 @@ namespace Pulsar {
     //! Return a const reference to the calibrator archive
     const Archive* get_Archive () const;
 
+    //! Return true if the calibrator is constructed from an Archive
+    bool has_Archive () const;
+
     //! Returns information about the calibrator using a generic interface
     class Info;
 

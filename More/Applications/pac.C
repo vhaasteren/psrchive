@@ -795,13 +795,16 @@ int main (int argc, char *argv[]) try
         }
       }
 
-      const Archive* calarch = pcal_engine->get_Archive ();
-      auto cpe = calarch->get<ConfigurableProjectionExtension>();
-      if (cpe)
+      if (pcal_engine->has_Archive())
       {
-        cerr << "pac: using configurable projection (disabling frontend correction)" << endl;
-        projection = new ConfigurableProjection(cpe);
-        do_frontend = false;
+        const Archive* calarch = pcal_engine->get_Archive ();
+        auto cpe = calarch->get<ConfigurableProjectionExtension>();
+        if (cpe)
+        {
+            cerr << "pac: using configurable projection (disabling frontend correction)" << endl;
+            projection = new ConfigurableProjection(cpe);
+            do_frontend = false;
+        }
       }
 
       pcal_engine->set_backend_correction( do_backend );
