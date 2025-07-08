@@ -1679,7 +1679,11 @@ void pcm::finalize ()
 #endif
 
   DataSetManager total_manager;
-  
+
+  // disable phase alignment (prepare->prepare is called during pcm::preprocess)
+  // It's confusing when *.calib are output with pulsar phase offset from the input data
+  prepare->set_align_phase(false);
+
   for (unsigned i = 0; i < filenames.size(); i++) try
   {
     if (verbose)
@@ -1740,34 +1744,34 @@ void pcm::finalize ()
 
       if (plot_total)
       {
-	string dev = append ("calibrated", name, ".ps/CPS", ntotal > 1);
-	
-	cpgbeg (0, dev.c_str(), 0, 0);
-	cpgask(1);
-	cpgslw(2);
-	cpgsvp (.1,.9, .1,.9);
+        string dev = append ("calibrated", name, ".ps/CPS", ntotal > 1);
 
-	total->fscrunch();
-	total->remove_baseline();
+        cpgbeg (0, dev.c_str(), 0, 0);
+        cpgask(1);
+        cpgslw(2);
+        cpgsvp (.1,.9, .1,.9);
 
-	cerr << "pcm: plotting calibrated result for " << name << endl;
-	Pulsar::StokesSpherical plot;
-	plot.plot (total);
+        total->fscrunch();
+        total->remove_baseline();
 
-	cpgend ();
+        cerr << "pcm: plotting calibrated result for " << name << endl;
+        Pulsar::StokesSpherical plot;
+        plot.plot (total);
+
+        cpgend ();
       }
 
       if (phase_bins.size() != 0)
       {
-	total->fscrunch ();
-	total->tscrunch ();
-	prepare->prepare (total);
+        total->fscrunch ();
+        total->tscrunch ();
+        prepare->prepare (total);
 
-	if (plot_chosen_bins)
-	{
-	  string dev = append ("selected", name, "", ntotal > 1);
-	  plot_chosen (total, phase_bins, dev);
-	}
+        if (plot_chosen_bins)
+        {
+          string dev = append ("selected", name, "", ntotal > 1);
+          plot_chosen (total, phase_bins, dev);
+        }
       }
 #endif // HAVE_PGPLOT
     }
