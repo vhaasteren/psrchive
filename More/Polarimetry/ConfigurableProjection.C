@@ -277,7 +277,6 @@ unsigned ConfigurableProjection::get_ndim () const
   return effective_ndim;
 }
 
-//! Return a newly constructed Transformation instance
 ConfigurableProjection::Transformation*
 ConfigurableProjection::get_transformation (unsigned ichan)
 {
@@ -294,7 +293,6 @@ ConfigurableProjection::get_transformation (unsigned ichan)
   return xforms[ichan];
 }
 
-//! Return a newly constructed Transformation instance
 const ConfigurableProjection::Transformation*
 ConfigurableProjection::get_transformation (unsigned ichan) const
 {
@@ -316,11 +314,9 @@ bool ConfigurableProjection::get_transformation_valid (unsigned ichan) const
 
 using Calibration::VariableTransformation;
 
-//! Return a newly constructed Argument::Value for the given Transformation
-MEAL::Argument::Value*
-ConfigurableProjection::new_value (VariableTransformationManager::Transformation* xform)
+MEAL::Argument::Value* ConfigurableProjection::new_value ()
 {
-  MEAL::Argument* argument = xform->get_argument ();
+  MEAL::Argument* argument = xforms[chan]->get_argument ();
 
   typedef MEAL::Axis< Calibration::VariableTransformation::Argument > VariableArgument;
 
@@ -410,7 +406,6 @@ void ConfigurableProjection::calibrate (Archive* arch)
     for (unsigned ichan=0; ichan < nchan; ichan++)
     {
       set_chan (ichan);
-
       update ();
 
       if (get_transformation_valid(ichan))

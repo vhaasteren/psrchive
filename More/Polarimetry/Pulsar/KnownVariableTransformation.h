@@ -37,8 +37,7 @@ namespace Pulsar {
   {
   public:
 
-
-    typedef MEAL::Axis< LabelledJones<double> >   KnownArgument;
+    typedef MEAL::Axis< LabelledJones<double> > KnownArgument;
     typedef MEAL::Value< MEAL::Complex2 > KnownTransformation;
 
     class Transformation : public VariableTransformationManager::Transformation
@@ -50,6 +49,8 @@ namespace Pulsar {
       //! The known transformation
       KnownTransformation transformation;
       
+      friend class KnownVariableTransformation;
+
     public:
 
       Transformation ()
@@ -63,16 +64,22 @@ namespace Pulsar {
       //! Its argument
       MEAL::Argument* get_argument () { return &argument; }  
     };
-    
-    //! Return a newly constructed Transformation instance
-    Transformation* get_transformation (unsigned ichan);
 
-    //! Return a newly constructed Argument::Value for the given Transformation
-    MEAL::Argument::Value* new_value (VariableTransformationManager::Transformation*);
+    //! Set the number of frequency channels with a unique Transformation
+    void set_nchan (unsigned nchan) override;
+
+    //! Return the Transformation for the specified channel
+    Transformation* get_transformation (unsigned ichan) override;
+
+    //! Return a newly constructed Argument::Value for the current archive / subint / chan
+    MEAL::Argument::Value* new_value () override;
 
     //! Derived classes define the known transformation
-    virtual LabelledJones<double> get_transformation () = 0;
-    
+    virtual LabelledJones<double> get_value () = 0;
+
+  protected:
+
+    std::vector<Transformation> xform;
   };
 }
 

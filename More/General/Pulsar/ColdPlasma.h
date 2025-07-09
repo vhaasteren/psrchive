@@ -332,7 +332,6 @@ void Pulsar::ColdPlasma<C,History>::execute1 (Integration* data) try
   corrected->set_measure( backup_measure );
   corrected->set_reference_wavelength( get_reference_wavelength() );
   data->add_extension( corrected );
-
 }
 catch (Error& error)
 {

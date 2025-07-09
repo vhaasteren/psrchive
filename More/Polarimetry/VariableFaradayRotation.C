@@ -21,10 +21,13 @@ VariableFaradayRotation::VariableFaradayRotation ()
   built = false;
 }
 
-LabelledJones<double> VariableFaradayRotation::get_transformation ()
+LabelledJones<double> VariableFaradayRotation::get_value ()
 {
   if (!built)
     build ();
+
+  if (Archive::verbose > 1)
+    cerr << "VariableFaradayRotation::get_value" << endl;
 
   return transformation;
 }
@@ -155,6 +158,11 @@ void VariableFaradayRotation::build () const try
   catch (Error& error)
   {
     throw error += "VariableFaradayRotation::build ism_faraday";
+  }
+
+  if (Archive::verbose > 1)
+  {
+    cerr << "VariableFaradayRotation::build description=" << description << endl;
   }
 
   built = true;

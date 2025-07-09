@@ -1,7 +1,7 @@
 //-*-C++-*-
 /***************************************************************************
  *
- *   Copyright (C) 2008 - 2022 by Willem van Straten
+ *   Copyright (C) 2008-2025 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -28,6 +28,7 @@ namespace Pulsar
   class FluxCalibrator;
   class CalibratorStokes;
   class VariableTransformationManager;
+  class VariableFaradayRotation;
 
   //! PolnCalibrator with estimated calibrator Stokes parameters
   /*! The SystemCalibrator is the virtual base class of polarization
@@ -137,7 +138,7 @@ namespace Pulsar
     virtual void set_projection( VariableTransformationManager* );
 
     //! Set the ionospheric and interstellar Faraday rotation transformation
-    virtual void set_faraday_rotation( VariableTransformationManager* );
+    virtual void set_faraday_rotation( VariableFaradayRotation* );
 
     //! Set the time variation of absolute gain
     virtual void set_gain( MEAL::Univariate<MEAL::Scalar>* );
@@ -348,7 +349,7 @@ namespace Pulsar
     Reference::To<VariableTransformationManager> projection;
 
     //! The ionospheric and interstellar Faraday rotation transformation
-    Reference::To<VariableTransformationManager> faraday_rotation;
+    Reference::To<VariableFaradayRotation> faraday_rotation;
 
     //! The CalibratorStokesExtension of the Archive passed during construction
     mutable Reference::To<const CalibratorStokes> calibrator_stokes;

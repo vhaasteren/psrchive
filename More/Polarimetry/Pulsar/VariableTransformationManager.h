@@ -47,21 +47,20 @@ namespace Pulsar {
     //! Update the tranformation for the current archive / subint / chan
     virtual void update ();
 
-    //! Set the number of frequency channels for which get_transformation will be called
-    virtual void set_nchan (unsigned);
+    //! Set the number of frequency channels with a unique Transformation
+    virtual void set_nchan (unsigned nchan) = 0;
 
-    //! Return a newly constructed Transformation instance
+    //! Return the Transformation for the specified channel
     virtual Transformation* get_transformation (unsigned ichan) = 0;
 
-    //! Return a newly constructed Argument::Value for the given Transformation
-    virtual MEAL::Argument::Value* new_value (Transformation*) = 0;
+    //! Return a newly constructed Argument::Value for the current archive / subint / chan
+    virtual MEAL::Argument::Value* new_value () = 0;
 
     //! Get the description of the transformation
     virtual std::string get_description () const { return description; }
 
     //! Return true if the transformation is required
     virtual bool required () const { return true; }
-
   };
 }
 

@@ -33,7 +33,7 @@ LabelledJones<double> VariableProjectionCorrection::get_antenna_projection ()
 }
 
 //! Get the transformation = feed_projection * antenna_projection
-LabelledJones<double> VariableProjectionCorrection::get_transformation ()
+LabelledJones<double> VariableProjectionCorrection::get_value ()
 {
   if (!built)
     build();

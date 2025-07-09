@@ -39,13 +39,16 @@ namespace Pulsar {
     VariableFaradayRotation ();
  
     //! Get the transformation
-    LabelledJones<double> get_transformation () override;
+    LabelledJones<double> get_value () override;
 
     //! Set the ionospheric Faraday rotation measure
     void set_ionospheric_rotation_measure (double);
 
     //! Set the interstellar Faraday rotation measure
     void set_interstellar_rotation_measure (double);
+
+    //! Get the transformation used to compute interstellar Faraday rotation
+    const Calibration::Faraday* get_interstellar_rotation () const { return ism_faraday; }
 
     //! Return true if the transformation is required
     bool required () const; 

@@ -9,23 +9,18 @@
 
 using namespace Pulsar;
 
-//! Return a newly constructed Transformation instance
+void KnownVariableTransformation::set_nchan (unsigned nchan)
+{
+  xform.resize(nchan);
+}
+
 KnownVariableTransformation::Transformation*
 KnownVariableTransformation::get_transformation (unsigned ichan)
 {
-  return new KnownVariableTransformation::Transformation;
+  return &(xform.at(ichan));
 }
 
-//! Return a newly constructed Argument::Value for the given Transformation
-MEAL::Argument::Value*
-KnownVariableTransformation::new_value (VariableTransformationManager::Transformation* xform)
+MEAL::Argument::Value* KnownVariableTransformation::new_value ()
 {
-  MEAL::Argument* argument = xform->get_argument ();
-  KnownArgument* known = dynamic_cast<KnownArgument*> (argument);
-
-  if (!known)
-    throw Error (InvalidParam, "KnownVariableTransformation::new_value",
-		 "Transformation does not have a KnownArgument");
-						      
-  return known->new_Value( get_transformation() );
+  return xform[chan].argument.new_Value( get_value() );
 }

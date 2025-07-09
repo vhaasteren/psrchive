@@ -16,7 +16,7 @@ VariableTransformationFile::VariableTransformationFile (ManualPolnCalibrator* _c
   calibrator = _calibrator;
 }
 
-LabelledJones<double> VariableTransformationFile::get_transformation ()
+LabelledJones<double> VariableTransformationFile::get_value ()
 {
   const Integration* the_subint = archive->get_Integration(subint);
   MJD epoch = the_subint->get_epoch();
@@ -27,14 +27,15 @@ LabelledJones<double> VariableTransformationFile::get_transformation ()
   LabelledJones<double> retval = best_match.get_response();
   retval.label = "from file";
   
-#if 0
-  cerr << "VariableTransformationFile::get_transformation"
-       << " subint=" << subint << " data epoch=" << epoch.printdays(13) 
-       << " chan=" << chan << " data freq=" << freq << endl
-       << " cal epoch=" << best_match.ref_epoch.printdays(13)
-       << " cal freq=" << best_match.ref_frequency*1e-6 
-       << " det(J)=" << det(retval) << endl;
-#endif
+  if (Archive::verbose > 1)
+  {
+    cerr << "VariableTransformationFile::get_value"
+        << " subint=" << subint << " data epoch=" << epoch.printdays(13) 
+        << " chan=" << chan << " data freq=" << freq << endl
+        << " cal epoch=" << best_match.ref_epoch.printdays(13)
+        << " cal freq=" << best_match.ref_frequency*1e-6 
+        << " det(J)=" << det(retval) << endl;
+  }
 
   return retval;
 }

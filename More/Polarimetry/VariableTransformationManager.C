@@ -46,14 +46,10 @@ void VariableTransformationManager::set_chan (unsigned _chan)
   chan = _chan;
 }
 
-void VariableTransformationManager::set_nchan (unsigned)
-{
-}
-
 void VariableTransformationManager::update ()
 {
   DEBUG("VariableTransformationManager::update chan=" << chan);
-  Reference::To<MEAL::Argument::Value> arg = new_value (get_transformation(chan));
+  Reference::To<MEAL::Argument::Value> arg = new_value();
   arg->apply();
 }
 

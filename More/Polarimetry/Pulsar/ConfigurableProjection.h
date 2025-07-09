@@ -43,17 +43,26 @@ namespace Pulsar
 
     class Transformation;
 
-    //! Set the number of frequency channels
-    void set_nchan (unsigned);
+    //! Set the number of frequency channels with a unique Transformation
+    void set_nchan (unsigned nchan) override;
+
+    //! Return the Transformation for the specified channel
+    Transformation* get_transformation (unsigned ichan) override;
+
+    //! Return a newly constructed Argument::Value for the current archive / subint / chan
+    MEAL::Argument::Value* new_value () override;
+
+    //! Return the Transformation instance for the specified channel
+    const Transformation* get_transformation (unsigned ichan) const;
+
+    //! Return true if the speficied channel has a valid solution
+    bool get_transformation_valid (unsigned ichan) const;
 
     //! Get the number of frequency channels
     unsigned get_nchan () const;
 
     //! Get the number of abscissa / dimensions that describe the variability
     unsigned get_ndim () const;
-
-    //! Return a newly constructed Argument::Value for the given Transformation
-    MEAL::Argument::Value* new_value (VariableTransformationManager::Transformation*);
 
     //! Return the value associated with the parameter name
     double get_value (const std::string& name);
@@ -123,22 +132,11 @@ namespace Pulsar
       MEAL::Argument* get_argument () { return &argument; }
     };
 
-    //! Return the Transformation instance for the specified channel
-    Transformation* get_transformation (unsigned ichan);
-
-    //! Return the Transformation instance for the specified channel
-    const Transformation* get_transformation (unsigned ichan) const;
-
-    //! Return true if the speficied channel has a valid solution
-    bool get_transformation_valid (unsigned ichan) const;
-
   };
 
-  void copy (MEAL::Complex2* to,
-             const ConfigurableProjectionExtension::Transformation* from);
+  void copy (MEAL::Complex2* to, const ConfigurableProjectionExtension::Transformation* from);
 
-  void copy (ConfigurableProjectionExtension::Transformation* to,
-             const MEAL::Complex2* from);
+  void copy (ConfigurableProjectionExtension::Transformation* to, const MEAL::Complex2* from);
 
 }
 

@@ -36,7 +36,7 @@ namespace Pulsar {
     LabelledJones<double> get_antenna_projection ();
 
     //! Get the transformation
-    LabelledJones<double> get_transformation () override;
+    LabelledJones<double> get_value () override;
 
     //! Return true if the transformation is required
     bool required () const;
