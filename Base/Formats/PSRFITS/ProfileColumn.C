@@ -408,9 +408,7 @@ void Pulsar::ProfileColumn::unload (int row,
 
     offsets[iprof] = (min*the_max -max*the_min) / (the_max - the_min);
 
-    if (verbose)
-      cerr << "Pulsar::ProfileColumn::unload iprof=" << iprof
-	   << " offset=" << offsets[iprof] << endl;
+    DEBUG("Pulsar::ProfileColumn::unload iprof=" << iprof << " offset=" << offsets[iprof]);
       
     // Test for dynamic range
     if (fabs(min - max) > (100.0 * FLT_MIN))
@@ -418,13 +416,10 @@ void Pulsar::ProfileColumn::unload (int row,
     else if (verbose)
     {
       scales[iprof] = 1.0;
-      cerr << "Pulsar::ProfileColumn::unload WARNING no range in profile"
-	   << endl;
+      cerr << "Pulsar::ProfileColumn::unload WARNING no range in profile iprof=" << iprof << endl;
     }
     
-    if (verbose)
-      cerr << "Pulsar::ProfileColumn::unload iprof=" << iprof
-	   << " scale=" << scales[iprof] << endl;
+    DEBUG("Pulsar::ProfileColumn::unload iprof=" << iprof << " scale=" << scales[iprof]);
   }
 
   // offset and scale are one-dimensional arrays
@@ -465,9 +460,7 @@ void Pulsar::ProfileColumn::unload (int row,
       compressed[iprof*nbin+ibin] = value;
     }
 
-    if (verbose)
-      cerr << "Pulsar::ProfileColumn::unload iprof=" << iprof << "written" 
-	   << endl;
+    DEBUG("Pulsar::ProfileColumn::unload iprof=" << iprof << " written");
   }
 
   // Write the data

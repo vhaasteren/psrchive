@@ -126,8 +126,14 @@ void Pulsar::Integration::edit_extensions (const std::string& name)
   string ext = name.substr(1);
 
   if (name[0] == '+')
-    add_extension( Integration::Extension::factory(ext) );
-  
+  {
+    if (verbose)
+      cerr << "Pulsar::Integration::edit_extensions name=" << name << endl;
+
+    Reference::To<Integration::Extension> new_ext = Integration::Extension::factory(ext);
+    new_ext->update(this);
+    add_extension(new_ext);
+  }
   else if (name[0] == '-')
   {
     unsigned next = get_nextension();

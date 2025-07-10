@@ -66,7 +66,6 @@ Pulsar::Pointing::~Pointing ()
 {
 }
 
-
 static const double seconds_per_day = 24.0 * 60.0 * 60.0;
 static const double radians_per_second = 2.0 * M_PI / seconds_per_day;
 
@@ -77,7 +76,7 @@ void Pulsar::Pointing::set_local_sidereal_time (double seconds)
 
 double Pulsar::Pointing::get_local_sidereal_time () const
 {
-  return local_sidereal_time.get_Estimate().val * radians_per_second;
+  return local_sidereal_time.get_Estimate().val / radians_per_second;
 }
 
 static void setmean (MeanRadian<double>& value, const Angle& angle)
@@ -100,7 +99,6 @@ Angle Pulsar::Pointing::get_right_ascension () const
   return getmean (right_ascension);
 }
 
-
 void Pulsar::Pointing::set_declination (const Angle& angle)
 {
   setmean (declination, angle);
@@ -111,6 +109,11 @@ Angle Pulsar::Pointing::get_declination () const
   return getmean (declination);
 }
 
+Angle Pulsar::Pointing::get_hour_angle () const
+{
+  double lst_rad = get_local_sidereal_time() * radians_per_second;
+  return lst_rad - get_right_ascension();
+}
 
 void Pulsar::Pointing::set_galactic_longitude (const Angle& angle)
 {
@@ -222,14 +225,19 @@ void Pulsar::Pointing::update (const Integration* subint, const Archive *archive
       "  zen=" << get_telescope_zenith().getDegrees() << " deg\n"
       " para=" << get_parallactic_angle().getDegrees() << " deg\n"
       " posa=" << get_position_angle().getDegrees() << " deg\n"
-      "Pulsar::Pointing::update using:\n"
       " r.a.=" << get_right_ascension().getDegrees() << " deg\n"
       " dec.=" << get_declination().getDegrees() << " deg\n"
-      " pos.=" << coord << "\n"
       "Pulsar::Pointing::update parent:\n"
       " r.a.=" << archive->get_coordinates().ra().getDegrees() << " deg\n"
       " dec.=" << archive->get_coordinates().dec().getDegrees() << " deg"
 	 << endl;
+
+  if (coord.ra() == 0 && coord.dec() == 0)
+  {
+    coord = archive->get_coordinates();
+    if (Integration::verbose)
+      cerr << "Pulsar::Pointing::update using parent coordinates=" << coord << endl;
+  }
 
   Mount* mount = mount_factory (telescope->get_mount());
   if (!mount)
@@ -239,12 +247,20 @@ void Pulsar::Pointing::update (const Integration* subint, const Archive *archive
     return;
   }
 
+  if (Integration::verbose)
+    cerr << "Pulsar::Pointing::update using observatory"
+            " latitude=" << telescope->get_latitude() <<
+            " longitude=" << telescope->get_longitude() << endl;
+
   mount->set_source_coordinates( coord );
   mount->set_observatory_latitude( telescope->get_latitude().getRadians() );
   mount->set_observatory_longitude( telescope->get_longitude().getRadians() );
   mount->set_epoch( subint->get_epoch() );
 
-  set_local_sidereal_time( mount->get_local_sidereal_time()/radians_per_second );
+  if (Integration::verbose)
+    cerr << "Pulsar::Pointing::update LST=" << mount->get_local_sidereal_time() << " rad" << endl;
+
+  local_sidereal_time = Estimate<double>( mount->get_local_sidereal_time(), 1.0 );
 
   Directional* directional = dynamic_cast<Directional*> (mount);
   if (!directional)
