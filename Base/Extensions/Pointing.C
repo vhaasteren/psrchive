@@ -112,7 +112,11 @@ Angle Pulsar::Pointing::get_declination () const
 Angle Pulsar::Pointing::get_hour_angle () const
 {
   double lst_rad = get_local_sidereal_time() * radians_per_second;
-  return lst_rad - get_right_ascension();
+  double ra_rad = get_right_ascension().getRadians();
+
+  if (Integration::verbose)
+    cerr << "Pulsar::Pointing::get_hour_angle lst=" << lst_rad << " R.A.=" << ra_rad << " (radians)" << endl;
+  return lst_rad - ra_rad;
 }
 
 void Pulsar::Pointing::set_galactic_longitude (const Angle& angle)
@@ -237,6 +241,9 @@ void Pulsar::Pointing::update (const Integration* subint, const Archive *archive
     coord = archive->get_coordinates();
     if (Integration::verbose)
       cerr << "Pulsar::Pointing::update using parent coordinates=" << coord << endl;
+
+    set_right_ascension(coord.ra());
+    set_declination(coord.dec());
   }
 
   Mount* mount = mount_factory (telescope->get_mount());

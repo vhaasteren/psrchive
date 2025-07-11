@@ -6,6 +6,8 @@
  ***************************************************************************/
 
 #include "MJD.h"
+
+// #define _DEBUG 1
 #include "debug.h"
 
 #include <math.h>
@@ -25,9 +27,9 @@ double MJD::GMST () const
 double MJD::LST (double longitude_deg) const
 {
   double gmst_rad = this->GMST();
-  DEBUG("MJD::LST gmst=" << gmst << " rad");
+  DEBUG("MJD::LST gmst=" << gmst_rad << " rad");
   double lst_hours = gmst_rad * 12.0/M_PI + longitude_deg * 12.0/180.0;
-  DEBUG("MJD::LST lst=" << lst << " hr");
+  DEBUG("MJD::LST lst=" << lst_hours << " hr");
 
   while (lst_hours<0.0) lst_hours+=24.0;
   while (lst_hours>=24.0) lst_hours-=24.0;
