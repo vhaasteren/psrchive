@@ -82,6 +82,8 @@ namespace Pulsar {
     void defaraday (unsigned ichan, unsigned kchan, double f0)
     { instance->defaraday (ichan, kchan, f0); }
 
+    void update_history()
+    { instance->update_history(); }
     //! Swap the two specified Profiles
     void swap_profiles (unsigned ipol, unsigned ichan,
 			unsigned jpol, unsigned jchan)

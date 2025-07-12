@@ -317,6 +317,8 @@ void Pulsar::ColdPlasma<Corrector,History>::update_absolute (const Integration* 
   if (!absolute_measure)
     return;
 
+  double effective_absolute_measure = absolute_measure;
+
   auto history = data->template get<History>();
 
   Corrector absolute;
@@ -334,10 +336,14 @@ void Pulsar::ColdPlasma<Corrector,History>::update_absolute (const Integration* 
     // calculate the correction due to the new centre frequency, if any
     absolute.set_wavelength( lambda );
     absolute.set_reference_frequency( data->get_centre_frequency() );
-    combine (delta, corrector.evaluate());
 
-    absolute_measure -= corrected_measure;
-    absolute.set_measure( absolute_measure );
+    if (Integration::verbose)
+      std::cerr << "Pulsar::" + name + "::update_absolute correction=" << absolute.evaluate() << std::endl;
+
+    combine (delta, absolute.evaluate());
+
+    effective_absolute_measure -= corrected_measure;
+    absolute.set_measure( effective_absolute_measure );
   }
 
   absolute.set_reference_wavelength( 0 );
@@ -345,7 +351,10 @@ void Pulsar::ColdPlasma<Corrector,History>::update_absolute (const Integration* 
   combine (delta, absolute.evaluate());
 
   // the following corrects channel frequency to the reference frequency
-  effective_measure += absolute_measure;
+  if (history && history->relative.get_corrected())
+    effective_measure += effective_absolute_measure;
+  else
+    effective_measure += absolute_measure;
 }
 catch (Error& error)
 {

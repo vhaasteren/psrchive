@@ -213,7 +213,7 @@ namespace Pulsar {
     virtual double get_folding_period() const = 0;
     //! Set the folding or topocentric pulsar period (in seconds)
     /*  The topocentric folding period of the pulsar should be equal
-	to that at the epoch defined by get_epoch. */
+        to that at the epoch defined by get_epoch. */
     virtual void set_folding_period (double seconds) = 0;
 
     //! Get the fraction of the pulse period recorded (in turns)
@@ -314,7 +314,7 @@ namespace Pulsar {
 
     //! Returns a vector of Stokes parameters along the specified dimension
     void get_Stokes (std::vector< Stokes<float> >& S, unsigned iother,
-		     Signal::Dimension abscissa = Signal::Phase ) const;
+                     Signal::Dimension abscissa = Signal::Phase ) const;
 
     // //////////////////////////////////////////////////////////////////
     //
@@ -439,8 +439,7 @@ namespace Pulsar {
     virtual void copy (const Integration* subint, bool management = true);
 
     //! Swap the two specified profiles
-    void swap_profiles (unsigned ipol, unsigned ichan,
-			unsigned jpol, unsigned jchan);
+    void swap_profiles (unsigned ipol, unsigned ichan, unsigned jpol, unsigned jchan);
 
     //! Rotate each profile by time (in seconds); updates the epoch attribute
     void rotate (double time);
@@ -507,6 +506,9 @@ namespace Pulsar {
     //! Defaraday worker function
     void defaraday (unsigned ichan, unsigned kchan,
                     double reference_frequency);
+
+    //! Update the Dedispersed and DeFaradayed history
+    void update_history ();
 
     //! Converts between coherency products and Stokes parameters
     void poln_convert (Signal::State out_state);

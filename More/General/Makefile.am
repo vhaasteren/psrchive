@@ -225,6 +225,7 @@ libGeneral_la_SOURCES = \
 	Integration_remove_baseline.C \
 	Integration_rotate.C \
 	Integration_total.C \
+	Integration_update_history.C \
 	Integration_weighted_frequency.C \
 	IntegrationBarycentre.C \
 	IntegrationWeight.C \

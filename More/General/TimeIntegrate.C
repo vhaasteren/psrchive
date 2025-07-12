@@ -326,6 +326,8 @@ void Pulsar::TimeIntegrate::transform (Archive* archive) try
       ext->update (result);
     }
 
+    result->expert()->update_history ();
+
   } // for each integrated result
 
   if (digitiserCounts != NULL)

@@ -109,7 +109,7 @@ void Pulsar::FrequencyIntegrate::transform (Integration* integration)
           *(output) = *(input);
         else
           output->average (input);
-      } 
+      }
     }
 
     integration->set_centre_frequency (ichan, reference_frequency);
@@ -123,6 +123,7 @@ void Pulsar::FrequencyIntegrate::transform (Integration* integration)
     cerr << "Pulsar::FrequencyIntegrate::transform resize" << endl;
 
   integration->expert()->resize (0, output_nchan, 0);
+  integration->expert()->update_history ();
 
   if (Integration::verbose) 
     cerr << "Pulsar::FrequencyIntegrate::transform finish" << endl;
