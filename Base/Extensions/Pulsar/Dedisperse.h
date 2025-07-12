@@ -31,15 +31,6 @@ namespace Pulsar {
     
     //! Clone method
     Dedisperse* clone () const { return new Dedisperse( *this ); }
-
-    //! Set the dispersion measure
-    void set_dispersion_measure (double dispersion_measure)
-    { relative.set_measure (dispersion_measure); }
-
-    //! Get the dispersion measure
-    double get_dispersion_measure () const
-    { return relative.get_measure (); }
-
   };
   
 }

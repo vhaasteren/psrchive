@@ -219,13 +219,12 @@ void Pulsar::TimerArchive::subint_load (FILE* fptr)
         && version == 10.0)  {
  
       if (verbose > 2) 
-	cerr << "TimerArchive::subint_load Correcting psrdisp v10.0 MJD error"
-	     << endl;
+        cerr << "TimerArchive::subint_load Correcting psrdisp v10.0 MJD error" << endl;
       
       double seconds_per_file = 53.6870912;
 
       if (isub == 0)
-	Timer::set_MJD (hdr, Timer::get_MJD (hdr) - seconds_per_file);
+        Timer::set_MJD (hdr, Timer::get_MJD (hdr) - seconds_per_file);
 
       MJD minimjd = Mini::get_MJD (subint->mini) - seconds_per_file;
       Mini::set_MJD (subint->mini, minimjd);
@@ -250,13 +249,12 @@ void Pulsar::TimerArchive::subint_load (FILE* fptr)
         double freqerror = 32.0e6/4.0/(pow(2.0,32.0))/2.0/1024.0;
         /* end nint() correction  jss */
         if (verbose > 2) 
-	  cerr << "TimerArchive::subint_load Correcting nint error" << endl;
-        difftime = subint->mini.mjd + subint->mini.fracmjd 
-	  - hdr.mjd - hdr.fracmjd; 
+          cerr << "TimerArchive::subint_load Correcting nint error" << endl;
+        difftime = subint->mini.mjd + subint->mini.fracmjd - hdr.mjd - hdr.fracmjd; 
         tcorr = difftime*freqerror*subint->mini.pfold;
         subint->mini.fracmjd += tcorr;
         if (subint->mini.fracmjd > 1.0) 
-	{
+        {
           subint->mini.mjd++;
           subint->mini.fracmjd -= 1.0;
         }
@@ -287,22 +285,21 @@ void Pulsar::TimerArchive::subint_load (FILE* fptr)
         key = strtok(comment, whitespace);
         for (int ntok = 0; ntok<6; ++ntok)
         {
-	  if (key==NULL)
+          if (key==NULL)
             break;
-	  key = strtok(NULL, whitespace);
+          key = strtok(NULL, whitespace);
         }
         if (key && sscanf(key, "%d", &year)==1 && year<=1997)
         {
-	  cerr << "TimerArchive::subint_load performing S2 MJD correction" 
-	       << endl;
-	  MJD old_mjd = Mini::get_MJD (subint->mini);
-	  Mini::set_MJD (subint->mini, old_mjd + 1.0);
+          cerr << "TimerArchive::subint_load performing S2 MJD correction" << endl;
+          MJD old_mjd = Mini::get_MJD (subint->mini);
+          Mini::set_MJD (subint->mini, old_mjd + 1.0);
 
-	  if (isub == 0)
+          if (isub == 0)
           {
-	    old_mjd = Timer::get_MJD (hdr);
-	    Timer::set_MJD (hdr, old_mjd + 1.0);
-	  }
+            old_mjd = Timer::get_MJD (hdr);
+            Timer::set_MJD (hdr, old_mjd + 1.0);
+          }
           s2ros_corrected = true;
         }
       } // if S2 ROS bug was not already corrected
@@ -335,21 +332,20 @@ void Pulsar::TimerArchive::subint_load (FILE* fptr)
       cerr << error << endl;
     }
 
-    if (reverse_U && !Profile::no_amps) {
+    if (reverse_U && !Profile::no_amps)
+    {
       if (verbose > 2)
-	cerr << "TimerArchive::subint_load reversing sign of ipol=2" 
-	     << endl;
+        cerr << "TimerArchive::subint_load reversing sign of ipol=2" << endl;
       for (int ichan=0; ichan<hdr.nsub_band; ichan++)
-	*(subint->profiles[2][ichan]) *= -1.0;
+        *(subint->profiles[2][ichan]) *= -1.0;
     }
     
     if (reverse_V && !Profile::no_amps)
     {
       if (verbose > 2)
-	cerr << "TimerArchive::subint_load reversing sign of ipol=3" 
-	     << endl;
+        cerr << "TimerArchive::subint_load reversing sign of ipol=3" << endl;
       for (int ichan=0; ichan<hdr.nsub_band; ichan++)
-	*(subint->profiles[3][ichan]) *= -1.0;
+        *(subint->profiles[3][ichan]) *= -1.0;
     }
 
     // initialize book-keeping attributes
@@ -362,8 +358,7 @@ void Pulsar::TimerArchive::subint_load (FILE* fptr)
   hdr.wts_and_bpass = 1;
 
   if (verbose > 2) 
-    cerr << "TimerArchive::subint_load Read in " << get_nsubint()
-         << " sub-Integrations" << endl;
+    cerr << "TimerArchive::subint_load Read in " << get_nsubint() << " sub-Integrations" << endl;
 
   // profile.wt correction - MCB
   // profile weights from the S2 set to zero during software coherent

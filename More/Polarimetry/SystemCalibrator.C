@@ -2321,10 +2321,31 @@ void SystemCalibrator::precalibrate (Archive* data)
     if (faraday_rotation_corrected)
     {
       auto ism = faraday_rotation->get_interstellar_rotation();
-      auto corrected = new DeFaraday;
-      corrected->relative.set_measure( ism->get_rotation_measure().get_value() );
-      corrected->relative.set_reference_wavelength( ism->get_reference_wavelength() );
-      integration->add_extension( corrected );
+      auto iono = faraday_rotation->get_ionospheric_rotation();
+
+      double ism_rm = ism->get_rotation_measure().get_value();
+      double iono_rm = iono->get_rotation_measure().get_value();
+
+      if (ism_rm != 0 || iono_rm != 0)
+      {
+        auto corrected = integration->getadd<DeFaraday>();
+
+        double reference_wavelength = ism->get_reference_wavelength();
+
+        if (ism_rm != 0)
+        {
+          corrected->get_relative()->set_corrected(true);
+          corrected->get_relative()->set_measure(ism_rm);
+          corrected->get_relative()->set_reference_wavelength( reference_wavelength );
+        }
+
+        if (iono_rm != 0)
+        {
+          corrected->get_absolute()->set_corrected(true);
+          corrected->get_absolute()->set_measure(iono_rm);
+          corrected->get_absolute()->set_reference_wavelength( reference_wavelength );
+        }
+      }
     }
   }
 

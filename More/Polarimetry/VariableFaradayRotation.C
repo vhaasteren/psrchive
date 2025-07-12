@@ -119,7 +119,7 @@ void VariableFaradayRotation::build () const try
 
   if (ism_rm != 0.0)
   {
-    description += " correcting interstellar Faraday rotation - RM=" + tostring(ism_rm) + "\n";
+    description += " correcting interstellar Faraday rotation - (specified) RM=" + tostring(ism_rm) + "\n";
     transformation.label += " RM_ism=" + tostring(ism_rm);
     is_required = true;
   }

@@ -54,7 +54,13 @@ namespace Pulsar {
 
   //! Stores parameters used to correct dispersion and Faraday rotation in each Integration
   class ColdPlasmaHistory : public Pulsar::Integration::Extension
-  {  
+  {
+    //! The correction history for the measure corrected with respect to centre frequency
+    ColdPlasmaMeasure relative;
+
+    //! The correction history for the measure corrected with respect to infinite frequency
+    ColdPlasmaMeasure absolute;
+
   public:
     
     //! Default constructor
@@ -63,18 +69,13 @@ namespace Pulsar {
     //! Copy constructor
     ColdPlasmaHistory (const ColdPlasmaHistory&);
 
-    //! The correction history for the measure corrected with respect to centre frequency
-    ColdPlasmaMeasure relative;
+    //! Get the correction history for the measure corrected with respect to centre frequency
+    ColdPlasmaMeasure* get_relative() { return &relative; }
+    const ColdPlasmaMeasure* get_relative() const { return &relative; }
 
-    //! The correction history for the measure corrected with respect to infinite frequency
-    ColdPlasmaMeasure absolute;
-
-    //! Set the reference frequency in MHz
-    void set_reference_frequency (double MHz)
-    {
-      relative.set_reference_frequency(MHz);
-      absolute.set_reference_frequency(MHz);
-    }
+    //! Get the correction history for the measure corrected with respect to infinite frequency
+    ColdPlasmaMeasure* get_absolute() { return &absolute; }
+    const ColdPlasmaMeasure* get_absolute() const { return &absolute; }
   };
   
 }

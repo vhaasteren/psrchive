@@ -50,6 +50,9 @@ namespace Pulsar {
     //! Get the transformation used to compute interstellar Faraday rotation
     const Calibration::Faraday* get_interstellar_rotation () const { return ism_faraday; }
 
+    //! Get the transformation used to compute ionospheric Faraday rotation
+    const Calibration::Faraday* get_ionospheric_rotation () const { return iono_faraday; }
+
     //! Return true if the transformation is required
     bool required () const; 
 

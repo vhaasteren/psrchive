@@ -658,7 +658,8 @@ namespace Pulsar
     //! Return the given Integration ready for use
     Integration* use_Integration (Integration*);
 
-    //! Initialize an Integration to reflect Archive attributes.
+    //! Initialize an Integration to reflect Archive attributes
+    /*! This should be performed after the integration is considered complete. */
     void init_Integration (Integration* subint, bool check_phase = false);
 
     //! Provide Integration::resize access to Archive-derived classes

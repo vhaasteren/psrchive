@@ -281,8 +281,8 @@ try
 
   if (history)
   {
-    double corrected_measure = history->relative.get_measure();
-    double lambda = history->relative.get_reference_wavelength();
+    double corrected_measure = history->get_relative()->get_measure();
+    double lambda = history->get_relative()->get_reference_wavelength();
 
     if (Integration::verbose)
       std::cerr << "Pulsar::" + name + "::update corrected"
@@ -317,6 +317,9 @@ void Pulsar::ColdPlasma<Corrector,History>::update_absolute (const Integration* 
   if (!absolute_measure)
     return;
 
+  // contribution to correcting the channel frequency to the reference frequency
+  effective_measure += absolute_measure;
+
   double effective_absolute_measure = absolute_measure;
 
   auto history = data->template get<History>();
@@ -324,37 +327,41 @@ void Pulsar::ColdPlasma<Corrector,History>::update_absolute (const Integration* 
   Corrector absolute;
   absolute.set_measure( absolute_measure );
 
-  if (history && history->absolute.get_corrected())
+  if (history)
   {
-    double corrected_measure = history->absolute.get_measure();
-    double lambda = history->absolute.get_reference_wavelength();
+    double corrected_measure = history->get_absolute()->get_measure();
+    double lambda = history->get_absolute()->get_reference_wavelength();
 
     if (Integration::verbose)
       std::cerr << "Pulsar::" + name + "::update_absolute corrected"
                   " measure=" << corrected_measure << " lambda=" << lambda << std::endl;
 
-    // calculate the correction due to the new centre frequency, if any
-    absolute.set_wavelength( lambda );
-    absolute.set_reference_frequency( data->get_centre_frequency() );
+    if (history->get_absolute()->get_corrected())
+    {
+      // calculate the correction due to the new centre frequency, if any
+      absolute.set_wavelength( lambda );
+      absolute.set_reference_frequency( data->get_centre_frequency() );
 
-    if (Integration::verbose)
-      std::cerr << "Pulsar::" + name + "::update_absolute correction=" << absolute.evaluate() << std::endl;
+      if (Integration::verbose)
+        std::cerr << "Pulsar::" + name + "::update_absolute correction=" << absolute.evaluate() << std::endl;
 
-    combine (delta, absolute.evaluate());
+      combine (delta, absolute.evaluate());
+    }
 
+    // remaining correction is due to change in corrected measure, if any
     effective_absolute_measure -= corrected_measure;
-    absolute.set_measure( effective_absolute_measure );
+
+    if (history->get_relative()->get_corrected())
+      effective_measure -= corrected_measure;
   }
 
-  absolute.set_reference_wavelength( 0 );
-  absolute.set_frequency( data->get_centre_frequency() );
-  combine (delta, absolute.evaluate());
-
-  // the following corrects channel frequency to the reference frequency
-  if (history && history->relative.get_corrected())
-    effective_measure += effective_absolute_measure;
-  else
-    effective_measure += absolute_measure;
+  if (effective_absolute_measure != 0)
+  {
+    absolute.set_measure( effective_absolute_measure );
+    absolute.set_reference_wavelength( 0 );
+    absolute.set_frequency( data->get_centre_frequency() );
+    combine (delta, absolute.evaluate());
+  }
 }
 catch (Error& error)
 {
@@ -377,8 +384,17 @@ void Pulsar::ColdPlasma<C,History>::execute1 (Integration* data) try
   set_measure( backup_measure );
 
   History* history = data->template getadd<History>();
-  history->relative.set_measure( backup_measure );
-  history->relative.set_reference_wavelength( get_reference_wavelength() );
+  history->get_relative()->set_corrected( true );
+  history->get_relative()->set_measure( get_measure() );
+  history->get_relative()->set_reference_wavelength( get_reference_wavelength() );
+
+  double absolute_measure = get_absolute_measure (data);
+  if (absolute_measure)
+  {
+    history->get_absolute()->set_corrected( true );
+    history->get_absolute()->set_measure( get_measure() );
+    history->get_absolute()->set_reference_wavelength( get_reference_wavelength() );
+  }
 }
 catch (Error& error)
 {
@@ -396,8 +412,8 @@ void Pulsar::ColdPlasma<C,History>::revert1 (Integration* data) try
   if (!history)
     throw Error (InvalidState, "Pulsar::" + name + "::revert1", "no correction history");
 
-  set_measure( -history->relative.get_measure() );
-  set_reference_wavelength( history->relative.get_reference_wavelength() );
+  set_measure( -history->get_relative()->get_measure() );
+  set_reference_wavelength( history->get_relative()->get_reference_wavelength() );
   set_delta( get_identity() );
 
   if (Integration::verbose)
@@ -424,8 +440,8 @@ void Pulsar::ColdPlasma<C,History>::match (const Integration* reference, Integra
     throw Error (InvalidState, "Pulsar::" + name + "::match",
 		 "reference has no correction history");
 
-  set_measure( history->relative.get_measure() );
-  set_reference_wavelength( history->relative.get_reference_wavelength() );
+  set_measure( history->get_relative()->get_measure() );
+  set_reference_wavelength( history->get_relative()->get_reference_wavelength() );
  
   execute1( to_correct );
 }

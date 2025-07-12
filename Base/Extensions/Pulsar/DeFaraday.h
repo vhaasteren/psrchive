@@ -16,8 +16,8 @@
 namespace Pulsar {
   
   //! Stores parameters used to correct Faraday rotation in each Integration
-  class DeFaraday : public ColdPlasmaHistory {
-    
+  class DeFaraday : public ColdPlasmaHistory
+  {
   public:
     
     //! Default constructor
@@ -31,15 +31,6 @@ namespace Pulsar {
     
     //! Clone method
     DeFaraday* clone () const { return new DeFaraday( *this ); }
-
-    //! Set the rotation measure
-    void set_rotation_measure (double rotation_measure)
-    { relative.set_measure (rotation_measure); }
-
-    //! Get the rotation measure
-    double get_rotation_measure () const
-    { return relative.get_measure (); }
-
   };
   
 }

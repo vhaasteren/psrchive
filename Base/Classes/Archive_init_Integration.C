@@ -9,11 +9,15 @@
 #include "Pulsar/Integration.h"
 #include "Pulsar/Predictor.h"
 
-// Integration Extension classes used to store state information
-#include "Pulsar/DeFaraday.h"
+// Extension classes used to store state information
+#include "Pulsar/AuxColdPlasma.h"
+#include "Pulsar/AuxColdPlasmaMeasures.h"
 #include "Pulsar/Dedisperse.h"
+#include "Pulsar/DeFaraday.h"
 
 #include <iostream>
+
+using namespace Pulsar;
 using namespace std;
 
 Pulsar::Integration* Pulsar::Archive::use_Integration (Integration* subint)
@@ -36,18 +40,43 @@ void Pulsar::Archive::init_Integration (Integration* subint, bool check_phase)
 
   if ( get_dedispersed() )
   {
-    Dedisperse* corrected = new Dedisperse;
-    corrected->set_reference_frequency( get_centre_frequency() );
-    corrected->set_dispersion_measure( get_dispersion_measure() );
-    subint->add_extension( corrected );
+    auto corrected = subint->getadd<Dedisperse>();
+    corrected->get_relative()->set_corrected(true);
+    corrected->get_relative()->set_reference_frequency( get_centre_frequency() );
+    corrected->get_relative()->set_measure( get_dispersion_measure() );
   }
 
   if ( get_faraday_corrected() )
   {
-    DeFaraday* corrected = new DeFaraday;
-    corrected->set_reference_frequency( get_centre_frequency() );
-    corrected->set_rotation_measure( get_rotation_measure() );
-    subint->add_extension( corrected );
+    auto corrected = subint->getadd<DeFaraday>();
+    corrected->get_relative()->set_corrected(true);
+    corrected->get_relative()->set_reference_frequency( get_centre_frequency() );
+    corrected->get_relative()->set_measure( get_rotation_measure() );
+  }
+
+  auto aux = get<AuxColdPlasma>();
+  if (aux)
+  {
+    auto subaux = subint->get<AuxColdPlasmaMeasures>();
+
+    if (!subaux)
+      throw Error (InvalidState, "Pulsar::Archive::init_Integration",
+                   "Archive has AuxColdPlasma extension but Integration does not have AuxColdPlasmaMeasures extension");
+
+    if (aux->get_dispersion_corrected())
+    {
+      auto corrected = subint->getadd<Dedisperse>();
+      corrected->get_absolute()->set_corrected(true);
+      corrected->get_absolute()->set_reference_frequency( get_centre_frequency() );
+      corrected->get_absolute()->set_measure( subaux->get_dispersion_measure() );
+    }
+    if (aux->get_birefringence_corrected())
+    {
+      auto corrected = subint->getadd<DeFaraday>();
+      corrected->get_absolute()->set_corrected(true);
+      corrected->get_absolute()->set_reference_frequency( get_centre_frequency() );
+      corrected->get_absolute()->set_measure( subaux->get_rotation_measure() );
+    }
   }
 
   subint->zero_phase_aligned = false;
@@ -70,5 +99,4 @@ void Pulsar::Archive::init_Integration (Integration* subint, bool check_phase)
       cerr << "Pulsar::Archive::init_Integration frac=" << frac
            << " aligned=" << subint->zero_phase_aligned << endl;
   }
-
 }
