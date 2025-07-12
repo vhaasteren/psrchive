@@ -1,7 +1,7 @@
 //-*-C++-*-
 /***************************************************************************
  *
- *   Copyright (C) 2006 by Willem van Straten
+ *   Copyright (C) 2006-2025 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -34,11 +34,11 @@ namespace Pulsar {
 
     //! Set the rotation measure
     void set_rotation_measure (double rotation_measure)
-    { set_measure (rotation_measure); }
+    { relative.set_measure (rotation_measure); }
 
     //! Get the rotation measure
     double get_rotation_measure () const
-    { return get_measure (); }
+    { return relative.get_measure (); }
 
   };
   

@@ -2322,8 +2322,8 @@ void SystemCalibrator::precalibrate (Archive* data)
     {
       auto ism = faraday_rotation->get_interstellar_rotation();
       auto corrected = new DeFaraday;
-      corrected->set_measure( ism->get_rotation_measure().get_value() );
-      corrected->set_reference_wavelength( ism->get_reference_wavelength() );
+      corrected->relative.set_measure( ism->get_rotation_measure().get_value() );
+      corrected->relative.set_reference_wavelength( ism->get_reference_wavelength() );
       integration->add_extension( corrected );
     }
   }

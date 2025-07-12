@@ -1,7 +1,7 @@
 //-*-C++-*-
 /***************************************************************************
  *
- *   Copyright (C) 2006 by Willem van Straten
+ *   Copyright (C) 2006-2025 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -24,8 +24,8 @@ namespace Pulsar {
     <LI> DeFaraday::reference_frequency == Archive::centre_frequency.
     </OL>
   */
-  class DeFaradayed : public Verification {
-
+  class DeFaradayed : public Verification
+  {
   public:
     
     //! Return the name of the check
@@ -34,6 +34,11 @@ namespace Pulsar {
     //! Perform the check
     void apply (const Archive* archive);
 
+    //! Check the correction relative to the centre frequency
+    void check_relative (const Archive* archive, unsigned isubint);
+
+    //! Check the correction relative to infinite frequency
+    void check_absolute (const Archive* archive, unsigned isubint);
   };
 
 }

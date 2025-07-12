@@ -86,8 +86,8 @@ void Pulsar::FrequencyIntegrate::transform (Integration* integration)
     double reference_frequency = integration->weighted_frequency (start,stop);
 
     if (Integration::verbose)
-      cerr << "Pulsar::FrequencyIntegrate::transform ichan=" << ichan 
-	   << " freq=" << reference_frequency << endl;
+      cerr << "Pulsar::FrequencyIntegrate::transform ichan=" << ichan
+           << " freq=" << reference_frequency << endl;
 
     if (must_dedisperse)
       integration->expert()->dedisperse (start, stop, reference_frequency);
@@ -98,17 +98,17 @@ void Pulsar::FrequencyIntegrate::transform (Integration* integration)
     for (unsigned ipol=0; ipol < subint_npol; ipol++)
     {
       if (Integration::verbose)
-	cerr << "Pulsar::FrequencyIntegrate::transform ipol=" << ipol << endl;
+        cerr << "Pulsar::FrequencyIntegrate::transform ipol=" << ipol << endl;
 
       Profile* output = integration->get_Profile (ipol, ichan);
 
       for (unsigned jchan=start; jchan<stop; jchan++)
       {
-	Profile* input  = integration->get_Profile (ipol, jchan);
-	if (jchan==start)
-	  *(output) = *(input);
-	else
-	  output->average (input);
+        Profile* input  = integration->get_Profile (ipol, jchan);
+        if (jchan==start)
+          *(output) = *(input);
+        else
+          output->average (input);
       } 
     }
 

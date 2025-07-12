@@ -1,7 +1,7 @@
 //-*-C++-*-
 /***************************************************************************
  *
- *   Copyright (C) 2006 by Willem van Straten
+ *   Copyright (C) 2006-2025 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -34,11 +34,11 @@ namespace Pulsar {
 
     //! Set the dispersion measure
     void set_dispersion_measure (double dispersion_measure)
-    { set_measure (dispersion_measure); }
+    { relative.set_measure (dispersion_measure); }
 
     //! Get the dispersion measure
     double get_dispersion_measure () const
-    { return get_measure (); }
+    { return relative.get_measure (); }
 
   };
   

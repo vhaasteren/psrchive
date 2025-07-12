@@ -34,6 +34,11 @@ namespace Pulsar {
     //! Perform the check
     void apply (const Archive* archive);
 
+    //! Check the correction relative to the centre frequency
+    void check_relative (const Archive* archive, unsigned isubint);
+
+    //! Check the correction relative to infinite frequency
+    void check_absolute (const Archive* archive, unsigned isubint);
   };
 
 }
