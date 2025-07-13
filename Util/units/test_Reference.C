@@ -11,7 +11,7 @@
 
 using namespace std;
 
-// #define _DEBUG 1
+#define _DEBUG 1
 #include "Reference.h"
 #include "debug.h"
 

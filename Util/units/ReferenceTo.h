@@ -1,15 +1,15 @@
 //-*-C++-*-
 /***************************************************************************
  *
- *   Copyright (C) 2004 - 2023 by Willem van Straten
+ *   Copyright (C) 2004 - 2025 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
 
 // psrchive/Util/units/ReferenceTo.h
 
-#ifndef __ReferenceTo_h
-#define __ReferenceTo_h
+#ifndef __psrchive_util_units_ReferenceTo_h
+#define __psrchive_util_units_ReferenceTo_h
 
 // #define _DEBUG 1
 #include "debug.h"
@@ -50,15 +50,15 @@ namespace Reference {
     //! Member dereferencing operator
     Type* operator -> () const { return get(); }
     
-    //! Enable tests like ref == nullptr
-    bool operator == (const void* ptr) const;
+    //! Comparison operator
+    bool operator == (const Type* ptr) const;
 
-    //! Enable tests like ref != nullptr
-    bool operator != (const void* ptr) const;
+    //! Comparison operator
+    bool operator != (const Type* ptr) const;
 
     //! Work around "warning: ISO C++ says that these are ambiguous
     /*! even though the worst conversion for the first is better than the worst conversion for the second" */
-    bool is_equal_to (const void* ptr) const;
+    bool is_equal_to (const Type* ptr) const;
 
     //! Cast to Type* operator
     operator Type* () const { return get(); }
@@ -102,21 +102,21 @@ namespace Reference {
 }
 
 template<class Type, bool active>
-bool Reference::To<Type,active>::operator == (const void* ptr) const
+bool Reference::To<Type,active>::operator == (const Type* ptr) const
 {
   DEBUG("Reference::To<"+name()+">::operator ==");
   return is_equal_to(ptr);
 }
 
 template<class Type, bool active>
-bool Reference::To<Type,active>::operator != (const void* ptr) const
+bool Reference::To<Type,active>::operator != (const Type* ptr) const
 {
   DEBUG("Reference::To<"+name()+">::operator !=");
   return !is_equal_to(ptr);
 }
 
 template<class Type, bool active>
-bool Reference::To<Type,active>::is_equal_to (const void* ptr) const
+bool Reference::To<Type,active>::is_equal_to (const Type* ptr) const
 {
   if (!ptr)
     return !the_handle || the_handle->pointer == nullptr;
@@ -367,5 +367,5 @@ P* const_kast (Reference::To<const P,A>& p)
   return const_cast<P*> (p.ptr());
 }
 
-#endif // #ifndef __ReferenceTo_h
+#endif // #ifndef __psrchive_util_units_ReferenceTo_h
 

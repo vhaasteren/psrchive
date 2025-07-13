@@ -43,6 +43,7 @@ nobase_include_HEADERS = \
 	Pulsar/ExponentialBaseline.h \
 	Pulsar/ExtensionInterpreter.h \
 	Pulsar/Extract.h \
+	Pulsar/FaradayRotation.h \
 	Pulsar/FixFluxCal.h \
 	Pulsar/FixInterpreter.h \
 	Pulsar/FluctSpectStats.h \
@@ -198,6 +199,7 @@ libGeneral_la_SOURCES = \
 	ExtensionInterpreter.C \
 	ExponentialBaseline.C \
 	Extract.C \
+	FaradayRotation.C \
 	FixFluxCal.C \
 	FixInterpreter.C \
 	FluctuationSpectrumStats.C \

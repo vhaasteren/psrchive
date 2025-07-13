@@ -20,7 +20,7 @@ nobase_include_HEADERS = \
 	Pulsar/ConfigurableProjectionInfo.h \
 	Pulsar/ConstantGainInfo.h \
 	Pulsar/ConvertMJD.h \
-    Pulsar/CorrelationInfo.h \
+	Pulsar/CorrelationInfo.h \
 	Pulsar/DataAndModelReport.h \
 	Pulsar/Database.h \
 	Pulsar/DataSetManager.h \
@@ -29,7 +29,6 @@ nobase_include_HEADERS = \
 	Pulsar/Distortion.h \
 	Pulsar/DoPCalibrator.h \
 	Pulsar/Faraday.h \
-	Pulsar/FaradayRotation.h \
 	Pulsar/Feed.h \
 	Pulsar/FitGoodnessReport.h \
 	Pulsar/FluxCalibrator.h \
@@ -146,7 +145,7 @@ libPolarimetry_la_SOURCES = \
 	ConfigurableProjectionExt.C \
 	ConstantGainInfo.C \
 	ConvertMJD.C \
-    CorrelationInfo.C \
+	CorrelationInfo.C \
 	DataAndModelReport.C \
 	Database.C \
 	DataSetManager.C \
@@ -155,7 +154,6 @@ libPolarimetry_la_SOURCES = \
 	Distortion.C \
 	DoPCalibrator.C \
 	Faraday.C \
-	FaradayRotation.C \
 	Feed.C \
 	Feed_load.C \
 	FitGoodnessReport.C \
