@@ -54,7 +54,7 @@ namespace Pulsar {
     void update (const Integration*) override;
 
     //! Phase rotate each profile by the correction
-    void apply (Integration*, unsigned channel) override;
+    void apply (Integration*, unsigned channel, double delay) override;
 
     //! Apply the current correction to all sub-integrations in an archive
     void execute (Archive*) override;

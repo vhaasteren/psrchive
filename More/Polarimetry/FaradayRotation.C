@@ -29,7 +29,7 @@ Pulsar::FaradayRotation::get_correction_measure (const Integration* data)
 {
   if (Archive::verbose > 2)
     cerr << "Pulsar::FaradayRotation::get_correction_measure RM="
-         << data->get_dispersion_measure () << endl;
+         << data->get_rotation_measure () << endl;
 
   return data->get_rotation_measure ();
 }
@@ -78,20 +78,21 @@ void Pulsar::FaradayRotation::revert (Archive* arch)
   arch->set_faraday_corrected( false );
 }
 
-void Pulsar::FaradayRotation::apply (Integration* data, unsigned ichan) try
+void Pulsar::FaradayRotation::apply (Integration* data, unsigned ichan, Jones<double> rotation) try
 {
   Reference::To<PolnProfile> poln_profile = data->new_PolnProfile (ichan);
 
-  Jones<double> xform = inv(delta * corrector.evaluate());
+  Jones<double> xform = inv(rotation);
 
 #ifdef _DEBUG
   cerr << "Pulsar::FaradayRotation::apply ichan=" << ichan 
-       << " det(xform)=" << det(corrector.evaluate()) << endl;
+       << " det(xform)=" << det(xform) << endl;
 #endif
 
   poln_profile->transform( xform );
 }
-catch (Error& error) {
+catch (Error& error)
+{
   throw error += "Pulsar::FaradayRotation::apply";
 }
 

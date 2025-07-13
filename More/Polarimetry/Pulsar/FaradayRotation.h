@@ -54,8 +54,8 @@ namespace Pulsar {
     //! Combine matrices
     void combine (Jones<double>& res, const Jones<double>& J) { res *= J; }
 
-    //! Faraday rotate each profile by the correction
-    void apply (Integration*, unsigned channel);
+    //! Invert the Faraday rotation in the specified polarization
+    void apply (Integration*, unsigned channel, Jones<double> rotation) override;
 
     //! Apply the current correction to all sub-integrations in an archive
     void execute (Archive*);

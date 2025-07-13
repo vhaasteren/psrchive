@@ -95,7 +95,7 @@ void Pulsar::Dispersion::revert (Archive* arch)
   arch->set_dedispersed( false );
 }
 
-void Pulsar::Dispersion::apply (Integration* data, unsigned ichan) try
+void Pulsar::Dispersion::apply (Integration* data, unsigned ichan, double delay) try
 {
   folding_period = data->get_folding_period();
   if (barycentric_correction)
@@ -105,12 +105,17 @@ void Pulsar::Dispersion::apply (Integration* data, unsigned ichan) try
 
     if (Archive::verbose > 2)
       cerr << "Pulsar::Dispersion::apply barycentric Doppler correction=1+" << earth_doppler - 1.0 << endl;
+
+    delay /= earth_doppler;
   }
 
+  double shift = delay / folding_period;
+
   for (unsigned ipol=0; ipol < data->get_npol(); ipol++)
-    data->get_Profile(ipol,ichan) -> rotate_phase( get_shift() );
+    data->get_Profile(ipol,ichan) -> rotate_phase( shift );
 }
-catch (Error& error) {
+catch (Error& error)
+{
   throw error += "Pulsar::Dispersion::apply";
 }
 
@@ -138,7 +143,7 @@ double Pulsar::Dispersion::get_delay () const
 {
   // corrector is of type DispersionDelay
   // it is a member of the ColdPlasma template base class
-  double delay = delta + corrector.evaluate();
+  double delay = delta + relative.evaluate();
   return delay / earth_doppler;
 }
 
