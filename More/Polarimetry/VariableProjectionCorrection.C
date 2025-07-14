@@ -87,9 +87,3 @@ catch (Error& error)
 {
   throw error += "VariableProjectionCorrection::build";
 }
-
-void VariableProjectionCorrection::set_chan (unsigned)
-{
-  // ignore (this override disables resetting the built flag)
-}
-

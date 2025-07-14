@@ -43,9 +43,6 @@ namespace Pulsar {
 
     //! Return the description
     std::string get_description () const;
-
-    //! Set the frequency channel index
-    void set_chan (unsigned);
   };
 }
 

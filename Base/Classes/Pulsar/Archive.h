@@ -726,9 +726,17 @@ namespace Pulsar
     //! Load a new instance of the specified integration from __load_filename
     Integration* load_Integration (unsigned isubint);
 
+    //! Update the AuxColdPlasma extension, as needed
+    /*! Assumes that dedisperse has been applied to all channels */
+    void update_absolute_dispersion();
+
+    //! Update the AuxColdPlasma extension, as needed
+    /*! Assumes that defaraday has been applied to all channels */
+    void update_absolute_rotation();
+    
     //! Set all values to null
     void init ();
-
+   
     //! Perform all known correction operations listed in Check::registry
     void correct ();
 

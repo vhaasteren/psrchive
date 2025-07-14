@@ -37,6 +37,6 @@ void Pulsar::Archive::defaraday ()
     get_Integration(i)->defaraday ();
   
   set_faraday_corrected (true);
-  getadd<AuxColdPlasma>()->set_birefringence_corrected (true);
+  update_absolute_rotation();
 }
 

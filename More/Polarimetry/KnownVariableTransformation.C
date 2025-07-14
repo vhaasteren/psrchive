@@ -17,10 +17,17 @@ void KnownVariableTransformation::set_nchan (unsigned nchan)
 KnownVariableTransformation::Transformation*
 KnownVariableTransformation::get_transformation (unsigned ichan)
 {
-  return &(xform.at(ichan));
+  if (ichan >= xform.size())
+    throw Error (InvalidState, "Pulsar::KnownVariableTransformation::get_transformation",
+      "chan=%u >= nchan=%u", ichan, xform.size());
+  return &(xform[ichan]);
 }
 
 MEAL::Argument::Value* KnownVariableTransformation::new_value ()
 {
+  if (chan >= xform.size())
+    throw Error (InvalidState, "Pulsar::KnownVariableTransformation::new_value",
+      "chan=%u >= nchan=%u", chan, xform.size());
+
   return xform[chan].argument.new_Value( get_value() );
 }
