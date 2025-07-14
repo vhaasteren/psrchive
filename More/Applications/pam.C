@@ -971,6 +971,26 @@ int main (int argc, char *argv[]) try {
 	correction.revert (arch);
       }
 
+      if (newrm) {
+        arch->set_rotation_measure (rm);
+        if (verbose)
+          cout << arch->get_filename() << " RM set to " << rm << endl;
+      }
+
+      if (defaraday) {
+        arch->defaraday();
+        if (verbose)
+          cout << arch->get_filename() << " defaradayed" <<endl;
+      }
+
+      if (aux_rm)
+      {
+        if (verbose)
+          cout << "pam: correct auxiliary Faraday rotation; iono RM="
+              << aux_rm << endl;
+        correct_auxiliary_rm (arch, aux_rm);
+      }
+
       if (stokesify) {
 	if (arch->get_npol() != 4)
 	  throw Error(InvalidState, "Convert to Stokes",
@@ -1073,25 +1093,6 @@ int main (int argc, char *argv[]) try {
 	  cout << arch->get_filename() << " invinted" << endl;
       }
 
-      if (newrm) {
-	arch->set_rotation_measure (rm);
-	if (verbose)
-	  cout << arch->get_filename() << " RM set to " << rm << endl;
-      }
-
-      if (defaraday) {
-	arch->defaraday();
-	if (verbose)
-	  cout << arch->get_filename() << " defaradayed" <<endl;
-      }
-
-      if (aux_rm)
-      {
-	if (verbose)
-	  cout << "pam: correct auxiliary Faraday rotation; iono RM="
-	       << aux_rm << endl;
-	correct_auxiliary_rm (arch, aux_rm);
-      }
 
       if (fscr) {
 	if (new_nchn > 0) {

@@ -37,7 +37,7 @@ Pulsar::FaradayRotation::get_correction_measure (const Integration* data)
 //! Return the auxiliary rotation measure (0 if corrected)
 double Pulsar::FaradayRotation::get_absolute_measure (const Integration* data)
 {
-  if (data->get_auxiliary_birefringence_corrected ())
+  if (data->get_absolute_birefringence_corrected ())
     return 0;
 
   const AuxColdPlasmaMeasures* aux = data->get<AuxColdPlasmaMeasures> ();

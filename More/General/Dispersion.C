@@ -51,8 +51,8 @@ double Pulsar::Dispersion::get_correction_measure (const Integration* data)
 //! Return the auxiliary dispersion measure (0 if corrected)
 double Pulsar::Dispersion::get_absolute_measure (const Integration* data)
 {
-  if (data->get_auxiliary_dispersion_corrected ())
-    return 0;
+  if (data->get_absolute_dispersion_corrected ())
+    return 0.0;
 
   const AuxColdPlasmaMeasures* aux = data->get<AuxColdPlasmaMeasures> ();
   if (!aux)

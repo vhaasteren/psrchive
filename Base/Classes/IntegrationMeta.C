@@ -29,13 +29,13 @@ Pulsar::Integration::Meta::Meta (const Archive* parent)
   const AuxColdPlasma* aux = parent->get<AuxColdPlasma> ();
   if (aux)
   {
-    set_auxiliary_dispersion_corrected (aux->get_dispersion_corrected());
-    set_auxiliary_birefringence_corrected (aux->get_birefringence_corrected());
+    set_absolute_dispersion_corrected (aux->get_dispersion_corrected());
+    set_absolute_birefringence_corrected (aux->get_birefringence_corrected());
   }
   else
   {
-    set_auxiliary_dispersion_corrected (false);
-    set_auxiliary_birefringence_corrected (false);
+    set_absolute_dispersion_corrected (false);
+    set_absolute_birefringence_corrected (false);
   }
 
   set_state( parent->get_state() );
@@ -151,24 +151,24 @@ void Pulsar::Integration::Meta::set_state (Signal::State v)
 }
 
 //! Auxiliary inter-channel dispersion delay has been removed
-bool Pulsar::Integration::Meta::get_auxiliary_dispersion_corrected () const
+bool Pulsar::Integration::Meta::get_absolute_dispersion_corrected () const
 {
-  return auxiliary_dispersion_corrected;
+  return absolute_dispersion_corrected;
 }
 
-void Pulsar::Integration::Meta::set_auxiliary_dispersion_corrected (bool flag)
+void Pulsar::Integration::Meta::set_absolute_dispersion_corrected (bool flag)
 {
-  auxiliary_dispersion_corrected = flag;
+  absolute_dispersion_corrected = flag;
 }
 
 //! Auxiliary inter-channel birefringence has been removed
-bool Pulsar::Integration::Meta::get_auxiliary_birefringence_corrected () const
+bool Pulsar::Integration::Meta::get_absolute_birefringence_corrected () const
 {
-  return auxiliary_birefringence_corrected;
+  return absolute_birefringence_corrected;
 }
 
-void Pulsar::Integration::Meta::set_auxiliary_birefringence_corrected (bool f)
+void Pulsar::Integration::Meta::set_absolute_birefringence_corrected (bool f)
 {
-  auxiliary_birefringence_corrected = f;
+  absolute_birefringence_corrected = f;
 }
 

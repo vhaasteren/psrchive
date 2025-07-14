@@ -270,18 +270,31 @@ namespace Pulsar {
     //! Get the polarimetric state of the profiles
     Signal::State get_state () const;
 
-    //! Auxiliary inter-channel dispersion delay has been removed
-    bool get_auxiliary_dispersion_corrected () const;
+    //! Absolute inter-channel dispersive delay has been removed
+    bool get_absolute_dispersion_corrected () const;
 
-    //! Auxiliary inter-channel birefringence has been removed
-    bool get_auxiliary_birefringence_corrected () const;
+    //! Absolute inter-channel birefringence has been removed
+    bool get_absolute_birefringence_corrected () const;
 
     //! Get the effective dispersion measure that remains to be corrected
+    /*! Returns the sum of get_relative_dispersion_measure and get_absolute_dispersion_measure. */
     double get_effective_dispersion_measure () const;
 
     //! Get the effective rotation measure that remains to be corrected
+    /*! Returns the sum of get_relative_rotation_measure and get_absolute_rotation_measure. */
     double get_effective_rotation_measure () const;
 
+    //! Get the relative dispersion measure that remains to be corrected
+    double get_relative_dispersion_measure () const;
+
+    //! Get the relative rotation measure that remains to be corrected
+    double get_relative_rotation_measure () const;    
+
+    //! Get the absolute dispersion measure that remains to be corrected
+    double get_absolute_dispersion_measure () const;
+
+    //! Get the absolute rotation measure that remains to be corrected
+    double get_absolute_rotation_measure () const;        
     //@}
 
 
@@ -507,8 +520,13 @@ namespace Pulsar {
     void defaraday (unsigned ichan, unsigned kchan,
                     double reference_frequency);
 
-    //! Update the Dedispersed and DeFaradayed history
-    void update_history ();
+    //! Update the Dedispersed extension, as needed
+    /*! Assumes that the dedisperse worker function has been applied to all channels */
+    void update_absolute_dispersion();
+
+    //! Update the DeFaradayed extension, as needed
+    /*! Assumes that the defaraday worker function has been applied to all channels */
+    void update_absolute_rotation();
 
     //! Converts between coherency products and Stokes parameters
     void poln_convert (Signal::State out_state);

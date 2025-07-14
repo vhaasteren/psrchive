@@ -74,36 +74,65 @@ void Pulsar::DeFaradayed::check_relative (const Archive* archive, unsigned isubi
 
 void Pulsar::DeFaradayed::check_absolute (const Archive* archive, unsigned isubint)
 {
+  if (Integration::verbose)
+    cerr << "Pulsar::DeFaradayed::check_absolute isubint=" << isubint << endl;
+
   const Integration* subint = archive->get_Integration (isubint);
   const DeFaraday* ext = subint->get<DeFaraday>();
 
+  bool integration_corrected = false;
+  string integration_description;
+
+  if (ext)
+  {
+    integration_description = "Integration has DeFaraday extension";
+    if (ext->get_absolute()->get_corrected())
+    {
+      integration_corrected = true;
+      integration_description += " with absolute correction flag set";
+    }
+    else
+    {
+      integration_description += " without absolute correction flag set";
+    }
+  }
+  else
+  {
+    integration_description = "Integration has no DeFaraday extension";
+  }
+
+  if (Integration::verbose)
+    cerr << "Pulsar::DeFaradayed::check_absolute Integration description='" << integration_description << "'" << endl;
+  
   const AuxColdPlasma* aux = archive->get<AuxColdPlasma>();
 
-  if (!aux)
+  bool archive_corrected = false;
+  string archive_description;
+
+  if (aux)
   {
-    if (ext && ext->get_absolute()->get_corrected())
-        throw Error (InvalidState, "Pulsar::DeFaradayed::apply",
-                "Archive does not have an AuxColdPlasma extension and Integration[%d]\n\t"
-                "has a DeFaraday Extension with the absolute correction flag set", isubint);
+    archive_description = "Archive has AuxColdPlasma extension";
+    if (aux->get_birefringence_corrected())
+    {
+      archive_corrected = true;
+      archive_description += " with birefringence corrected flag set";
+    }
+    else
+    {
+      archive_description += " without birefringence corrected flag set";
+    }
   }
-  else if (aux->get_birefringence_corrected())
+  else
   {
-    if (!ext)
-        throw Error (InvalidState, "Pulsar::DeFaradayed::apply",
-                "Archive has an AuxColdPlasma extension and Integration[%d]\n\t"
-                "has no DeFaraday Extension", isubint);
+    archive_description = "Archive has no AuxColdPlasma extension";
+  }
+  
+  if (Integration::verbose)
+    cerr << "Pulsar::DeFaradayed::check_absolute Archive description='" << archive_description << "'" << endl;
 
-    if (!ext->get_absolute()->get_corrected())
-        throw Error (InvalidState, "Pulsar::DeFaradayed::apply",
-                "Archive has an AuxColdPlasma extension and Integration[%d]\n\t"
-                "has a DeFaraday Extension without the absolute correction flag set", isubint);
-
-    if (diff( ext->get_absolute()->get_reference_frequency(), archive->get_centre_frequency() ))
-        throw Error (InvalidState, "Pulsar::DeFaradayed::apply",
-                "Archive has an AuxColdPlasma extension and Integration[%d]\n\t"
-                "DeFaraday::reference_frequency = %lf doesn't equal\n\t"
-                "Archive::centre_frequency = %lf", isubint,
-                ext->get_absolute()->get_reference_frequency(),
-                archive->get_centre_frequency());
+  if (archive_corrected != integration_corrected)
+  {
+    throw Error (InvalidState, "Pulsar::DeFaradayed::apply",
+                 archive_description + "\n\tAND\n\t" + integration_description); 
   }
 }

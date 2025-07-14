@@ -509,42 +509,46 @@ catch (Error& error) {
 }
 
 
-double Pulsar::Integration::get_effective_dispersion_measure () const try
+double Pulsar::Integration::get_effective_dispersion_measure () const
 {
-  double dm = 0;
+  return get_relative_dispersion_measure() + get_absolute_dispersion_measure();
+}
 
-  if (! get_dedispersed())
-    dm += get_dispersion_measure ();
+double Pulsar::Integration::get_relative_dispersion_measure () const
+{
+  if (get_dedispersed())
+    return 0.0;
 
-  if (! get_auxiliary_dispersion_corrected())
-  {
-    if (verbose)
-      cerr << "Integration::get_effective_dispersion_measure aux dm not corrected" << endl;
+  return get_dispersion_measure ();
+}
 
-    const AuxColdPlasmaMeasures* aux = get<AuxColdPlasmaMeasures>();
-    if (aux)
-    {
-      if (verbose)
-        cerr << "Integration::get_effective_dispersion_measure"
-                " aux dm = " << aux->get_dispersion_measure() << endl;
+double Pulsar::Integration::get_absolute_dispersion_measure () const try
+{
+  if (get_absolute_dispersion_corrected())
+    return 0.0;
 
-      dm += aux->get_dispersion_measure();
-    }
-  }
+  if (verbose)
+    cerr << "Integration::get_absolute_dispersion_measure aux dm not corrected" << endl;
 
-  return dm;
+  const AuxColdPlasmaMeasures* aux = get<AuxColdPlasmaMeasures>();
+  if (!aux)
+    return 0.0;
+
+  if (verbose)
+    cerr << "Integration::get_absolute_dispersion_measure aux:dm=" << aux->get_dispersion_measure() << endl;
+
+  return aux->get_dispersion_measure();
 }
 catch (Error& error)
 {
-  throw error += "Pulsar::Integration::get_effective_dispersion_measure";
+  throw error += "Pulsar::Integration::get_absolute_dispersion_measure";
 }
 
 //! Auxiliary inter-channel dispersion delay has been removed
-bool Pulsar::Integration::get_auxiliary_dispersion_corrected () const
-try
+bool Pulsar::Integration::get_absolute_dispersion_corrected () const try
 {
   if (orphaned)
-    return orphaned->get_auxiliary_dispersion_corrected ();
+    return orphaned->get_absolute_dispersion_corrected ();
 
   const AuxColdPlasma* aux = parent->get<AuxColdPlasma>();
   if (aux)
@@ -554,37 +558,45 @@ try
 }
 catch (Error& error)
 {
-  throw error += "Pulsar::Integration::get_auxiliary_dispersion_corrected ";
+  throw error += "Pulsar::Integration::get_absolute_dispersion_corrected ";
 }
 
-
-
-double Pulsar::Integration::get_effective_rotation_measure () const try
+double Pulsar::Integration::get_effective_rotation_measure () const
 {
-  double rm = 0;
+  return get_relative_rotation_measure() + get_absolute_rotation_measure();
+}
 
-  if (! get_faraday_corrected())
-    rm += get_rotation_measure ();
+double Pulsar::Integration::get_relative_rotation_measure () const
+{
+  if (get_faraday_corrected())
+    return 0.0;
+  return get_rotation_measure ();
+}
 
-  if (! get_auxiliary_birefringence_corrected())
-  {    
-    const AuxColdPlasmaMeasures* aux = get<AuxColdPlasmaMeasures>();
-    if (aux)
-      rm += aux->get_rotation_measure();
-  }
-  return rm;
+double Pulsar::Integration::get_absolute_rotation_measure () const try
+{
+  if (get_absolute_birefringence_corrected())
+    return 0.0;
+
+  const AuxColdPlasmaMeasures* aux = get<AuxColdPlasmaMeasures>();
+  if (!aux)
+    return 0.0;
+
+  if (verbose)
+    cerr << "Integration::get_absolute_rotation_measure aux:rm=" << aux->get_rotation_measure() << endl;
+
+  return aux->get_rotation_measure();
 }
 catch (Error& error)
 {
-  throw error += "Pulsar::Integration::get_effective_rotation_measure";
+  throw error += "Pulsar::Integration::get_absolute_rotation_measure";
 }
 
 //! Auxiliary inter-channel birefringence has been removed
-bool Pulsar::Integration::get_auxiliary_birefringence_corrected () const
-try
+bool Pulsar::Integration::get_absolute_birefringence_corrected () const try
 {
   if (orphaned)
-    return orphaned->get_auxiliary_birefringence_corrected ();
+    return orphaned->get_absolute_birefringence_corrected ();
 
   const AuxColdPlasma* aux = parent->get<AuxColdPlasma>();
   if (aux)
@@ -594,7 +606,7 @@ try
 }
 catch (Error& error)
 {
-  throw error += "Pulsar::Integration::get_auxiliary_birefringence_corrected ";
+  throw error += "Pulsar::Integration::get_absolute_birefringence_corrected ";
 }
 
 //! Get the feed configuration of the receiver

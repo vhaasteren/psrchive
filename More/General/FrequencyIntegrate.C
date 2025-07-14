@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *   Copyright (C) 2005-2009 by Willem van Straten
+ *   Copyright (C) 2005-2025 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -61,7 +61,7 @@ void Pulsar::FrequencyIntegrate::transform (Integration* integration)
   }
 
   double dm = integration->get_effective_dispersion_measure();
-  bool must_dedisperse = dedisperse &&  dm != 0;
+  bool must_dedisperse = dedisperse && dm != 0;
 
   double rm = integration->get_effective_rotation_measure();
   bool must_defaraday = defaraday && subint_npol == 4 && rm != 0;
@@ -123,7 +123,12 @@ void Pulsar::FrequencyIntegrate::transform (Integration* integration)
     cerr << "Pulsar::FrequencyIntegrate::transform resize" << endl;
 
   integration->expert()->resize (0, output_nchan, 0);
-  integration->expert()->update_history ();
+
+  if (must_dedisperse)
+    integration->expert()->update_absolute_dispersion ();
+
+  if (must_defaraday)
+    integration->expert()->update_absolute_rotation ();
 
   if (Integration::verbose) 
     cerr << "Pulsar::FrequencyIntegrate::transform finish" << endl;

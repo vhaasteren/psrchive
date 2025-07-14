@@ -54,14 +54,15 @@ void Pulsar::Archive::init_Integration (Integration* subint, bool check_phase)
     corrected->get_relative()->set_measure( get_rotation_measure() );
   }
 
-  auto aux = get<AuxColdPlasma>();
-  if (aux)
-  {
-    auto subaux = subint->get<AuxColdPlasmaMeasures>();
+  auto subaux = subint->get<AuxColdPlasmaMeasures>();
 
-    if (!subaux)
+  if (subaux)
+  {
+    auto aux = get<AuxColdPlasma>();
+
+    if (!aux)
       throw Error (InvalidState, "Pulsar::Archive::init_Integration",
-                   "Archive has AuxColdPlasma extension but Integration does not have AuxColdPlasmaMeasures extension");
+                   "Integration has AuxColdPlasmaMeasures extension but Archive does not have AuxColdPlasma extension");
 
     if (aux->get_dispersion_corrected())
     {
