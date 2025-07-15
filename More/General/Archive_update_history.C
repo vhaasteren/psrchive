@@ -13,7 +13,7 @@ using namespace std;
 
 void Pulsar::Archive::update_absolute_dispersion () try
 {
-  if (verbose)
+  if (verbose > 1)
     cerr << "Pulsar::Archive::update_absolute_dispersion" << endl;
 
   bool absolute_dm_corrected = false;
@@ -40,7 +40,7 @@ catch (Error& error)
 
 void Pulsar::Archive::update_absolute_rotation () try
 {
-  if (verbose)
+  if (verbose > 1)
     cerr << "Pulsar::Archive::update_absolute_rotation" << endl;
 
   bool absolute_rm_corrected = false;

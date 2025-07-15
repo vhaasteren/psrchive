@@ -343,14 +343,19 @@ void Pulsar::ColdPlasma<C,History>::execute1 (Integration* data) try
 
   range (data, 0, data->get_nchan());
 
-  History* history = data->template getadd<History>();
-  history->get_relative()->set_corrected( true );
-  history->get_relative()->set_measure( get_measure() );
-  history->get_relative()->set_reference_wavelength( get_reference_wavelength() );
+  double relative_measure = get_correction_measure (data);
+  if (relative_measure)
+  {
+    History* history = data->template getadd<History>();
+    history->get_relative()->set_corrected( true );
+    history->get_relative()->set_measure( relative_measure );
+    history->get_relative()->set_reference_wavelength( get_reference_wavelength() );
+  }
 
   double absolute_measure = get_absolute_measure (data);
   if (absolute_measure)
   {
+    History* history = data->template getadd<History>();
     history->get_absolute()->set_corrected( true );
     history->get_absolute()->set_measure( absolute_measure );
     history->get_absolute()->set_reference_wavelength( 0.0 );

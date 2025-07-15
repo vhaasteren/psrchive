@@ -40,6 +40,8 @@ void Pulsar::Archive::init_Integration (Integration* subint, bool check_phase)
 
   if ( get_dedispersed() )
   {
+    if (verbose > 2)
+      cerr << "Pulsar::Archive::init_Integration dedispersed DM=" << get_dispersion_measure() << endl;
     auto corrected = subint->getadd<Dedisperse>();
     corrected->get_relative()->set_corrected(true);
     corrected->get_relative()->set_reference_frequency( get_centre_frequency() );
@@ -48,6 +50,8 @@ void Pulsar::Archive::init_Integration (Integration* subint, bool check_phase)
 
   if ( get_faraday_corrected() )
   {
+    if (verbose > 2)
+      cerr << "Pulsar::Archive::init_Integration derotated RM=" << get_rotation_measure() << endl;
     auto corrected = subint->getadd<DeFaraday>();
     corrected->get_relative()->set_corrected(true);
     corrected->get_relative()->set_reference_frequency( get_centre_frequency() );
@@ -66,16 +70,20 @@ void Pulsar::Archive::init_Integration (Integration* subint, bool check_phase)
 
     if (aux->get_dispersion_corrected())
     {
+      if (verbose > 2)
+        cerr << "Pulsar::Archive::init_Integration absolute dedispersed DM=" << subaux->get_dispersion_measure() << endl;
+
       auto corrected = subint->getadd<Dedisperse>();
       corrected->get_absolute()->set_corrected(true);
-      corrected->get_absolute()->set_reference_frequency( get_centre_frequency() );
       corrected->get_absolute()->set_measure( subaux->get_dispersion_measure() );
     }
     if (aux->get_birefringence_corrected())
     {
+      if (verbose > 2)
+        cerr << "Pulsar::Archive::init_Integration absolute derotated RM=" << subaux->get_rotation_measure() << endl;
+ 
       auto corrected = subint->getadd<DeFaraday>();
       corrected->get_absolute()->set_corrected(true);
-      corrected->get_absolute()->set_reference_frequency( get_centre_frequency() );
       corrected->get_absolute()->set_measure( subaux->get_rotation_measure() );
     }
   }
