@@ -111,6 +111,9 @@ public:
   //! Load projection transformations from filename
   void set_projection (const string& filename);
 
+  //! Load projection configuration from filename
+  void set_configurable_projection (const string& filename);
+
   //! Enable the named diagnostic
   void enable_diagnostic (const string& name);
 
@@ -805,31 +808,27 @@ void pcm::set_impurity (const string& filename)
   impurity = MEAL::Function::load<MEAL::Real4> (filename);
 }
 
-void pcm::set_projection (const string& filename)
+void pcm::set_projection (const string& filename) try
 {
-  try {
-    cerr << "pcm: loading known projections from " << filename << endl;
-    ManualPolnCalibrator* cal = new ManualPolnCalibrator (filename);
-    projection = new VariableTransformationFile (cal);
-    return;
-  }
-  catch (Error& error)
-  {
-    if (verbose)
-      cerr << "pcm: failed to load known projections from " << filename << endl;
-  }
+  cerr << "pcm: loading known projections from " << filename << endl;
+  ManualPolnCalibrator* cal = new ManualPolnCalibrator (filename);
+  projection = new VariableTransformationFile (cal);
+}
+catch (Error& error)
+{
+  cerr << "pcm: failed to load known projections from " << filename << endl;
+  throw error;
+}
 
-  try {
-    cerr << "pcm: loading configurable projection from " << filename << endl;
-    projection = new ConfigurableProjection (filename);
-    cerr << "pcm: projection configuration loaded from " << filename << endl;
-    return;
-  }
-  catch (Error& error)
-  {
-    if (verbose)
-      cerr << "pcm: failed to load configurable projection from " << filename << endl;
-  }
+void pcm::set_configurable_projection (const string& filename) try
+{
+  cerr << "pcm: loading configurable projection from " << filename << endl;
+  projection = new ConfigurableProjection (filename);
+}
+catch (Error& error)
+{
+  cerr << "pcm: failed to load configurable projection from " << filename << endl;
+  throw error;
 }
 
 flags foreach_calibrator;
@@ -1069,6 +1068,9 @@ void pcm::add_options (CommandLine::Menu& menu)
 
   arg = menu.add (this, &pcm::set_projection, 'P', "file");
   arg->set_help ("load projection transformations from file");
+
+  arg = menu.add (this, &pcm::set_configurable_projection, "projection", "file");
+  arg->set_help ("load projection model configuration from YAML file");
 
   arg = menu.add (reparallactify, "repara");
   arg->set_help ("reparallactify the input data");

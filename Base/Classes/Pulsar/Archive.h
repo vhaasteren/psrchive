@@ -529,6 +529,7 @@ namespace Pulsar
     static void agent_list ();
 
     //! Set the verbosity level (0 to 3)
+    /*! note that Archive::verbose is IntegrationManager::verbose */
     static void set_verbosity (unsigned level);
 
     //! Sanity checks such as verification and correction

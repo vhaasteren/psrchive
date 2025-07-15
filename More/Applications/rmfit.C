@@ -623,9 +623,10 @@ int main (int argc, char** argv)
           data -> fscrunch(fscr);
       }
 
-      cerr << endl << endl
-          << "Number of frequency channels = " << data -> get_nchan() 
-          << endl << endl;
+      if (nfscr > 1)
+        cerr << endl << endl
+             << "Number of frequency channels = " << data -> get_nchan() 
+             << endl << endl;
 
       for(unsigned ibscr=0; ibscr<nbscr+1; ibscr++)
       {
