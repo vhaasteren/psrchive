@@ -1805,34 +1805,41 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile) try
 
   model->output_report = output_report;
 
-  if (degenerate_V_boost)
-    cerr << "pcm: boost along Stokes V is intrinsically degenerate" << endl;
-  else
-    cerr << "pcm: boost along Stokes V is not degenerate" << endl;
-
   model->degenerate_V_boost = degenerate_V_boost;
-
-  if (measure_cal_V)
-    cerr << "pcm: if available, will use fluxcal data to constrain"
-      " CAL Stokes V" << endl;
-  else
-    cerr << "pcm: assuming that CAL Stokes V = 0" << endl;
-
   model->measure_cal_V = measure_cal_V;
 
-  if (degenerate_V_rotation)
-    cerr << "pcm: rotation about Stokes V is intrinsically degenerate" << endl;
+  if (!degenerate_V_boost)
+  {
+    cerr << "pcm: boost along Stokes V is not degenerate" << endl;
+    cerr << "pcm: allowing CAL Stokes V to vary" << endl;
+    model->measure_cal_V = true;
+  }
   else
-    cerr << "pcm: rotation about Stokes V is not degenerate" << endl;
+  {
+    cerr << "pcm: boost along Stokes V is intrinsically degenerate" << endl;
+    if (measure_cal_V)
+      cerr << "pcm: if available, fluxcal data will be used to constrain CAL Stokes V" << endl;
+    else
+      cerr << "pcm: assuming that CAL Stokes V = 0" << endl;
+  }
 
   model->degenerate_V_rotation = degenerate_V_rotation;
-
-  if (measure_cal_Q)
-    cerr << "pcm: allowing CAL Stokes Q to vary" << endl;
-  else
-    cerr << "pcm: assuming that CAL Stokes Q = 0" << endl;
-
   model->measure_cal_Q = measure_cal_Q;
+
+  if (!degenerate_V_rotation)
+  {
+    cerr << "pcm: rotation about Stokes V is not degenerate" << endl;
+    cerr << "pcm: allowing CAL Stokes Q to vary" << endl;
+    model->measure_cal_Q = true;
+  }
+  else
+  {
+    cerr << "pcm: rotation about Stokes V is intrinsically degenerate" << endl;
+    if (measure_cal_Q)
+      cerr << "pcm: allowing CAL Stokes Q to vary" << endl;
+    else
+      cerr << "pcm: assuming that CAL Stokes Q = 0" << endl;
+  }
 
   if (equal_ellipticities)
     cerr << "pcm: assuming that the receptor ellipticities are equal" << endl;

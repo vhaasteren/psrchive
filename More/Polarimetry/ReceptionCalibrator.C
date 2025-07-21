@@ -598,7 +598,9 @@ void ReceptionCalibrator::setup_poln_calibrator (Calibration::SourceEstimate* es
     est->source->set_infit (1, true);
   }
   
-  if (measure_cal_V && (equal_ellipticities || has_fluxcal()))
+  bool cal_V_may_vary = equal_ellipticities || !degenerate_V_boost || has_fluxcal();
+
+  if (measure_cal_V && cal_V_may_vary)
   {
     if (verbose)
       cerr << "Stokes V of the calibrator may vary" << endl;
