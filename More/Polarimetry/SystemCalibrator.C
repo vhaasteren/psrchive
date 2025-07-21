@@ -2330,7 +2330,10 @@ void SystemCalibrator::precalibrate (Archive* data)
       {
         double total_invariant = get_invariant(integration, ichan);
 
-        invint_out << integration->get_epoch().printdays(10) << " " << ichan << " " << total_invariant << endl;
+        double G = norm(det( response[ichan] ));
+
+        invint_out << integration->get_epoch().printdays(10) << " " << ichan 
+                   << " " << total_invariant << " " << sqrt(G) << endl;
         invint_out.flush();
 
         response[ichan] *= sqrt(total_invariant);

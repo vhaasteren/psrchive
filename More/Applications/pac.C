@@ -683,6 +683,14 @@ int main (int argc, char *argv[]) try
   if (feed)
     dbase -> set_feed (feed);
 
+  Reference::To<ManualPolnCalibrator> known_projection;
+
+  if ( ! projection_file.empty() )
+  {
+    cerr << "pac: Loading projection transformations from " << projection_file << endl;
+    known_projection = new ManualPolnCalibrator (projection_file);
+  }
+
   // Start calibrating archives
   
   Interpreter* preprocessor = standard_shell();
@@ -748,8 +756,7 @@ int main (int argc, char *argv[]) try
       }
       catch (Error& error)
       {
-        error << " -- closest match: \n\n"
-              << dbase->get_closest_match_report ();
+        error << " -- closest match: \n\n" << dbase->get_closest_match_report ();
         throw error;
       }
 
@@ -830,7 +837,7 @@ int main (int argc, char *argv[]) try
     else
       cerr << "pac: Frontend corrections disabled." << endl;
 
-    bool do_special_projection = projection || ! projection_file.empty();
+    bool do_special_projection = projection || known_projection;
 
     Receiver* receiver = arch->get<Receiver>();
 
@@ -848,26 +855,20 @@ int main (int argc, char *argv[]) try
       }
     }
 
-    if ( projection )
+    if (projection)
     {
       cerr << "pac: Applying configurable projection transformation" << endl;
       projection->calibrate(arch);
-
-      if (receiver)
-        receiver->set_projection_corrected (true);
     }
 
-    if ( ! projection_file.empty() )
+    if (known_projection)
     {
-      cerr << "pac: Loading projection transformations from "
-	   << projection_file << endl;
+      known_projection->calibrate (arch);
+    }
 
-      Reference::To<ManualPolnCalibrator> calibrator;
-      calibrator = new ManualPolnCalibrator (projection_file);
-      calibrator->calibrate (arch);
-
-      if (receiver)
-        receiver->set_projection_corrected (true);
+    if (do_special_projection && receiver)
+    {
+      receiver->set_projection_corrected (true);
     }
     
     if (ionosphere)
