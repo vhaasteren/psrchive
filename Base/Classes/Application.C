@@ -139,10 +139,38 @@ void Pulsar::Application::parse (int argc, char** argv)
 
   if (!metafile.empty())
   {
+    std::vector<std::string> loaded;
+
     // stringfload appends to filenames (without first clearing the vector)
-    if (stringfload (&filenames, metafile) < 0)
+    if (stringfload (&loaded, metafile) < 0)
       throw Error (FailedSys, "Pulsar::Application::parse", 
                    "failed to load filnames from '" + metafile + "'\n");
+
+    std::string metapath = dirname(metafile);
+    if (metapath != ".")
+    {
+      // check if files need to have metapath prepended
+      unsigned ifile = 0;
+      while (ifile < loaded.size())
+      {
+        if (!file_exists(loaded[ifile].c_str()))
+        {
+          // check if it exists in metapath
+          std::string alt = metapath + "/" + loaded[ifile];
+          if (!file_exists(alt.c_str()))
+          {
+            cerr << "Pulsar::Application::parse '" << loaded[ifile] << "' not found and '" << alt << "' not found" << endl;
+            loaded.erase(loaded.begin() + ifile);
+            continue;
+          }
+
+          loaded[ifile] = alt;
+        }
+        ifile ++;
+      }
+    }
+
+    filenames.insert(filenames.end(), loaded.begin(), loaded.end());
   }
 
   string separator = " ";
