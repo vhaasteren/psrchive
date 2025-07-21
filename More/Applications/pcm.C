@@ -647,6 +647,7 @@ static bool prefit_report = false;
 static bool failed_report = false;
 static bool input_data_report = false;
 static bool data_and_model_report = false;
+static bool total_invariant_report = false;
 
 static bool plot_guess = false;
 static bool plot_residual = false;
@@ -695,6 +696,11 @@ void pcm::enable_diagnostic (const string& name)
   else if (name == "failed")
     failed_report = true;
 
+  else if (name == "invint")
+  {
+    cerr << "pcm: will print the normalization factor applied to each profile (based on total invariant)" << endl;
+    total_invariant_report = true;
+  }
   else
   {
     cerr << "pcm: unrecognized diagnostic name '" << name << "'" << endl;
@@ -1097,7 +1103,7 @@ void pcm::add_options (CommandLine::Menu& menu)
   arg->set_help ("flag invalid channels with reduced chisq above gof");
 
   arg = menu.add (this, &pcm::enable_diagnostic, 'D', "name");
-  arg->set_help ("enable diagnostic: name=report,guess,residual,result,total");
+  arg->set_help ("enable diagnostic: name=report,guess,residual,result,total,invint");
 
   menu.add ("\n" "MEM: Measurement Equation Modeling \n"
 	    "  -- observations of an unknown source (van Straten 2004)\n");
@@ -1300,7 +1306,8 @@ void configure_model (Pulsar::SystemCalibrator* model)
   model->set_report_input_data (input_data_report);
   model->set_report_input_failed (failed_report);
   model->set_report_data_and_model (data_and_model_report);
-  
+  model->set_report_total_invariant (total_invariant_report);
+
   if (response)
     model->set_response( response );
 

@@ -387,8 +387,7 @@ void SignalPath::add_psr_path (VariableBackendEstimate* backend)
   product->set_index ( xform_index );
 
   if (verbose)
-    cerr << "SignalPath::add_psr_path index="
-	 << product->get_index() << endl;
+    cerr << "SignalPath::add_psr_path index=" << product->get_index() << endl;
 }
 
 void SignalPath::add_cal_path (VariableBackendEstimate* backend)
@@ -640,7 +639,6 @@ void SignalPath::copy_transformation (const MEAL::Complex2* xform)
     copy_param( physical->get_frontend(), copy->get_frontend() );
   }
 }
-
 
 VariableBackendEstimate* SignalPath::get_backend (const MJD& epoch) const
 {

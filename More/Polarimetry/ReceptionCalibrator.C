@@ -370,6 +370,18 @@ void ReceptionCalibrator::add_pulsar
          
   standard_data->set_profile( integration->new_PolnProfile (ichan) );
 
+  if (report_total_invariant && normalize_by_invariant)
+  {
+    // determinant = invariant squared
+    Estimate<double> total_determinant = standard_data->get_total_determinant();
+    auto invint = sqrt(total_determinant);
+    invint_out << integration->get_epoch().printdays(10) << " " << ichan << " " << invint.get_value() << endl;
+    if (!invint_out)
+    {
+      cerr << "ReceptionCalibrator::add_pulsar FAILED to write total invariant for ichan=" << ichan << endl;
+    }
+  }
+
   for (unsigned istate=0; istate < pulsar_estimate.size(); istate++)
   {
     if (ichan >= pulsar_estimate[istate].size())

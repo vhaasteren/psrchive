@@ -19,8 +19,7 @@ namespace MEAL {
   class Scalar;
 
   //! Normalize Stokes parameters by the invariant interval
-  /*! This class properly handles the propagation of errors during
-    normalization. */
+  /*! This class properly handles the propagation of errors during normalization. */
   class NormalizeStokes : public Reference::Able {
 
   public:

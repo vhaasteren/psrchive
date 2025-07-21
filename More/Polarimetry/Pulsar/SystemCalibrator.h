@@ -22,6 +22,8 @@
 
 #include "BatchQueue.h"
 
+#include <ostream>
+
 namespace Pulsar
 {
   class ReferenceCalibrator;
@@ -241,6 +243,9 @@ namespace Pulsar
     //! Report on the data and model before and after the fit
     virtual void set_report_data_and_model (bool flag = true);
 
+    //! Report on the total invariant used to normalize each profile
+    virtual void set_report_total_invariant (bool flag = true);
+
     //! Set the threshold used to reject outliers when computing CAL levels
     void set_cal_outlier_threshold (float f) { cal_outlier_threshold = f; }
 
@@ -393,8 +398,7 @@ namespace Pulsar
     typedef Reference::To<Calibration::SourceEstimate> SourceEstimate;
     
     //! Initialize a vector of SourceEstimate instances
-    virtual void init_estimates ( std::vector<SourceEstimate>&,
-				  unsigned ibin = 0 );
+    virtual void init_estimates (std::vector<SourceEstimate>&, unsigned ibin = 0);
 
     //! Report on input data failure rates
     virtual void print_input_failed (const std::vector<SourceEstimate>&);
@@ -505,6 +509,9 @@ namespace Pulsar
     //! Report on the data and model before and after the fit
     bool report_data_and_model;
 
+    //! Report on the total invariant used to normalize each profile
+    bool report_total_invariant = false;
+
     //! Threshold used to reject outliers when computing CAL levels
     double cal_outlier_threshold;
 
@@ -559,6 +566,9 @@ namespace Pulsar
     //! Transformation that inverts the receptor basis
     Jones<double> invert_basis;
 
+    //! File to which total invariant will be written
+    std::ofstream invint_out;
+  
   private:
 
     std::vector<bool> epoch_added;

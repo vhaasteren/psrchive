@@ -1602,6 +1602,13 @@ void SystemCalibrator::create_model () try
     init_model( ichan );
   }
 
+  if (report_total_invariant)
+  {
+    invint_out.open("invint.txt");
+    if (!invint_out)
+      throw Error (FailedSys, "SystemCalibrator::create_model", "ostream::open(\"invint.txt\")");
+  }
+  
   if (verbose)
     cerr << "SystemCalibrator::create_model exit" << endl;
 }
@@ -1887,6 +1894,11 @@ void SystemCalibrator::solve_prepare () try
 
     if (verbose > 2)
       get_solver(ichan)->set_debug();
+  }
+
+  if (report_total_invariant)
+  {
+    invint_out.close();
   }
 
   is_prepared = true;
@@ -2502,10 +2514,14 @@ void SystemCalibrator::set_report_input_data (bool flag)
   report_input_data = flag;
 }
 
-//! Report on the data and model before and after the fit
 void SystemCalibrator::set_report_data_and_model (bool flag)
 {
   report_data_and_model = flag;
+}
+
+void SystemCalibrator::set_report_total_invariant (bool flag)
+{
+  report_total_invariant = flag;
 }
 
 void SystemCalibrator::set_report_input_failed (bool flag)
