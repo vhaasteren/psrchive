@@ -1,10 +1,11 @@
 /***************************************************************************
  *
- *   Copyright (C) 2000 by Willem van Straten
+ *   Copyright (C) 2000-2025 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
-#ifndef __DIRUTILS_H
+
+ #ifndef __DIRUTILS_H
 #define __DIRUTILS_H
 
 #ifdef __cplusplus
@@ -51,6 +52,12 @@ void dirglobtree (std::vector<std::string>* filenames,
 
 // expands ~
 std::string expand (const std::string& filename);
+
+// returns the directory name (using std C dirname)
+std::string dirname (const std::string& path);
+
+// returns the file name (using std C basename)
+std::string basename (const std::string& path);
 
 extern "C" {
 #endif /* #ifdef __cplusplus */

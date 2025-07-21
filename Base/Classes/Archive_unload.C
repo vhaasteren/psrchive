@@ -50,14 +50,27 @@ void Pulsar::Archive::unload (const char* filename) const
   string unload_to_filename = unload_filename;
   if (no_clobber && file_exists(filename))
   {
-    cerr << "Pulsar::Archive:unload file " << filename << " exists and no_clobber=" << no_clobber << endl << "Exiting..." << endl;
-    exit(-1);
+    throw Error (InvalidState, "Pulsar::Archive:unload", "%s exists and no_clobber is true", filename);
   }
+
   if (filename)
     unload_to_filename = expand(filename);
 
   if (verbose == 3)
     cerr << "Pulsar::Archive::unload (" << unload_to_filename << ")" << endl;
+
+  std::string path = dirname(unload_to_filename);
+  if (path != ".")
+  {
+    int path_exists = file_is_directory(path.c_str());
+    if (!path_exists)
+      cerr << "Pulsar::Archive:unload creating directory " << path << endl;
+    int result = makedir(path.c_str());
+    if (result != 0)
+    {
+      throw Error (FailedSys, "Pulsar::Archive:unload", "makedir(" + path + ")");
+    }
+  }
 
   TemporaryFile temp (unload_to_filename);
 
