@@ -726,6 +726,7 @@ int main (int argc, char *argv[]) try
       cerr << "pac: Backend corrections disabled" << endl;
 
     bool successful_polncal = false;
+    bool calibrate_frontend = do_frontend;
 
     Reference::To<ConfigurableProjection> projection;
 
@@ -734,7 +735,6 @@ int main (int argc, char *argv[]) try
       cout << "pac: " << filenames[i] << " already poln calibrated" << endl;
       successful_polncal = true;
     }
-
     else if (do_polncal && !arch->get_poln_calibrated())
     {
       Reference::To<PolnCalibrator> pcal_engine;
@@ -810,7 +810,7 @@ int main (int argc, char *argv[]) try
         {
             cerr << "pac: using configurable projection (disabling frontend correction)" << endl;
             projection = new ConfigurableProjection(cpe);
-            do_frontend = false;
+            calibrate_frontend = false;
         }
       }
 
@@ -826,7 +826,7 @@ int main (int argc, char *argv[]) try
       cerr << "pac: Poln calibration disabled" << endl;
     }
 
-    if (do_frontend && (arch->get_npol() == 4))
+    if (calibrate_frontend && (arch->get_npol() == 4))
     {
       if (verbose)
         cerr << "pac: Correcting fronted, if necessary" << endl;
