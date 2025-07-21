@@ -85,14 +85,16 @@ namespace Pulsar {
     void update_solution ();
 
     //! Return the transformation to be used for precalibration
-    MEAL::Complex2* get_transformation (const Archive* data,
-					unsigned isub, unsigned ichan);
+    MEAL::Complex2* get_transformation (const Archive* data, unsigned isub, unsigned ichan);
 
     //! The matrix template matching engine used to fit the specified channel
     const PolnProfileFit* get_mtm (unsigned ichan) const;
 
     //! Set true to detect gimbal lock when rotations are not quaternion
     bool monitor_gimbal_lock;
+
+    //! Return the invariant for the specified integration and frequency channel
+    double get_invariant (Integration* subint, unsigned ichan) override;
 
   protected:
     

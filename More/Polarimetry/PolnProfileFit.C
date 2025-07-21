@@ -393,8 +393,13 @@ catch (Error& error)
  throw error += "PolnProfileFit::add_observation";
 }
 
-void PolnProfileFit::add_observation (CoherencyMeasurementSet& measurements,
-				      const PolnProfile* observation )
+Estimate<double> PolnProfileFit::get_total_squared_invariant (const PolnProfile* obs)
+{
+  standard_data->set_profile(obs);
+  return standard_data->get_total_squared_invariant();
+}
+
+void PolnProfileFit::add_observation (CoherencyMeasurementSet& measurements, const PolnProfile* observation)
 {
   if (!standard)
     throw Error (InvalidState, "PolnProfileFit::add_observation",
@@ -422,8 +427,7 @@ void PolnProfileFit::add_observation (CoherencyMeasurementSet& measurements,
 
   Reference::To<const PolnProfile> fourier = standard_data->get_fourier();
 
-  float phase_guess = ccf_max_phase (standard_fourier->get_Profile(0),
-				     fourier->get_Profile(0));
+  float phase_guess = ccf_max_phase (standard_fourier->get_Profile(0), fourier->get_Profile(0));
 
   if (verbose)
     cerr << "PolnProfileFit::add_observation add gradient" << endl;

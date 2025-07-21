@@ -22,17 +22,14 @@ Pulsar::PolnProfileStats::PolnProfileStats (const PolnProfile* _profile) try
   regions_set = false;
   stats = new ProfileStats;
 
-#if _DEBUG
-  cerr << "Pulsar::PolnProfileStats::ctor this=" << this
-       << " calling select_profile" << endl;
-#endif
+  DEBUG("Pulsar::PolnProfileStats::ctor this=" << this << " calling select_profile");
 
   select_profile (_profile);
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::PolnProfileStats::ctor";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::PolnProfileStats::ctor";
+}
 
 //! Destructor
 Pulsar::PolnProfileStats::~PolnProfileStats()
@@ -49,26 +46,20 @@ void Pulsar::PolnProfileStats::set_profile (const PolnProfile* _profile) try
 {
   profile.set(_profile);
 
-#if _DEBUG
-  cerr << "Pulsar::PolnProfileStats::set_profile this=" << this
-       << " calling build" << endl;
-#endif
+  DEBUG("Pulsar::PolnProfileStats::set_profile this=" << this << " calling build");
   build ();
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::PolnProfileStats::set_profile";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::PolnProfileStats::set_profile";
+}
 
 //! Set the PolnProfile from which baseline and onpulse mask will be selected
 /*! It is assumed that all subsequent PolnProfile instances passed to
   set_profile will have the same phase as set_profile */
 void Pulsar::PolnProfileStats::select_profile (const PolnProfile* _profile) try
 {
-#if _DEBUG
-  cerr << "Pulsar::PolnProfileStats::select_profile this=" << this
-       << " PolnProfile=" << _profile << endl;
-#endif
+  DEBUG("Pulsar::PolnProfileStats::select_profile this=" << this << " PolnProfile=" << _profile);
 
   profile.set(_profile);
   regions_set = false;
@@ -76,26 +67,23 @@ void Pulsar::PolnProfileStats::select_profile (const PolnProfile* _profile) try
   if (_profile)
     regions_set = true;
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::PolnProfileStats::select_profile (PolnProfile*)";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::PolnProfileStats::select_profile (PolnProfile*)";
+}
 
 void Pulsar::PolnProfileStats::select_profile (const Profile* total) try
 {
-#if _DEBUG
-  cerr << "Pulsar::PolnProfileStats::select_profile this=" << this
-       << " Profile=" << total << endl;
-#endif
+  DEBUG("Pulsar::PolnProfileStats::select_profile this=" << this << " Profile=" << total);
 
   profile = 0;
   stats->select_profile( total );
   regions_set = true;
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::PolnProfileStats::select_profile (Profile*)";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::PolnProfileStats::select_profile (Profile*)";
+}
 
 //! Set the on-pulse and baseline regions
 void Pulsar::PolnProfileStats::set_regions (const PhaseWeight& on, const PhaseWeight& off) try
@@ -104,20 +92,20 @@ void Pulsar::PolnProfileStats::set_regions (const PhaseWeight& on, const PhaseWe
   regions_set = true;
   build ();
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::PolnProfileStats::set_regions";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::PolnProfileStats::set_regions";
+}
 
 //! Set the on-pulse and baseline regions
 void Pulsar::PolnProfileStats::get_regions (PhaseWeight& on, PhaseWeight& off) const try
 {
   stats->get_regions (on, off);
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::PolnProfileStats::get_regions";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::PolnProfileStats::get_regions";
+}
 
 //! Returns the total flux of the on-pulse phase bins
 Estimate<double> Pulsar::PolnProfileStats::get_total_intensity () const try
@@ -125,10 +113,10 @@ Estimate<double> Pulsar::PolnProfileStats::get_total_intensity () const try
   stats->set_profile( profile->get_Profile(0) );
   return stats->get_total ();
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::PolnProfileStats::get_total_intensity";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::PolnProfileStats::get_total_intensity";
+}
 
 //! Returns the total polarized flux of the on-pulse phase bins
 Estimate<double> Pulsar::PolnProfileStats::get_total_polarized () const try
@@ -140,10 +128,10 @@ Estimate<double> Pulsar::PolnProfileStats::get_total_polarized () const try
 
   return stats->get_total (false);
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::PolnProfileStats::get_total_polarized";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::PolnProfileStats::get_total_polarized";
+}
 
 //! Returns the total polarized flux of the on-pulse phase bins
 Estimate<double> Pulsar::PolnProfileStats::get_total_polarized_squared () const try
@@ -155,10 +143,10 @@ Estimate<double> Pulsar::PolnProfileStats::get_total_polarized_squared () const 
 
   return stats->get_total (false);
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::PolnProfileStats::get_total_polarized_squared";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::PolnProfileStats::get_total_polarized_squared";
+}
 
 //! Returns the total linearly polarized flux of the on-pulse phase bins
 Estimate<double> Pulsar::PolnProfileStats::get_total_linear () const try
@@ -166,24 +154,20 @@ Estimate<double> Pulsar::PolnProfileStats::get_total_linear () const try
   Profile linear;
   profile->get_linear (&linear);
 
-#if _DEBUG
-  cerr << "Pulsar::PolnProfileStats::get_total_linear this=" << this << 
-    " calling ProfileStats::set_profile regions_set=" << regions_set << endl;
-#endif
+  DEBUG("Pulsar::PolnProfileStats::get_total_linear this=" << this << 
+        " calling ProfileStats::set_profile regions_set=" << regions_set);
 
   stats->set_profile (&linear);
 
-#if _DEBUG
-  cerr << "Pulsar::PolnProfileStats::get_total_linear this=" << this <<
-    " calling ProfileStats::get_total" << endl;
-#endif
+  DEBUG("Pulsar::PolnProfileStats::get_total_linear this=" << this <<
+        " calling ProfileStats::get_total");
 
   return stats->get_total (false);
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::PolnProfileStats::get_total_linear";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::PolnProfileStats::get_total_linear";
+}
 
 //! Returns the total linearly polarized flux of the on-pulse phase bins
 Estimate<double> Pulsar::PolnProfileStats::get_total_linear_squared () const try
@@ -191,24 +175,20 @@ Estimate<double> Pulsar::PolnProfileStats::get_total_linear_squared () const try
   Profile linear;
   profile->get_linear_squared (&linear);
 
-#if _DEBUG
-  cerr << "Pulsar::PolnProfileStats::get_total_linear_squared  this=" << this << 
-    " calling ProfileStats::set_profile regions_set=" << regions_set << endl;
-#endif
+  DEBUG("Pulsar::PolnProfileStats::get_total_linear_squared this=" << this << 
+        " calling ProfileStats::set_profile regions_set=" << regions_set);
 
   stats->set_profile (&linear);
 
-#if _DEBUG
-  cerr << "Pulsar::PolnProfileStats::get_total_linear_squared  this=" << this <<
-    " calling ProfileStats::get_total" << endl;
-#endif
+  DEBUG("Pulsar::PolnProfileStats::get_total_linear_squared this=" << this <<
+        " calling ProfileStats::get_total");
 
   return stats->get_total (false);
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::PolnProfileStats::get_total_linear_squared ";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::PolnProfileStats::get_total_linear_squared ";
+}
 
 //! Returns the total circularly polarized flux of the on-pulse phase bins
 Estimate<double> Pulsar::PolnProfileStats::get_total_circular () const try
@@ -216,10 +196,10 @@ Estimate<double> Pulsar::PolnProfileStats::get_total_circular () const try
   stats->set_profile (profile->get_Profile(3));
   return stats->get_total ();
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::PolnProfileStats::get_total_circular";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::PolnProfileStats::get_total_circular";
+}
 
 //! Returns the total absolute value of circularly polarized flux
 Estimate<double> Pulsar::PolnProfileStats::get_total_abs_circular () const try
@@ -231,10 +211,10 @@ Estimate<double> Pulsar::PolnProfileStats::get_total_abs_circular () const try
 
   return stats->get_total (false);
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::PolnProfileStats::total_abs_circular";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::PolnProfileStats::total_abs_circular";
+}
 
 //! Get the Stokes parameters of the specified phase bin
 Stokes< Estimate<double> >
@@ -247,39 +227,43 @@ Pulsar::PolnProfileStats::get_stokes (unsigned ibin) const try
 
   return result;
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::PolnProfileStats::get_stokes";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::PolnProfileStats::get_stokes";
+}
+
+//! Returns the total of the squared invariant of the on-pulse phase bins
+Estimate<double> Pulsar::PolnProfileStats::get_total_squared_invariant () const try
+{
+  Estimate<double> total_inv_squared;
+
+  for (unsigned ibin=0; ibin < profile->get_nbin(); ibin++)
+    if (stats->get_onpulse(ibin))
+      total_inv_squared += invariant( get_stokes(ibin) );
+
+  return total_inv_squared;
+}
+catch (Error& error)
+{
+  throw error += "Pulsar::PolnProfileStats::get_total_squared_invariant";
+}
+
+Estimate<double> Pulsar::PolnProfileStats::get_invariant() const
+{
+  Estimate<double> total_inv_squared = get_total_squared_invariant ();
+  return sqrt(total_inv_squared);
+}
 
 //! Returns the total determinant of the on-pulse phase bins
 Estimate<double> Pulsar::PolnProfileStats::get_total_determinant () const try
 {
-  Estimate<double> total_det;
-
-  for (unsigned ibin=0; ibin < profile->get_nbin(); ibin++)
-    if (stats->get_onpulse(ibin))
-      total_det += invariant( get_stokes(ibin) );
-
-#if 0
-  cerr << "1: " << total_det << endl;
-
-  Profile invint;
-  profile->invint (&invint, false);
-
-  stats->set_profile (&invint);
-
-  total_det = stats->get_total (false);
-
-  cerr << "2: " << total_det << endl;
-#endif
-
-  return total_det;
+  // det(rho) = |S|^2 / 4
+  return 0.25 * get_total_squared_invariant();
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::PolnProfileStats::get_total_determinant";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::PolnProfileStats::get_total_determinant";
+}
 
 Estimate<double>
 Pulsar::PolnProfileStats::get_baseline_variance (unsigned ipol) const try
@@ -288,17 +272,15 @@ Pulsar::PolnProfileStats::get_baseline_variance (unsigned ipol) const try
   {
     stats->set_profile( profile->get_Profile(ipol) );
     baseline_variance[ipol] = stats->get_baseline_variance();
-#ifdef _DEBUG
-    cerr << "Pulsar::PolnProfileStats::get_baseline_variance ipol="
-         << ipol << " var=" << baseline_variance[ipol] << endl;
-#endif
+    DEBUG("Pulsar::PolnProfileStats::get_baseline_variance ipol="
+          << ipol << " var=" << baseline_variance[ipol]);
   }
   return baseline_variance[ipol];
 }
- catch (Error& error)
-   {
-     throw error += "Pulsar::PolnProfileStats::get_baseline_variance";
-   }
+catch (Error& error)
+{
+  throw error += "Pulsar::PolnProfileStats::get_baseline_variance";
+}
 
 void Pulsar::PolnProfileStats::build () try
 {
@@ -313,11 +295,9 @@ void Pulsar::PolnProfileStats::build () try
 
   if (!regions_set)
   {
-#ifdef _DEBUG
-    cerr << "Pulsar::PolnProfileStats::build this=" << this << 
-      " call ProfileStats::select_profile"
-      " ProfileStats*=" << stats.ptr() << endl;
-#endif
+    DEBUG("Pulsar::PolnProfileStats::build this=" << this << 
+          " call ProfileStats::select_profile"
+          " ProfileStats*=" << stats.ptr());
 
     stats->select_profile( profile->get_Profile(0) );
 
@@ -330,13 +310,9 @@ void Pulsar::PolnProfileStats::build () try
       double invint_variance = get_baseline_variance(0).val * 4;
       double threshold = 3.0 * sqrt (invint_variance);
 
-#ifdef _DEBUG
-      cerr << "before avoid " << stats->get_onpulse_nbin() << endl;
-#endif
+      DEBUG("before avoid " << stats->get_onpulse_nbin());
       stats->deselect_onpulse (&invint, threshold);
-#ifdef _DEBUG
-      cerr << "after avoid " << stats->get_onpulse_nbin() << endl;
-#endif
+      DEBUG("after avoid " << stats->get_onpulse_nbin());
     }
   }
 }

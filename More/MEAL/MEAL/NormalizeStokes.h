@@ -45,8 +45,8 @@ namespace MEAL {
     //! Normalize the Stokes parameters by their invariant interval
     void normalize (Stokes< Estimate<double> >& stokes);
 
-    //! Normalize the Stokes parameters by the determinant
-    void normalize (Stokes< Estimate<double> >& stokes, Estimate<double> det);
+    //! Normalize the Stokes parameters by the total invariant interval
+    void normalize (Stokes< Estimate<double> >& stokes, const Estimate<double>& total_squared_invariant);
 
   protected:
 

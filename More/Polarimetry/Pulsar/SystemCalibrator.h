@@ -183,6 +183,9 @@ namespace Pulsar
     //! Normalize each pulsar Stokes vector by the mean on-pulse invariant
     virtual void set_normalize_by_invariant (bool flag = true);
 
+    //! Normalize each pulsar Stokes vector by the mean on-pulse invariant
+    virtual void set_normalize_calibrated_by_invariant (bool flag = true);
+
     //! Add the pulsar observation to the set of constraints
     virtual void add_pulsar (const Archive* data);
 
@@ -443,12 +446,10 @@ namespace Pulsar
 
     //! Add pulsar data constraints to coherency measurement set
     /*! Derived types must define how pulsar data are incorporated */
-    virtual void add_pulsar (Calibration::CoherencyMeasurementSet&,
-			     const Integration*, unsigned ichan) = 0;
+    virtual void add_pulsar (Calibration::CoherencyMeasurementSet&, const Integration*, unsigned ichan) = 0;
 
     //! add pulsar data to mean estimate used as initial guess
-    virtual void integrate_pulsar_data
-    (const Calibration::CoherencyMeasurementSet&) { }
+    virtual void integrate_pulsar_data (const Calibration::CoherencyMeasurementSet&) { }
 
     //! add all pulsar data constraints to measurement equation
     virtual void submit_pulsar_data ();
@@ -456,8 +457,12 @@ namespace Pulsar
     //! add the given pulsar observations to measurement equation constraints
     virtual void submit_pulsar_data (Calibration::CoherencyMeasurementSet&);
 
+    //! Return the invariant for the specified integration and frequency channel
+    virtual double get_invariant (Integration* subint, unsigned ichan) = 0;
+
     //! The calibrators to be loaded after first pulsar observation
     std::vector<std::string> calibrator_filenames;
+
     //! The calibrator pre-processor
     Reference::To<Processor> calibrator_preprocessor;
 
@@ -475,6 +480,9 @@ namespace Pulsar
 
     //! Normalize pulsar Stokes parameters by the invariant interval
     bool normalize_by_invariant;
+
+    //! Normalize pulsar Stokes parameters by the invariant interval
+    bool normalize_calibrated_by_invariant = false;
 
     //! Solve measurement equations in reverse channel order
     bool solve_in_reverse_channel_order;

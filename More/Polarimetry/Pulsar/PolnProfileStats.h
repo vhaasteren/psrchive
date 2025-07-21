@@ -63,8 +63,11 @@ namespace Pulsar {
     //! Returns the total polarized flux of the on-pulse phase bins
     Estimate<double> get_total_polarized () const;
 
-    //! Returns the total polarized flux of the on-pulse phase bins
+    //! Returns the total squared polarized flux  of the on-pulse phase bins
     Estimate<double> get_total_polarized_squared () const;
+
+    //! Returns the total squared invariant of the on-pulse phase bins
+    Estimate<double> get_total_squared_invariant () const;
 
     //! Returns the total determinant of the on-pulse phase bins
     Estimate<double> get_total_determinant () const;
@@ -83,6 +86,9 @@ namespace Pulsar {
 
     //! Returns the variance of the baseline for the specified polarization
     Estimate<double> get_baseline_variance (unsigned ipol) const;
+
+    //! Returns the square root of the total squared invariant
+    Estimate<double> get_invariant () const;
 
     //! Returns the vairance of the linearly polarized flux
     double get_linear_variance () const;

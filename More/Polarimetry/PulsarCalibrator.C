@@ -161,8 +161,8 @@ void Pulsar::PulsarCalibrator::set_standard (const Archive* data)
     {
       chosen_maximum_harmonic = stats.get_last_harmonic();
       if (verbose)
-	cerr << "PulsarCalibrator::set_standard max harmonic="
-	     << chosen_maximum_harmonic << "/" << clone->get_nbin()/2 << endl;
+        cerr << "PulsarCalibrator::set_standard max harmonic="
+             << chosen_maximum_harmonic << "/" << clone->get_nbin()/2 << endl;
     }
   }
 }
@@ -388,6 +388,16 @@ bool Pulsar::PulsarCalibrator::match (const Archive* data, bool throw_exception)
   return true;
 }
 
+double Pulsar::PulsarCalibrator::get_invariant (Integration* subint, unsigned ichan)
+{
+  if (!mtm[ichan])
+    throw Error (InvalidState, "PulsarCalibrator::get_invariant", "mtm[%u] not set", ichan);
+
+  Reference::To<PolnProfile> profile = subint->new_PolnProfile (ichan);
+  Estimate<double> total_squared_invariant = mtm[ichan]->get_total_squared_invariant(profile);
+  return sqrt(total_squared_invariant.get_value());
+}
+
 /*!
   If solve_each is set, then this method will solve for the solution of
   the specified channel
@@ -489,8 +499,12 @@ try
     Reference::Vector<MEAL::Complex2>& store = store_each[isub];
     store.resize( get_nchan() );
     for (unsigned i=0; i < store.size(); i++)
+    {
       if (get_transformation_valid(i))
-	store[i] = PolnCalibrator::get_transformation(i)->clone();
+      {
+        store[i] = PolnCalibrator::get_transformation(i)->clone();
+      }
+    }
   }
 }
 catch (Error& error)

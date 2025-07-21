@@ -9,6 +9,7 @@
 #include "Pulsar/PolnProfile.h"
 
 // #define _DEBUG 1
+#include "debug.h"
 
 using namespace std;
 
@@ -29,7 +30,7 @@ void Calibration::StandardData::select_profile (const Pulsar::PolnProfile* p)
     stats -> set_avoid_zero_determinant ();
 
   stats->select_profile (p);
-  total_determinant = stats->get_total_determinant ();
+  total_squared_invariant = stats->get_total_squared_invariant ();
 }
 
 //! Set the profile from which estimates will be derived
@@ -37,20 +38,15 @@ void Calibration::StandardData::set_profile (const Pulsar::PolnProfile* p)
 {
   stats->set_profile (p);
 
-#ifdef _DEBUG
-  cerr << "Calibration::StandardData::set_profile onpulse nbin=" 
-       << stats->get_stats()->get_onpulse_nbin() << endl;
-#endif
+  DEBUG("Calibration::StandardData::set_profile onpulse nbin=" << stats->get_stats()->get_onpulse_nbin());
 
-  total_determinant = stats->get_total_determinant ();
+  total_squared_invariant = stats->get_total_squared_invariant ();
 }
 
 //! Normalize estimates by the average determinant
 void Calibration::StandardData::set_normalize (bool norm)
 {
-#ifdef _DEBUG
-  cerr << "Calibration::StandardData::set_normalize " << norm << endl;
-#endif
+  DEBUG("Calibration::StandardData::set_normalize " << norm);
 
   if (norm)
     normalize = new MEAL::NormalizeStokes;
@@ -66,19 +62,12 @@ Calibration::StandardData::get_stokes (unsigned ibin)
 
   if (normalize)
   {
-#ifdef _DEBUG1
-    cerr << "Calibration::StandardData::get_stokes normalize total_det="
-	 << total_determinant << endl;
-#endif
-    normalize->normalize (result, total_determinant);
+    DEBUG("Calibration::StandardData::get_stokes normalize total_inv_sq=" << total_squared_invariant);
+    normalize->normalize (result, total_squared_invariant);
     result *= sqrt( (double) stats->get_stats()->get_onpulse_nbin() );
   }
 
-#ifdef _DEBUG
-  cerr << "Calibration::StandardData::get_stokes ibin=" << ibin << endl
-       << "result=" << result << endl;
-#endif
-
+  DEBUG("Calibration::StandardData::get_stokes ibin=" << ibin << endl << "result=" << result);
   return result;
 }
 

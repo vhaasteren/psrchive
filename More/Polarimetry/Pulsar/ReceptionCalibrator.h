@@ -111,6 +111,9 @@ namespace Pulsar
     //! Normalize each Stokes vector by the mean on-pulse invariant 
     void set_normalize_by_invariant (bool set = true);
 
+    //! Return the invariant for the specified integration and frequency channel
+    double get_invariant (Integration* subint, unsigned ichan) override;
+
   protected:
     
     //! Standard data interface

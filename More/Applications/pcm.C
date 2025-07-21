@@ -455,6 +455,7 @@ bool measure_cal_Q = true;
 bool equal_ellipticities = false;
 
 bool normalize_by_invariant = false;
+bool normalize_calibrated_by_invariant = false;
 bool independent_gains = false;
 bool step_after_cal = false;
 bool refcal_through_frontend = true;
@@ -996,10 +997,12 @@ void pcm::add_options (CommandLine::Menu& menu)
   arg = menu.add (unload_each_calibrated, 'N');
   arg->set_help ("do not unload calibrated data files");
 
+  arg = menu.add (normalize_calibrated_by_invariant, "normalize");
+  arg->set_help ("normalize output Stokes parameters by total invariant interval");
+
   arg = menu.add (this, &pcm::disable_plotting, "noplots");
   arg->set_help ("do not plot chosen.ps and onpulse.ps");
 
-  
   menu.add ("\n" "Input options:");
 
   arg = menu.add (calfile, 'C', "file");
@@ -1842,6 +1845,11 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile) try
     cerr << "pcm: not normalizing Stokes parameters" << endl;
 
   model->set_normalize_by_invariant( normalize_by_invariant );
+
+  if (normalize_calibrated_by_invariant)
+    cerr << "pcm: normalizing output calibrated Stokes parameters by invariant" << endl;
+
+  model->set_normalize_calibrated_by_invariant( normalize_calibrated_by_invariant );
 
   if (independent_gains)
     cerr << "pcm: each observation has a unique gain" << endl;

@@ -360,6 +360,15 @@ bool ReceptionCalibrator::match (const Archive* data, bool throw_exception)
   return SystemCalibrator::match (data, throw_exception);
 }
 
+double ReceptionCalibrator::get_invariant (Integration* subint, unsigned ichan)
+{
+  if (!standard_data)
+    throw Error (InvalidState, "ReceptionCalibrator::get_invariant", "standard_data not set");
+
+  standard_data->set_profile( subint->new_PolnProfile (ichan) );
+  Estimate<double> total_squared_invariant = standard_data->get_total_squared_invariant();
+  return sqrt(total_squared_invariant.get_value());
+}
 
 void ReceptionCalibrator::add_pulsar
 ( Calibration::CoherencyMeasurementSet& measurements,
@@ -372,10 +381,8 @@ void ReceptionCalibrator::add_pulsar
 
   if (report_total_invariant && normalize_by_invariant)
   {
-    // determinant = invariant squared
-    Estimate<double> total_determinant = standard_data->get_total_determinant();
-    auto invint = sqrt(total_determinant);
-    invint_out << integration->get_epoch().printdays(10) << " " << ichan << " " << invint.get_value() << endl;
+    Estimate<double> invint = standard_data->get_total_squared_invariant();
+    invint_out << integration->get_epoch().printdays(10) << " " << ichan << " " << sqrt(invint.get_value()) << endl;
     if (!invint_out)
     {
       cerr << "ReceptionCalibrator::add_pulsar FAILED to write total invariant for ichan=" << ichan << endl;

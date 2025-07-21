@@ -70,17 +70,17 @@ namespace Calibration {
     //! Get the algorithm used to compute the profile statistics
     Pulsar::PolnProfileStats* get_poln_stats ();
 
-    //! Get the total determinant used to normalize the Stokes parameters
-    Estimate<double> get_total_determinant() { return total_determinant; }
+    //! Get the total squared invariant used to normalize the Stokes parameters
+    Estimate<double> get_total_squared_invariant() { return total_squared_invariant; }
 
  protected:
 
     Reference::To< Pulsar::PolnProfileStats > stats;
     Reference::To< MEAL::NormalizeStokes > normalize;
 
-    //! The determinant of the coherency matrix, integrated over all onpulse-phase bins,
+    //! The square of the invariant, integrated over all onpulse-phase bins,
     /*! This is proportional to the gain squared, so it's sqrt is taken as a normalization factor. */
-    Estimate<double> total_determinant;
+    Estimate<double> total_squared_invariant;
   };
 
 }

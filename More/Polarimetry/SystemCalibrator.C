@@ -166,6 +166,11 @@ void SystemCalibrator::set_normalize_by_invariant (bool flag)
   normalize_by_invariant = flag;
 }
 
+void SystemCalibrator::set_normalize_calibrated_by_invariant (bool flag)
+{
+  normalize_calibrated_by_invariant = flag;
+}
+
 //! Return true if least squares minimization solvers are available
 bool SystemCalibrator::has_solver () const
 {
@@ -1901,6 +1906,11 @@ void SystemCalibrator::solve_prepare () try
     invint_out.close();
   }
 
+  if (normalize_calibrated_by_invariant)
+  {
+    invint_out.open("invint_out.txt");
+  }
+
   is_prepared = true;
 }
 catch (Error& error)
@@ -2235,6 +2245,7 @@ void SystemCalibrator::precalibrate (Archive* data)
   {
     faraday_rotation->set_archive (data);
   }
+
   bool faraday_rotation_corrected = false;
 
   BackendCorrection correct_backend;
@@ -2313,6 +2324,16 @@ void SystemCalibrator::precalibrate (Archive* data)
         integration->set_weight (ichan, 0.0);
         response[ichan] = 0.0;
         continue;
+      }
+
+      if (normalize_calibrated_by_invariant)
+      {
+        double total_invariant = get_invariant(integration, ichan);
+
+        invint_out << integration->get_epoch().printdays(10) << " " << ichan << " " << total_invariant << endl;
+        invint_out.flush();
+
+        response[ichan] *= sqrt(total_invariant);
       }
 
       if ( norm(det( response[ichan] )) < 1e-9 )

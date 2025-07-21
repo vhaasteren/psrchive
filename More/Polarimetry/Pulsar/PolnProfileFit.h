@@ -167,6 +167,9 @@ namespace Pulsar
     //! Get the statistical interface to the data
     Calibration::StandardSpectra* get_spectra ();
 
+    //! Get the total squared invariant used to normalize the Stokes parameters
+    Estimate<double> get_total_squared_invariant (const PolnProfile*);
+
   protected:
 
     friend class ScalarProfileFitAnalysis;
