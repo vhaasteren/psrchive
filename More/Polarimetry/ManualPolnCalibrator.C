@@ -20,34 +20,10 @@
 
 using namespace std;
 
-Pulsar::ManualPolnCalibrator::ManualPolnCalibrator (const string filename)
+Pulsar::ManualPolnCalibrator::ManualPolnCalibrator (const string& filename)
 {
   type = new CalibratorTypes::ManualPoln;
   load (filename);
-}
-
-//! Copy constructor
-Pulsar::ManualPolnCalibrator::ManualPolnCalibrator (const ManualPolnCalibrator& calibrator)
-{
-  built = false;
-  observation_nchan = 0;
-}
-
-//! Destructor
-Pulsar::ManualPolnCalibrator::~ManualPolnCalibrator ()
-{
-}
-
-//! Set the number of integrations in the response array
-void Pulsar::ManualPolnCalibrator::set_response_nsub (unsigned nsub)
-{
-  return;
-}
-
-//! Get the number of frequency channels in the response array
-unsigned Pulsar::ManualPolnCalibrator::get_response_nsub () const
-{
-  return 0;
 }
 
 void Pulsar::ManualPolnCalibrator::load (const string& ascii_model_filename)
