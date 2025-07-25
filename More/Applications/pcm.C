@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *   Copyright (C) 2003 - 2022 by Willem van Straten
+ *   Copyright (C) 2003-2025 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -260,8 +260,7 @@ void auto_select (Pulsar::ReceptionCalibrator& model,
   vector<unsigned> bins;
 
   if (!prepare)
-    throw Error (InvalidState, "auto_select", 
-    "StandardPrepare policy not set");
+    throw Error (InvalidState, "auto_select", "StandardPrepare policy not set");
 
   prepare->set_input_states (maxbins);
   prepare->choose (archive);
@@ -1271,6 +1270,24 @@ void pcm::setup ()
     prepare = mult;
   }
 
+  if (normalize_calibrated_by_invariant)
+  {
+    /*
+    By default, StandardPrepare::prepare calls Archive::centre(0.0) to ensure that all
+    input data are aligned in phase.  The resulting phase shift is confusing
+    if it is also applied to the calibrated output; therefore, by default, phase alignment
+    is disabled before using StandardPrepare::prepare to produce calibrated output.
+
+    However, this causes trouble when the same "on pulse" window that is used to compute
+    the invariant (the square root of the total squared invariant, integrated over all onpulse
+    phase bins) of the input data is also used to compute the invariant of the output data.
+
+    Therefore, when normalizing the calibrated output data is enabled, phase alignment is disabled.
+    */
+    cerr << "pcm: disabling phase alignment so that internal phase = output phase" << endl;
+    prepare->set_align_phase(false);
+  }
+
   unloader.set_program ( "pcm" );
   unloader.set_filename( output_filename );
 }
@@ -1854,7 +1871,9 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile) try
   model->set_normalize_by_invariant( normalize_by_invariant );
 
   if (normalize_calibrated_by_invariant)
+  {
     cerr << "pcm: normalizing output calibrated Stokes parameters by invariant" << endl;
+  }
 
   model->set_normalize_calibrated_by_invariant( normalize_calibrated_by_invariant );
 
