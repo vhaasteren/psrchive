@@ -32,23 +32,27 @@ namespace Pulsar {
     //! Default constructor
     Dispersion ();
 
-    //! Return the dispersion measure due to the ISM
-    double get_correction_measure (const Integration*) override;
+    //! Return the dispersion measure
+    /*! As returned by psredit -c dm */
+    double get_relative_measure (const Integration*) const override;
 
-    //! Return the auxiliary dispersion measure (0 if corrected)
-    double get_absolute_measure (const Integration*) override;
+    //! Return the auxiliary dispersion measure
+    /*! As returned by psredit -c int:aux:dm */
+    double get_absolute_measure (const Integration*) const override;
 
-    //! Return true if the Integration has been dedispersed
-    bool get_corrected (const Integration* data) override;
+    //! Return true if the dispersion measure has been corrected with respect to centre frequency
+    /*! As returned by psredit -c dmc */
+    bool get_relative_corrected (const Integration*) const override;
 
-    //! Return the effective dispersion measure that remains to be corrected
-    double get_effective_measure (const Integration*) override;
+    //! Return true if the auxiliary dispersion measure has been corrected with respect to centre frequency
+    /*! As returned by psredit -c aux:dmc */
+    bool get_absolute_corrected (const Integration*) const override;
 
     //! Return zero delay
-    double get_identity () override { return 0; }
+    double get_identity () const override { return 0; }
 
     //! Combine delays
-    void combine (double& result, const double& add) override { result += add; }
+    void combine (double& result, const double& add) const override { result += add; }
 
     //! Setup all necessary attributes
     void update (const Integration*) override;
@@ -64,11 +68,11 @@ namespace Pulsar {
 
     //! Set the dispersion measure
     void set_dispersion_measure (double dispersion_measure)
-    { set_measure (dispersion_measure); }
+    { relative.set_measure (dispersion_measure); }
       
     //! Get the dispersion measure
     double get_dispersion_measure () const
-    { return get_measure (); }
+    { return relative.get_measure (); }
 
     //! Get the dispersive delay in seconds
     double get_delay () const;

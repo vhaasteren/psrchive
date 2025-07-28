@@ -165,7 +165,7 @@ void Pulsar::ProfileStats::deselect_onpulse (const Profile* prof, float thresh)
 void Pulsar::ProfileStats::set_onpulse_estimator (ProfileWeightFunction* est)
 {
   if (Profile::verbose)
-    cerr << "Pulsar::ProfileStats::set_onpulse_estimator this=" << this << " est=" << est << endl;
+    cerr << "Pulsar::ProfileStats::set_onpulse_estimator this=" << this << " est=" << (void*) est << endl;
 
   onpulse_estimator = est;
   built = false;

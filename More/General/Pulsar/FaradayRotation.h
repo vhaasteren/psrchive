@@ -29,30 +29,35 @@ namespace Pulsar {
     \post All profiles will have a position angle aligned to the
           reference frequency
   */
-  class FaradayRotation : public ColdPlasma<Calibration::Faraday,DeFaraday> {
+  class FaradayRotation : public ColdPlasma<Calibration::Faraday,DeFaraday>
+  {
 
   public:
 
     //! Default constructor
     FaradayRotation ();
 
-    //! Return the rotation measure due to the ISM
-    double get_correction_measure (const Integration*);
+    //! Return the rotation measure
+    /*! As returned by psredit -c rm */
+    double get_relative_measure (const Integration*) const override;
 
-    //! Return the auxiliary rotation measure (0 if corrected)
-    double get_absolute_measure (const Integration*);
+    //! Return the auxiliary rotation measure
+    /*! As returned by psredit -c int:aux:rm */
+    double get_absolute_measure (const Integration*) const override;
 
-    //! Return the effective rotation measure that remains to be corrected
-    double get_effective_measure (const Integration*);
+    //! Return true if the rotation measure has been corrected with respect to centre frequency
+    /*! As returned by psredit -c rmc */
+    bool get_relative_corrected (const Integration*) const override;
 
-    //! Ignore correction history if parent Archive corrected flag is false
-    bool get_corrected (const Integration* data);
+    //! Return true if the auxiliary rotation measure has been corrected with respect to centre frequency
+    /*! As returned by psredit -c aux:rmc */
+    bool get_absolute_corrected (const Integration*) const override;
 
     //! Return the identity matrix
-    Jones<double> get_identity () { return 1; }
+    Jones<double> get_identity () const override { return 1; }
 
     //! Combine matrices
-    void combine (Jones<double>& res, const Jones<double>& J) { res *= J; }
+    void combine (Jones<double>& res, const Jones<double>& J) const override { res *= J; }
 
     //! Invert the Faraday rotation in the specified polarization
     void apply (Integration*, unsigned channel, Jones<double> rotation) override;
@@ -65,11 +70,11 @@ namespace Pulsar {
 
     //! Set the rotation measure
     void set_rotation_measure (double rotation_measure)
-    { set_measure (rotation_measure); }
+    { relative.set_measure (rotation_measure); }
       
     //! Get the rotation measure
     double get_rotation_measure () const
-    { return get_measure (); }
+    { return relative.get_measure (); }
 
   };
 

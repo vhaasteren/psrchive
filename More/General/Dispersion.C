@@ -39,21 +39,17 @@ Pulsar::Dispersion::Dispersion ()
   delta = get_identity ();
 }
 
-double Pulsar::Dispersion::get_correction_measure (const Integration* data)
+double Pulsar::Dispersion::get_relative_measure (const Integration* data) const
 {
   if (Archive::verbose > 2)
-    cerr << "Pulsar::Dispersion::get_correction_measure DM="
+    cerr << "Pulsar::Dispersion::get_relative_measure DM="
          << data->get_dispersion_measure () << endl;
 
   return data->get_dispersion_measure ();
 }
 
-//! Return the auxiliary dispersion measure (0 if corrected)
-double Pulsar::Dispersion::get_absolute_measure (const Integration* data)
+double Pulsar::Dispersion::get_absolute_measure (const Integration* data) const
 {
-  if (data->get_absolute_dispersion_corrected ())
-    return 0.0;
-
   const AuxColdPlasmaMeasures* aux = data->get<AuxColdPlasmaMeasures> ();
   if (!aux)
     return 0;
@@ -61,22 +57,22 @@ double Pulsar::Dispersion::get_absolute_measure (const Integration* data)
   return aux->get_dispersion_measure ();
 }
 
-double Pulsar::Dispersion::get_effective_measure (const Integration* data)
+bool Pulsar::Dispersion::get_relative_corrected (const Integration* data) const
 {
   if (Archive::verbose > 2)
-    cerr << "Pulsar::Dispersion::get_effective_measure DM="
-         << data->get_effective_dispersion_measure () << endl;
-
-  return data->get_effective_dispersion_measure ();
-}
-
-bool Pulsar::Dispersion::get_corrected (const Integration* data)
-{
-  if (Archive::verbose > 2)
-    cerr << "Pulsar::Dispersion::get_corrected dedispersed=" 
+    cerr << "Pulsar::Dispersion::get_relative_corrected dedispersed=" 
 	       << data->get_dedispersed() << endl;
 
   return data->get_dedispersed();
+}
+
+bool Pulsar::Dispersion::get_absolute_corrected (const Integration* data) const
+{
+  if (Archive::verbose > 2)
+    cerr << "Pulsar::Dispersion::get_relative_corrected dedispersed=" 
+	       << data->get_absolute_dispersion_corrected() << endl;
+
+  return data->get_absolute_dispersion_corrected ();
 }
 
 //! Execute the correction for an entire Pulsar::Archive

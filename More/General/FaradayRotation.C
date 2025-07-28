@@ -24,22 +24,17 @@ Pulsar::FaradayRotation::FaradayRotation ()
   delta = get_identity();
 }
 
-double 
-Pulsar::FaradayRotation::get_correction_measure (const Integration* data)
+double Pulsar::FaradayRotation::get_relative_measure (const Integration* data) const
 {
   if (Archive::verbose > 2)
-    cerr << "Pulsar::FaradayRotation::get_correction_measure RM="
+    cerr << "Pulsar::FaradayRotation::get_relative_measure RM="
          << data->get_rotation_measure () << endl;
 
   return data->get_rotation_measure ();
 }
 
-//! Return the auxiliary rotation measure (0 if corrected)
-double Pulsar::FaradayRotation::get_absolute_measure (const Integration* data)
+double Pulsar::FaradayRotation::get_absolute_measure (const Integration* data) const
 {
-  if (data->get_absolute_birefringence_corrected ())
-    return 0;
-
   const AuxColdPlasmaMeasures* aux = data->get<AuxColdPlasmaMeasures> ();
   if (!aux)
     return 0;
@@ -47,19 +42,22 @@ double Pulsar::FaradayRotation::get_absolute_measure (const Integration* data)
   return aux->get_rotation_measure ();
 }
 
-double 
-Pulsar::FaradayRotation::get_effective_measure (const Integration* data)
+bool Pulsar::FaradayRotation::get_relative_corrected (const Integration* data) const
 {
   if (Archive::verbose > 2)
-    cerr << "Pulsar::FaradayRotation::get_effective_measure RM="
-         << data->get_effective_rotation_measure () << endl;
+    cerr << "Pulsar::FaradayRotation::get_relative_corrected corrected=" 
+	       << data->get_faraday_corrected() << endl;
 
-  return data->get_effective_rotation_measure ();
+  return data->get_faraday_corrected();
 }
 
-bool Pulsar::FaradayRotation::get_corrected (const Integration* data)
+bool Pulsar::FaradayRotation::get_absolute_corrected (const Integration* data) const
 {
-  return data->get_faraday_corrected();
+  if (Archive::verbose > 2)
+    cerr << "Pulsar::DisFaradayRotationpersion::get_relative_corrected corrected=" 
+	       << data->get_absolute_birefringence_corrected() << endl;
+
+  return data->get_absolute_birefringence_corrected ();
 }
 
 //! Execute the correction for an entire Pulsar::Archive

@@ -247,7 +247,7 @@ void psrsim::process (Pulsar::Archive* data)
       // perform Faraday rotation
       FaradayRotation xform;
       xform.set_reference_frequency( data->get_centre_frequency() );
-      xform.set_measure( -rotation_measure );
+      xform.set_rotation_measure( -rotation_measure );
       xform.just_do_it( data );
     }
     

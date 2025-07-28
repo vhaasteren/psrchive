@@ -1247,7 +1247,7 @@ string Pulsar::Interpreter::dedisperse (const string& args) try
     xform.set_reference_wavelength( 0 );
   }
 
-  xform.set_measure( get()->get_dispersion_measure() );
+  xform.set_dispersion_measure( get()->get_dispersion_measure() );
   xform.execute( get() );
 
   return response (Good);
@@ -1280,7 +1280,7 @@ string Pulsar::Interpreter::defaraday (const string& args) try
     xform.set_reference_wavelength( 0 );
   }
 
-  xform.set_measure( get()->get_rotation_measure() );
+  xform.set_rotation_measure( get()->get_rotation_measure() );
   xform.execute( get() );
 
   return response (Good);
