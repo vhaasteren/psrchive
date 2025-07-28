@@ -266,17 +266,16 @@ void Pulsar::ColdPlasma<Calculator,History>::update_relative (const Integration*
     if (history && history->get_relative()->get_corrected())
     {
       corrected_measure = history->get_relative()->get_measure();
+      double lambda = history->get_relative()->get_reference_wavelength();
+
+      if (Integration::verbose)
+        std::cerr << "Pulsar::" + name + "::update_relative corrected"
+                    " measure=" << corrected_measure << " lambda=" << lambda << std::endl;
+
+      // calculate the correction due to the new centre frequency, if any
+      relative.set_wavelength( lambda );
+      delta = relative.evaluate();
     }
-
-    double lambda = history->get_relative()->get_reference_wavelength();
-
-    if (Integration::verbose)
-      std::cerr << "Pulsar::" + name + "::update_relative corrected"
-                  " measure=" << corrected_measure << " lambda=" << lambda << std::endl;
-
-    // calculate the correction due to the new centre frequency, if any
-    relative.set_wavelength( lambda );
-    delta = relative.evaluate();
 
     // remaining correction is due to change in corrected measure, if any
     relative.set_measure(relative_measure - corrected_measure);
