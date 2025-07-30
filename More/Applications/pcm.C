@@ -817,8 +817,20 @@ void pcm::set_impurity (const string& filename)
 void pcm::set_projection (const string& filename) try
 {
   cerr << "pcm: loading known projections from " << filename << endl;
-  ManualPolnCalibrator* cal = new ManualPolnCalibrator (filename);
-  projection = new VariableTransformationFile (cal);
+  auto cal = new ManualPolnCalibrator (filename);
+
+  if (!projection)
+  {
+    projection = new VariableTransformationFile (cal);
+    return;
+  }
+
+  auto confable = dynamic_cast<ConfigurableProjection*> (projection.get());
+  if (confable)
+  {
+    cerr << "pcm: setting the known projection of the configurable projection" << endl;
+    confable->set_projection(projection);
+  }
 }
 catch (Error& error)
 {
@@ -829,7 +841,15 @@ catch (Error& error)
 void pcm::set_configurable_projection (const string& filename) try
 {
   cerr << "pcm: loading configurable projection from " << filename << endl;
-  projection = new ConfigurableProjection (filename);
+  auto cal = new ConfigurableProjection (filename);
+
+  if (projection)
+  {
+    cerr << "pcm: setting the known projection of the configurable projection" << endl;
+    cal->set_projection(projection);    
+  }
+
+  projection = cal;
 }
 catch (Error& error)
 {

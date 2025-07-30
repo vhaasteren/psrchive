@@ -80,13 +80,19 @@ namespace Pulsar
     /*! \pre The backend should be fully corrected and calibrated, and the basis should be corrected */
     void calibrate (Archive*);
 
+    //! Set the projection from the antenna to the celestial reference frame
+    void set_projection (KnownVariableTransformation* known) { projection = known; }
+
+    //! Get the projection from the antenna to the celestial reference frame
+    KnownVariableTransformation* get_projection () { return projection; }
+
   protected:
 
     //! Configuration string
     std::string configuration;
 
     //! Known/fixed projection correction
-    VariableProjectionCorrection projection;
+    Reference::To<KnownVariableTransformation> projection;
 
     //! Model inserted between instrument and projection
     /*! This attribute is cloned in each new Transformation */

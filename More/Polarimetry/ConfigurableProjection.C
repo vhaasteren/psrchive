@@ -239,27 +239,29 @@ void ConfigurableProjection::construct (const string& text)
   throw Error (InvalidState, "ConfigurableProjection::construct",
                "yaml-cpp required and not available");
 #endif
+
+  projection = new VariableProjectionCorrection;
 }
 
 //! Set the Archive for which a tranformation will be computed
 void ConfigurableProjection::set_archive (const Archive* _archive)
 {
   VariableTransformationManager::set_archive (_archive);
-  projection.set_archive (_archive);
+  projection->set_archive (_archive);
 }
 
 //! Set the sub-integration for which a tranformation will be computed
 void ConfigurableProjection::set_subint (unsigned _subint)
 {
   VariableTransformationManager::set_subint (_subint);
-  projection.set_subint (_subint);
+  projection->set_subint (_subint);
 }
 
 //! Set the frequency channel for which a tranformation will be computed
 void ConfigurableProjection::set_chan (unsigned _chan)
 {
   VariableTransformationManager::set_chan (_chan);
-  projection.set_chan (_chan);
+  projection->set_chan (_chan);
 }
 
 void ConfigurableProjection::set_nchan (unsigned nchan)
@@ -328,8 +330,17 @@ MEAL::Argument::Value* ConfigurableProjection::new_value ()
 
   Calibration::VariableTransformation::Argument arg;
 
-  arg.pre_correction = projection.get_antenna_projection ();
-  arg.post_correction = projection.get_feed_projection ();
+  auto var = dynamic_cast<VariableProjectionCorrection*>(projection.get());
+
+  if (var)
+  {
+    arg.pre_correction = var->get_antenna_projection();
+    arg.post_correction = var->get_feed_projection();
+  }
+  else
+  {
+    arg.pre_correction = projection->get_value();
+  }
 
   for (auto param : parameters)
   {
@@ -350,9 +361,6 @@ MEAL::Argument::Value* ConfigurableProjection::new_value ()
 //! Return the value associated with the parameter name
 double ConfigurableProjection::get_value (const std::string& name)
 {
-  if (name == "ha")
-    return projection.get_correction()->get_mount()->get_hour_angle();
-
   // until a const interface with only get access is implemented ...
   Archive* data = const_cast<Archive*> ( archive.get() );
 

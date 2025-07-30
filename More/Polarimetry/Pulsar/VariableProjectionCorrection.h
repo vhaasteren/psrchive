@@ -39,10 +39,10 @@ namespace Pulsar {
     LabelledJones<double> get_value () override;
 
     //! Return true if the transformation is required
-    bool required () const;
+    bool required () const override;
 
     //! Return the description
-    std::string get_description () const;
+    std::string get_description () const override;
   };
 }
 
