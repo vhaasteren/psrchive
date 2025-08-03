@@ -229,6 +229,9 @@ namespace Calibration
     //! Activate time varations
     void engage_time_variations ();
 
+    //! Return true if time-variations are engaged
+    bool get_time_variations_engaged () const { return time_variations_engaged; }
+
     //! Set whether steps occur before or after cals
     void set_step_after_cal (bool flag = true);
 

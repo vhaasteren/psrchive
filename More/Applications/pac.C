@@ -1,21 +1,14 @@
 /***************************************************************************
  *
- *   Copyright (C) 2003-2011 by Willem van Straten
+ *   Copyright (C) 2003-2025 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
 
-#if 1
 #include "Pulsar/psrchive.h"
 #include "Pulsar/Interpreter.h"
-#else
-#include "Pulsar/Application.h"
-#include "Pulsar/StandardOptions.h"
-#include "Pulsar/UnloadOptions.h"
-#endif
 
 #include "Pulsar/CalibratorTypes.h"
-
 #include "Pulsar/Archive.h"
 #include "Pulsar/ArchiveMatch.h"
 
@@ -37,6 +30,7 @@
 
 #include "Pulsar/ConfigurableProjectionExtension.h"
 #include "Pulsar/ConfigurableProjection.h"
+#include "Pulsar/VariableTransformationFile.h"
 
 #include "Pulsar/ReflectStokes.h"
 #include "Pulsar/BackendFeed.h"
@@ -56,7 +50,7 @@ using namespace std;
 using namespace Pulsar;
 
 // A command line tool for calibrating Pulsar::Archives
-const char* args = "A:aBbC:cDd:Ee:fFGghIJ:j:K:k:lLM:m:Nn:O:op:PqQ:Rr:sSt:Tu:UvVwWxXyY:Z";
+const char* args = "A:aBbC:cDd:Ee:fFGghIiJ:j:K:k:LlM:m:Nn:O:oPp:Q:qRr:SsTt:Uu:VvWwXxY:yZ";
 
 void usage ()
 {
@@ -86,7 +80,8 @@ void usage ()
     "  -r filename    Use the specified receiver parameters file \n"
     "  -S             Use the complete Reception model \n"
     "  -s             Use the Polar Model \n"
-    "  -I             Correct ionospheric Faraday rotation using IRI\n"
+    "  -I             Correct ionospheric Faraday rotation using IRI \n"
+    "  -i             Perform the inverse of calibration \n"
     "  -x             Derive calibrator Stokes parameters from fluxcal data\n"
     "  -y             Always trust the Pointing::feed_angle attribute \n"
     "  -g             Fscrunch data to match number of channels of calibrator\n"
@@ -172,6 +167,8 @@ int main (int argc, char *argv[]) try
   bool do_backend = true;
   bool do_frontend = true;
 
+  bool do_calibration = true;
+
   bool use_fluxcal_stokes = false;
   bool fscrunch_data_to_cal = false;
   float outlier_threshold = 0.0;
@@ -256,10 +253,10 @@ int main (int argc, char *argv[]) try
 
     case 'V':
       {
-	cerr << "pac: increasing verbosity" << endl;
+        cerr << "pac: increasing verbosity" << endl;
         verbose = true;
-	static unsigned verbosity = 2;
-	verbosity ++;
+        static unsigned verbosity = 2;
+        verbosity ++;
         Archive::set_verbosity(verbosity);
       }
       break;
@@ -325,6 +322,11 @@ int main (int argc, char *argv[]) try
 
     case 'I':
       ionosphere = new IonosphereCalibrator;
+      break;
+
+    case 'i':
+      cerr << "pac: disabling calibration and enabling simulation" << endl;
+      do_calibration = false;
       break;
 
     case 'j':
@@ -683,7 +685,11 @@ int main (int argc, char *argv[]) try
   if (feed)
     dbase -> set_feed (feed);
 
+  // If -Y is used to load "known projections" (e.g. as computed by dreamBeam)
   Reference::To<ManualPolnCalibrator> known_projection;
+
+  // If the calibrator has a "configurable projection" it will incorporate the "known projections"
+  Reference::To<VariableTransformationFile> known_wrapper;
 
   if ( ! projection_file.empty() )
   {
@@ -808,9 +814,17 @@ int main (int argc, char *argv[]) try
         auto cpe = calarch->get<ConfigurableProjectionExtension>();
         if (cpe)
         {
-            cerr << "pac: using configurable projection (disabling frontend correction)" << endl;
-            projection = new ConfigurableProjection(cpe);
-            calibrate_frontend = false;
+          cerr << "pac: using configurable projection (disabling frontend correction)" << endl;
+          projection = new ConfigurableProjection(cpe);
+
+          if (known_projection)
+          {
+            if (!known_wrapper)
+              known_wrapper = new VariableTransformationFile (known_projection);
+
+            projection->set_projection(known_wrapper);
+          }
+          calibrate_frontend = false;
         }
       }
 
@@ -858,12 +872,20 @@ int main (int argc, char *argv[]) try
     if (projection)
     {
       cerr << "pac: Applying configurable projection transformation" << endl;
-      projection->calibrate(arch);
-    }
 
-    if (known_projection)
+      if (do_calibration)
+        projection->calibrate (arch);
+      else
+        projection->transform (arch);
+    }
+    else if (known_projection)
     {
-      known_projection->calibrate (arch);
+      cerr << "pac: Applying known projection transformation" << endl;
+
+      if (do_calibration)
+        known_projection->calibrate (arch);
+      else
+        known_projection->transform (arch);
     }
 
     if (do_special_projection && receiver)

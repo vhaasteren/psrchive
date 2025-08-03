@@ -17,6 +17,7 @@
 #include "Pulsar/IntegrationExpert.h"
 #include "MEAL/NvariateScalarFactory.h"
 
+// #define _DEBUG 1
 #include "debug.h"
 
 #if HAVE_YAMLCPP
@@ -340,6 +341,13 @@ MEAL::Argument::Value* ConfigurableProjection::new_value ()
   else
   {
     arg.pre_correction = projection->get_value();
+    arg.post_correction = Jones<double>::identity();
+  }
+
+  if (Archive::verbose > 3)
+  {
+    cerr << "ConfigurableProjection::new_value pre=" << arg.pre_correction << endl;
+    cerr << "ConfigurableProjection::new_value post=" << arg.post_correction << endl;
   }
 
   for (auto param : parameters)
@@ -381,17 +389,31 @@ double ConfigurableProjection::get_value (const std::string& name)
   // print with 15 digits of precision
   param += "%15";
 
+  // ensure that angles are reported in radians
+  Angle::default_type = Angle::Radians;
+
   double result = fromstring<double>( parser->get_value (param) );
 
-  DEBUG("ConfigurableProjection::get_value name=" << param << " val=" << result);
+  if (Archive::verbose > 2)
+    cerr << "ConfigurableProjection::get_value name=" << param << " val=" << result << endl;
 
   return result;
 }
 
-void ConfigurableProjection::calibrate (Archive* arch)
+void Pulsar::ConfigurableProjection::calibrate (Archive* arch)
 {
-  if (Archive::verbose > 2)
-    cerr << "ConfigurableProjection::calibrate" << endl;
+  transform_work (arch, "calibrate", true);
+}
+
+void Pulsar::ConfigurableProjection::transform (Archive* arch)
+{
+  transform_work (arch, "transform", false);
+}
+
+void Pulsar::ConfigurableProjection::transform_work (Archive* arch, const std::string& name, bool invert) try
+{
+  if (Archive::verbose)
+    cerr << "ConfigurableProjection::"+name << endl;
 
   set_archive (arch);
 
@@ -399,7 +421,7 @@ void ConfigurableProjection::calibrate (Archive* arch)
   unsigned nchan = arch->get_nchan();
 
   if (nchan != get_nchan())
-    throw Error (InvalidState, "ConfigurableProjection::calibrate",
+    throw Error (InvalidState, "ConfigurableProjection::"+name,
                  "Archive::nchan=%d != ConfigurableProjection::nchan=%d",
                  nchan, get_nchan());
 
@@ -411,23 +433,41 @@ void ConfigurableProjection::calibrate (Archive* arch)
 
     Integration* subint = arch->get_Integration (isub);
 
-    for (unsigned ichan=0; ichan < nchan; ichan++)
+    for (unsigned ichan=0; ichan < nchan; ichan++) try
     {
       set_chan (ichan);
       update ();
 
       if (get_transformation_valid(ichan))
       {
-        response[ichan] = inv(get_transformation(ichan)->get_transformation()->evaluate());
+        auto resp = get_transformation(ichan)->get_transformation()->evaluate();
+        if (Archive::verbose > 2)
+          cerr << "ConfigurableProjection::"+name+" isub=" << isub << " ichan=" << ichan 
+               << " response=" << resp << endl;  
+
+        if (invert)
+          response[ichan] = inv(resp);
+        else
+          response[ichan] = resp;
       }
       else
       {
-        DEBUG("ConfigurableProjection::calibrate bad chan=" << ichan);
+        DEBUG("ConfigurableProjection::"+name+" bad chan=" << ichan);
         response[ichan] = 0.0;
+        subint->set_weight(ichan,0);
       }
+    }
+    catch (Error& error)
+    {
+      cerr << "ConfigurableProjection::"+name+" ichan=" << ichan << " error=" << error << endl;
+      response[ichan] = 0.0;
+      subint->set_weight(ichan,0);
     }
 
     subint->expert()->transform (response);
   }
 }
-
+catch (Error& error)
+{
+  throw error += "ConfigurableProjection::" + name;
+}

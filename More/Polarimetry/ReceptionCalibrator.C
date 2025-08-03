@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *   Copyright (C) 2003-2012 by Willem van Straten
+ *   Copyright (C) 2003-2025 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -46,8 +46,6 @@ using namespace std;
 using Pulsar::ReceptionCalibrator;
 using Calibration::FluxCalManager;
 
-/*! The Archive passed to this constructor will be used to supply the first
-  guess for each pulse phase bin used to constrain the fit. */
 ReceptionCalibrator::ReceptionCalibrator (Calibrator::Type* _type)
 {
   type = _type;
@@ -433,8 +431,7 @@ void ReceptionCalibrator::add_data
   }
 }
 
-Calibration::SourceEstimate* ReceptionCalibrator::get_estimate (unsigned index,
-								unsigned ichan)
+Calibration::SourceEstimate* ReceptionCalibrator::get_estimate (unsigned index, unsigned ichan)
 {
   for (unsigned istate=0; istate < pulsar_estimate.size(); istate++)
   {
@@ -450,7 +447,7 @@ Calibration::SourceEstimate* ReceptionCalibrator::get_estimate (unsigned index,
 void ReceptionCalibrator::integrate_pulsar_data
 (const Calibration::CoherencyMeasurementSet& data)
 {
-  unsigned mchan = data.get_ichan();
+  unsigned ichan = data.get_ichan();
   MJD epoch = data.get_epoch();
 
   data.set_coordinates();
@@ -458,9 +455,9 @@ void ReceptionCalibrator::integrate_pulsar_data
   for (unsigned i=0; i < data.size(); i++)
   {
     unsigned index = data[i].get_input_index();
-    Calibration::SourceEstimate* estimate = get_estimate (index, mchan);
+    Calibration::SourceEstimate* estimate = get_estimate (index, ichan);
 
-    integrate_pulsar_data (data[i], estimate, epoch, mchan);
+    integrate_pulsar_data (data[i], estimate, epoch, ichan);
   }
 }
 
@@ -468,23 +465,28 @@ void ReceptionCalibrator::integrate_pulsar_data
 (const Calibration::CoherencyMeasurement& data,
  Calibration::SourceEstimate* estimate,
  const MJD& epoch,
- unsigned mchan) try
+ unsigned ichan) try
 {
   estimate->add_data_attempts ++;
 
+  if (Profile::verbose)
+    cerr << "ReceptionCalibrator::integrate_pulsar_data chan=" << ichan
+         << " calling Calibration::CoherencyMeasurement::set_coordinates" << endl;
+
   data.set_coordinates();
+
+  auto transformation = get_transformation (epoch, Signal::Pulsar, ichan);
 
   /* Correct the stokes parameters using the current best estimate of
      the instrument and the parallactic angle rotation before adding
      them to best estimate of the input state */
-    
-  unsigned path = model[mchan]->get_psr_path_index(epoch);
 
-  model[mchan]->get_equation()->set_transformation_index (path);
+  Jones< Estimate<double> > xform = transformation->evaluate();
 
-  Jones< Estimate<double> > correct;
-  correct = inv( model[mchan]->get_pulsar_transformation(epoch)->evaluate() );
+  // if (Profile::verbose)
+    cerr << "ReceptionCalibrator::integrate_pulsar_data chan=" << ichan << " xform=" << xform << endl;
 
+  auto correct = inv(xform);
   Stokes< Estimate<double> > stokes = data.get_stokes();
   stokes = transform( stokes, correct );
     
@@ -495,7 +497,7 @@ catch (Error& error)
   unsigned ibin = estimate->phase_bin;
 
   // if (verbose > 1)
-  cerr << "Pulsar::ReceptionCalibrator::add_data mchan=" << mchan 
+  cerr << "Pulsar::ReceptionCalibrator::add_data ichan=" << ichan 
        << " ibin=" << ibin << " error\n\t" << error.get_message() << endl;
   estimate->add_data_failures ++;  
 }

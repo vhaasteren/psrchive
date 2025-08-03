@@ -2224,9 +2224,9 @@ void SystemCalibrator::precalibrate (Archive* data)
   string reason;
   if (!calibrator_match (data, reason))
     throw Error (InvalidParam, "PulsarCalibrator::precalibrate",
-		 "mismatch between calibrator\n\t" 
-		 + get_calibrator()->get_filename() +
-                 " and\n\t" + data->get_filename() + reason);
+        "mismatch between calibrator\n\t" 
+        + get_calibrator()->get_filename() +
+        " and\n\t" + data->get_filename() + reason);
 
   unsigned nsub = data->get_nsubint ();
   unsigned nchan = data->get_nchan ();
@@ -2235,6 +2235,12 @@ void SystemCalibrator::precalibrate (Archive* data)
   if (nchan != model.size() && model.size() != 1)
     throw Error (InvalidState, "SystemCalibrator::precalibrate",
                  "model size=%u != data nchan=%u", model.size(), nchan);
+
+  for (unsigned ichan=0; ichan<nchan; ichan++)
+  {
+    assert (ichan < model.size());
+    model[ichan]->engage_time_variations();
+  }
 
   vector< Jones<float> > response (nchan);
 
@@ -2280,8 +2286,7 @@ void SystemCalibrator::precalibrate (Archive* data)
           cerr << "SystemCalibrator::precalibrate transformation not valid but model valid ichan=" << ichan << endl;
 
         if (verbose > 2)
-          cerr << "SystemCalibrator::precalibrate ichan=" << ichan 
-                << " zero weight" << endl;
+          cerr << "SystemCalibrator::precalibrate ichan=" << ichan << " zero weight" << endl;
 
         integration->set_weight (ichan, 0.0);
 
@@ -2413,11 +2418,17 @@ MEAL::Complex2* SystemCalibrator::get_transformation (const Archive* data, unsig
 {
   const Integration* integration = data->get_Integration (isubint);
   MJD epoch = integration->get_epoch();
+
+  return get_transformation (epoch, data->get_type(), ichan);
+}
+
+MEAL::Complex2* SystemCalibrator::get_transformation (const MJD& epoch, Signal::Source source, unsigned ichan)
+{
   VariableBackendEstimate* backend = model[ichan]->get_backend (epoch);
 
   IndexedProduct* product = 0;
   
-  switch ( data->get_type() )
+  switch ( source )
   {
   case Signal::Pulsar:
     if (verbose > 2)
@@ -2433,7 +2444,7 @@ MEAL::Complex2* SystemCalibrator::get_transformation (const Archive* data, unsig
 
   default:
     throw Error (InvalidParam, "SystemCalibrator::get_transformation",
-		 "unknown Archive type for " + data->get_filename() );
+		 "unknown transformation for " + tostring(source) );
   }
   
   ReceptionModel* equation = model[ichan]->get_equation();
@@ -2450,9 +2461,9 @@ MEAL::Complex2* SystemCalibrator::get_transformation (const Archive* data, unsig
 		 "measurement equation is not a congruence transformation");
 
   if (verbose > 2)
-    cerr << "SystemCalibrator::get_transformation set epoch=" << integration->get_epoch() << endl;
+    cerr << "SystemCalibrator::get_transformation set epoch=" << epoch << endl;
   
-  model[ichan]->time.set_value( integration->get_epoch() );
+  model[ichan]->time.set_value(epoch);
   return congruence->get_transformation();
 }
 

@@ -72,13 +72,23 @@ void Pulsar::ManualPolnCalibrator::add (const MJD& epoch, const Response& single
   response[current_response].add(single);
 }
 
-void Pulsar::ManualPolnCalibrator::calibrate (Archive* arch) try
+void Pulsar::ManualPolnCalibrator::calibrate (Archive* arch)
+{
+  transform_work (arch, "calibrate", true);
+}
+
+void Pulsar::ManualPolnCalibrator::transform (Archive* arch)
+{
+  transform_work (arch, "transform", false);
+}
+
+void Pulsar::ManualPolnCalibrator::transform_work (Archive* arch, const std::string& name, bool invert) try
 {
   if (verbose > 2)
-    cerr << "Pulsar::ManualPolnCalibrator::calibrate" << endl;
+    cerr << "Pulsar::ManualPolnCalibrator::" << name << endl;
 
   if (arch->get_npol() != 4)
-    throw Error (InvalidState, "Pulsar::ManualPolnCalibrator::calibrate", "Archive::npol != 4");
+    throw Error (InvalidState, "Pulsar::ManualPolnCalibrator::"+name, "Archive::npol != 4");
 
   for (unsigned isub=0; isub < arch->get_nsubint(); isub++)
   {
@@ -91,7 +101,9 @@ void Pulsar::ManualPolnCalibrator::calibrate (Archive* arch) try
     {
       double freq = subint->get_centre_frequency(ichan);
       auto& match = freq_response.match(freq);
-      response[ichan] = inv(match.get_response());
+      response[ichan] = match.get_response();
+      if (invert)
+        response[ichan] = inv(response[ichan]);
     }
 
     subint->expert()->transform (response);
@@ -100,7 +112,7 @@ void Pulsar::ManualPolnCalibrator::calibrate (Archive* arch) try
 }
 catch (Error& error)
 {
-  throw error += "Pulsar::ManualPolnCalibrator::calibrate";
+  throw error += "Pulsar::ManualPolnCalibrator::"+name;
 }
 
 MJD Pulsar::ManualPolnCalibrator::Response::load (const string& str)

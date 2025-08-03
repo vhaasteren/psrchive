@@ -80,8 +80,7 @@ const MEAL::Complex2* VariableTransformation::get_model () const
 }
 
 //! Set the multivariate function that constrains the specified parameter
-void VariableTransformation::set_constraint (unsigned index, 
-                                             MEAL::Nvariate<MEAL::Scalar>* func)
+void VariableTransformation::set_constraint (unsigned index, MEAL::Nvariate<MEAL::Scalar>* func)
 {
 #if _DEBUG
   cerr << "VariableTransformation::set_constrain this=" << this << " function=" << (void*) func;

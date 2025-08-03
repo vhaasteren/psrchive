@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *   Copyright (C) 2004 by Willem van Straten
+ *   Copyright (C) 2004-2025 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -10,19 +10,16 @@
 #include "Pulsar/CoherencyMeasurementSet.h"
 #include "Pulsar/ReceptionModelSolveMEAL.h"
 
-// #define _DEBUG
+// #define _DEBUG 1
 #include "debug.h"
 
 #include <assert.h>
 
 using namespace std;
 
-// #define _DEBUG 1
-
 Calibration::ReceptionModel::ReceptionModel ()
 {
   set_solver( new_default_Solver() );
-
   DEBUG("Calibration::ReceptionModel::ctor this=" << this << " solver=" << (void*) solver);
 }
 

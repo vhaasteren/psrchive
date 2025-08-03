@@ -4,7 +4,8 @@
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
-#include "MEAL/Polynomial.h"
+
+ #include "MEAL/Polynomial.h"
 
 #include "stringtok.h"
 #include "tostring.h"

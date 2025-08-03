@@ -433,6 +433,9 @@ float alignment_threshold = 4.0; // sigma
 // significance of phase shift required to automatically rotate in phase
 float auto_alignment_threshold = 0.0; // sigma
 
+// StandardPrepare::prepare calls Archive::centre to ensure that input data are aligned in phase
+bool align_phase = true;
+
 // total intensity profile of first archive, used to check for phase jumps
 Reference::To<DataSetManager> phase_std_manager;
 
@@ -818,10 +821,11 @@ void pcm::set_projection (const string& filename) try
 {
   cerr << "pcm: loading known projections from " << filename << endl;
   auto cal = new ManualPolnCalibrator (filename);
+  auto known = new VariableTransformationFile (cal);
 
   if (!projection)
   {
-    projection = new VariableTransformationFile (cal);
+    projection = known;
     return;
   }
 
@@ -829,7 +833,7 @@ void pcm::set_projection (const string& filename) try
   if (confable)
   {
     cerr << "pcm: setting the known projection of the configurable projection" << endl;
-    confable->set_projection(projection);
+    confable->set_projection(known);
   }
 }
 catch (Error& error)
@@ -845,8 +849,13 @@ void pcm::set_configurable_projection (const string& filename) try
 
   if (projection)
   {
-    cerr << "pcm: setting the known projection of the configurable projection" << endl;
-    cal->set_projection(projection);    
+    auto known = dynamic_cast<KnownVariableTransformation*> (projection.get());
+
+    if (known)
+    {
+      cerr << "pcm: setting the known projection of the configurable projection" << endl;
+      cal->set_projection(known);
+    }
   }
 
   projection = cal;
@@ -1002,8 +1011,7 @@ void pcm::add_options (CommandLine::Menu& menu)
   
   menu.add ("\n" "Output options:");
 
-  arg = menu.add (&unloader, &SystemCalibrator::Unloader::set_archive_class,
-		  'A', "class");
+  arg = menu.add (&unloader, &SystemCalibrator::Unloader::set_archive_class, 'A', "class");
   arg->set_help ("set the output archive class name");
 
   arg = menu.add (unload_path, 'O', "path");
@@ -1177,6 +1185,9 @@ void pcm::add_options (CommandLine::Menu& menu)
   arg = menu.add (this, &pcm::set_alignment_threshold, 'a', "bins");
   arg->set_help ("set the threshold for testing input data phase alignment");
 
+  arg = menu.add (align_phase, "noalign");
+  arg->set_help ("disable phase alignment using Archive::centre");
+
   arg = menu.add (normalize_by_invariant, 's');
   arg->set_help ("normalize Stokes parameters by total invariant interval");
 
@@ -1290,7 +1301,7 @@ void pcm::setup ()
     prepare = mult;
   }
 
-  if (normalize_calibrated_by_invariant)
+  if (normalize_calibrated_by_invariant || !align_phase)
   {
     /*
     By default, StandardPrepare::prepare calls Archive::centre(0.0) to ensure that all
@@ -1657,6 +1668,7 @@ void pcm::finalize ()
   else
   {
     cerr << "pcm: no valid solutions to unload" << endl;
+    return;
   }
 
   if (print_variation && get_time_variation())
@@ -2235,8 +2247,7 @@ void pcm::print_time_variation (SystemCalibrator* model)
 
   for (unsigned ichan = 0; ichan < nchan; ichan++)
   {
-    Calibration::SignalPath* path
-        = const_cast<Calibration::SignalPath*>( model->get_model(ichan) );
+    auto path = const_cast<Calibration::SignalPath*>( model->get_model(ichan) );
 
     if (!path->get_valid())
       continue;

@@ -38,6 +38,8 @@ LabelledJones<double> VariableTransformationFile::get_value ()
         << " det(J)=" << det(retval) << endl;
   }
 
+  cerr << "VariableTransformationFile::get_value chan=" << chan << " result=" << retval << endl;
+  
   return retval;
 }
 

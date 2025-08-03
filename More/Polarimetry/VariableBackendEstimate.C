@@ -384,8 +384,7 @@ catch (Error& error)
   throw error += "VariableBackendEstimate::disengage_time_variations";
 }
 
-void VariableBackendEstimate::unmap_variations (vector<unsigned>& imap,
-						MEAL::Complex2* composite) try
+void VariableBackendEstimate::unmap_variations (vector<unsigned>& imap, MEAL::Complex2* composite) try
 {
   MEAL::get_imap( composite, get_backend(), backend_imap );
       

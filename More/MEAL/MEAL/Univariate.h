@@ -103,10 +103,11 @@ namespace MEAL {
 template<class T>
 MEAL::Univariate<T>& MEAL::Univariate<T>::operator = (const Univariate& copy)
 { 
-  if (&copy != this) {
-    set_abscissa( copy.get_abscissa() ); 
-    T::operator=( copy );
-  }
+  if (&copy == this)
+    return *this;
+
+  set_abscissa( copy.get_abscissa() ); 
+  T::operator=( copy );
   return *this;
 }
 

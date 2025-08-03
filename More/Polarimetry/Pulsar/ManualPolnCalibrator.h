@@ -23,8 +23,11 @@ namespace Pulsar
     //! Loads content from specified file name
     virtual void load (const std::string& filename);
 
-    //! Calibrate the polarization of the given archive
+    //! Calibrate the polarization of the given observation
     void calibrate (Archive* archive);
+
+    //! Subject an observation to the transformation (inverse of calibration)
+    void transform (Archive*);
 
     //! The response at a single radio frequency
     class Response
@@ -103,6 +106,9 @@ namespace Pulsar
 
     //! Name of the file from which the entries were loaded
     std::string ascii_model_filename;
+
+    //! Performs the work for calibrate and transform
+    void transform_work (Archive* arch, const std::string& name, bool invert);
   };
 }
 

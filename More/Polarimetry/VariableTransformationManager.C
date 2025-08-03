@@ -7,6 +7,7 @@
 
 #include "Pulsar/VariableTransformationManager.h"
 
+// #define _DEBUG 1
 #include "debug.h"
 
 using namespace Pulsar;

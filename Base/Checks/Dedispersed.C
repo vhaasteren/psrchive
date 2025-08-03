@@ -40,7 +40,7 @@ void Pulsar::Dedispersed::check_relative (const Archive* archive, unsigned isubi
                 "Archive::dedispsersed is not set and Integration[%d]\n\t"
                 "has a Dedisperse Extension with the relative correction flag set", isubint);
   }
-  else
+  else if (archive->get_dispersion_measure() != 0)
   {
     if (!ext)
         throw Error (InvalidState, "Pulsar::Dedispersed::apply",

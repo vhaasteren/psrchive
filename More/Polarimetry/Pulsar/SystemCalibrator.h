@@ -298,6 +298,9 @@ namespace Pulsar
     //! Return the transformation to be used for precalibration
     virtual MEAL::Complex2* get_transformation (const Archive* data, unsigned isub, unsigned ichan);
 
+    //! Return the transformation to be used for precalibration
+    virtual MEAL::Complex2* get_transformation (const MJD& epoch, Signal::Source source, unsigned ichan);
+
     //! Return a Calibrator::new_solution with a CalibratorStokesExtension
     virtual Archive* new_solution (const std::string& archive_class) const;
 

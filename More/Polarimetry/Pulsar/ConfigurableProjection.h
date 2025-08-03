@@ -80,6 +80,9 @@ namespace Pulsar
     /*! \pre The backend should be fully corrected and calibrated, and the basis should be corrected */
     void calibrate (Archive*);
 
+    //! Subject an observation to the transformation (inverse of calibration)
+    void transform (Archive*);
+
     //! Set the projection from the antenna to the celestial reference frame
     void set_projection (KnownVariableTransformation* known) { projection = known; }
 
@@ -106,6 +109,9 @@ namespace Pulsar
     //! The effective number of dimensions / abscissa
     unsigned effective_ndim = 0;
     
+    //! Performs the work for calibrate and transform
+    void transform_work (Archive* arch, const std::string& name, bool invert);
+
   public:
 
     class Transformation : public VariableTransformationManager::Transformation
