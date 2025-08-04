@@ -30,6 +30,8 @@
 #include "substitute.h"
 #include "Ranges.h"
 
+#include "debug.h"
+
 using namespace std;
 
 string index_help (const string& cmd)
@@ -334,7 +336,7 @@ string Pulsar::ZapInterpreter::cal (const string& args)
       cp = get()->get<ConfigurableProjectionExtension>();
       if (cp)
       {
-        cerr << "zap cal robust ConfigurableProjectionExtension nparam=" << cp->get_nparam() << endl;
+        DEBUG("zap cal robust ConfigurableProjectionExtension nparam=" << cp->get_nparam());
         for (unsigned iparam=0; iparam < cp->get_nparam(); iparam++)
           robust_estimate_zapper->excise (iparam, cp.get(),
                                         &ConfigurableProjectionExtension::get_nchan,

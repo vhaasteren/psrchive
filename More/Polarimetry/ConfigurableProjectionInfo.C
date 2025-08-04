@@ -6,6 +6,8 @@
  ***************************************************************************/
 
 #include "Pulsar/ConfigurableProjectionInfo.h"
+#include "debug.h"
+
 #include <set>
 
 using namespace std;
@@ -24,7 +26,7 @@ Pulsar::ConfigurableProjection::Info::Info (const ConfigurableProjection* cal)
 
   unsigned nparam = 0;
 
-  cerr << "ConfigurableProjection::Info nchan=" << nchan << endl;
+  DEBUG("ConfigurableProjection::Info nchan=" << nchan);
 
   const MEAL::Complex2* valid = 0;
 
@@ -53,7 +55,7 @@ Pulsar::ConfigurableProjection::Info::Info (const ConfigurableProjection* cal)
 
   together = 2;
 
-  cerr << "Pulsar::ConfigurableProjection::Info " << parameters.size() << " out of " << nparam << " parameters have estimates" << endl; 
+  DEBUG("Pulsar::ConfigurableProjection::Info " << parameters.size() << "/" << nparam << " params have estimates");
 
   unsigned nclass = get_nclass();
   names.resize (nclass);
@@ -123,8 +125,7 @@ Estimate<float> Pulsar::ConfigurableProjection::Info::get_param (unsigned ichan,
 {
   if (! projection->get_transformation_valid(ichan) )
   {
-    cerr << "Pulsar::ConfigurableProjection::Info::get_param"
-		   " invalid ichan=" << ichan << endl;
+    DEBUG("Pulsar::ConfigurableProjection::Info::get_param invalid ichan=" << ichan);
     return 0;
   }
 

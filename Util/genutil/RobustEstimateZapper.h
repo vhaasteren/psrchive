@@ -11,7 +11,7 @@
 #ifndef __RobustEstimateZapper_h
 #define __RobustEstimateZapper_h
 
-#define _DEBUG 1
+// #define _DEBUG 1
 
 #include "TextInterface.h"
 #include "Estimate.h"

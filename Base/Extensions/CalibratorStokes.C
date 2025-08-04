@@ -111,10 +111,10 @@ Stokes<Estimate<float>> CalibratorStokes::get_stokes (unsigned ichan) const
 Estimate<float> CalibratorStokes::get_Estimate ( unsigned iparam, unsigned ichan ) const
 {
   assert (iparam < 3);
-  if (get_valid())
+  if (get_valid(ichan))
     return get_stokes(ichan)[iparam+1];
   else
-    return 0;
+    return 0.0;
 }
 
 void CalibratorStokes::set_Estimate (unsigned iparam, unsigned ichan, Estimate<float>& val)

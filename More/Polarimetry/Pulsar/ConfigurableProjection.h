@@ -123,7 +123,7 @@ namespace Pulsar
   
       //! The variable transformation
       Reference::To<Calibration::VariableTransformation> transformation;
-  
+
     public:
   
       Transformation (Calibration::VariableTransformation* xform)
@@ -140,7 +140,7 @@ namespace Pulsar
       const Calibration::VariableTransformation* get_transformation () const
       { return transformation; }
  
-      //! Its argument
+      //! The argument to the transformation
       MEAL::Argument* get_argument () { return &argument; }
     };
 
