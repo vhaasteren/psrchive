@@ -57,7 +57,7 @@ Pulsar::PolnCalibratorExtension::PolnCalibratorExtension
   unsigned nchan = get_nchan();
 
   if (Calibrator::verbose > 2)
-    cerr << "Pulsar::PolnCalibratorExtension nchan=" << nchan << endl;
+    cerr << "Pulsar::PolnCalibratorExtension nchan=" << nchan << " nparam=" << get_nparam() << endl;
 
   for (unsigned ichan=0; ichan < nchan; ichan++)
   {

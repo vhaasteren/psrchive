@@ -647,7 +647,9 @@ void SystemCalibrator::add_pulsar (const Archive* data, unsigned isub) try
   }
   catch (Error& error)
   {
-    cerr << "SystemCalibrator::add_pulsar ichan=" << ichan << " error\n" << error.get_message() << endl;
+    cerr << "SystemCalibrator::add_pulsar ichan=" << ichan << " error\n" << error << endl;
+    if (error.get_code() != InvalidParam)
+      throw error += "SystemCalibrator::add_pulsar";
   }
 
   if (verbose > 2)
@@ -655,7 +657,7 @@ void SystemCalibrator::add_pulsar (const Archive* data, unsigned isub) try
 }
 catch (Error& error)
 {
-  cerr << "SystemCalibrator::add_pulsar error" << error << endl;
+  cerr << "SystemCalibrator::add_pulsar error\n" << error << endl;
   throw error += "SystemCalibrator::add_pulsar subint";
 }
 
@@ -2067,9 +2069,8 @@ void SystemCalibrator::solve () try
   }
   catch (Error& error)
   {
-    if (verbose)
-      cerr << "SystemCalibrator::solve get_covariance error"
-	         << error << endl;
+    // if (verbose)
+      cerr << "SystemCalibrator::solve get_covariance error" << error << endl;
     model[ichan]->set_valid( false, error.get_message().c_str() );
   }
 

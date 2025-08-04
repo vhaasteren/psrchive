@@ -73,7 +73,7 @@ namespace Pulsar
         set_identity("van02eA1");
         add_alias("Polar");
       }
-      unsigned get_nparam () const { return 6; }
+      unsigned get_nparam () const { return 7; }
     };
     
     //! Full 7 degrees of freedom parameterization of Jones matrix

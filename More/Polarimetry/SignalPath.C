@@ -281,8 +281,7 @@ void SignalPath::build () try
   {
     equation = new Calibration::ReceptionModel;
     if (verbose)
-      cerr << "SignalPath::build new ReceptionModel"
-	" ptr=" << (void*) equation << endl;
+      cerr << "SignalPath::build new ReceptionModel ptr=" << (void*) equation << endl;
   }
 
   if (solver)
@@ -327,7 +326,8 @@ void SignalPath::build () try
 }
 catch (Error& error)
 {
-  error += "SignalPath::build";
+  cerr << "SignalPath::build exception " << error << endl;
+  throw error += "SignalPath::build";
 }
 
 void SignalPath::reset ()
@@ -336,7 +336,7 @@ void SignalPath::reset ()
   response->copy(initial_response);
 }
 
-VariableBackendEstimate* SignalPath::new_backend (Complex2* mine)
+VariableBackendEstimate* SignalPath::new_backend (Complex2* mine) try
 {
   if (!mine)
     mine = stepeach_pcal->clone();
@@ -359,8 +359,12 @@ VariableBackendEstimate* SignalPath::new_backend (Complex2* mine)
     
   return backend;
 }
+catch (Error& error)
+{
+  throw error += "SignalPath::new_backend";
+}
 
-void SignalPath::add_psr_path (VariableBackendEstimate* backend)
+void SignalPath::add_psr_path (VariableBackendEstimate* backend) try
 {
   if (!built)
     build ();
@@ -389,8 +393,12 @@ void SignalPath::add_psr_path (VariableBackendEstimate* backend)
   if (verbose)
     cerr << "SignalPath::add_psr_path index=" << product->get_index() << endl;
 }
+catch (Error& error)
+{
+  throw error += "SignalPath::add_psr_path";
+}
 
-void SignalPath::add_cal_path (VariableBackendEstimate* backend)
+void SignalPath::add_cal_path (VariableBackendEstimate* backend) try
 {
   if (!built)
     build ();
@@ -412,8 +420,11 @@ void SignalPath::add_cal_path (VariableBackendEstimate* backend)
   product->set_index (equation->get_transformation_index ());
 
   if (verbose)
-    cerr << "SignalPath::add_cal_path index="
-	 << product->get_index() << endl;
+    cerr << "SignalPath::add_cal_path index=" << product->get_index() << endl;
+}
+catch (Error& error)
+{
+  throw error += "SignalPath::add_cal_path";
 }
 
 //! Get the index for the signal path experienced by the reference source
@@ -642,12 +653,15 @@ void SignalPath::copy_transformation (const MEAL::Complex2* xform)
 
 VariableBackendEstimate* SignalPath::get_backend (const MJD& epoch) const
 {
+  if (backends.size() == 0)
+    throw Error (InvalidParam, "SignalPath::get_backend", "no backends");
+
   for (unsigned i=0; i<backends.size(); i++)
     if ( backends[i]->spans (epoch) )
       return backends[i];
 
   throw Error (InvalidParam, "SignalPath::get_backend",
-	       "epoch=" + epoch.printdays(13) + " not spanned");
+               "epoch=" + epoch.printdays(13) + " not spanned");
 }
 
 void SignalPath::integrate_calibrator (const MJD& epoch, const MEAL::Complex2* xform) try
@@ -690,8 +704,7 @@ void SignalPath::add_diff_phase_step (const MJD& mjd)
   set_free (2, mjd);
 }
 
-void SignalPath::add_step (const MJD& mjd,
-			   Calibration::VariableBackend* backend)
+void SignalPath::add_step (const MJD& mjd, Calibration::VariableBackend* backend)
 {
 #if _DEBUG
   cerr << "SignalPath::add_step epoch=" << mjd << endl;
@@ -725,7 +738,7 @@ void SignalPath::add_step (const MJD& mjd,
     for (unsigned i=0; i<backend->get_nparam(); i++)
     {
       if (backend->get_infit(i))
-	response->set_infit (i, false);
+        response->set_infit (i, false);
     }
   }
   
@@ -770,7 +783,7 @@ void SignalPath::add_step (const MJD& mjd,
 #if _DEBUG
   for (auto backend: backends)
     cerr << "   start=" << backend->get_start_time()
-	 << " end=" << backend->get_end_time() << endl;
+         << " end=" << backend->get_end_time() << endl;
 #endif
 }
 
@@ -1039,7 +1052,7 @@ void SignalPath::get_covariance( vector<double>& covar, const MJD& epoch ) try
     solution_response = response->clone ();
     for (unsigned iparam=0; iparam<backend->get_nparam(); iparam++)
       if (!solution_response->get_infit(iparam))
-	solution_response->set_param ( iparam, backend->get_param(iparam) );
+        solution_response->set_param ( iparam, backend->get_param(iparam) );
   }
   
   for (ptr = response_variation.begin(); ptr != response_variation.end(); ptr++)
