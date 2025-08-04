@@ -302,27 +302,25 @@ void PolnCalibratorExtension::Transformation::set_param
   params[i].set_value(value);
 }
 
-double
-PolnCalibratorExtension::Transformation::get_variance (unsigned i) 
-const
+double PolnCalibratorExtension::Transformation::get_variance (unsigned i) const
 {
   return params[i].get_variance();
 }
 
-void PolnCalibratorExtension::Transformation::set_variance
-(unsigned i, double var)
+void PolnCalibratorExtension::Transformation::set_variance (unsigned i, double var)
 {
   params[i].set_variance(var);
 }
 
-Estimate<double>
-PolnCalibratorExtension::Transformation::get_Estimate (unsigned i) const
+Estimate<double> PolnCalibratorExtension::Transformation::get_Estimate (unsigned i) const
 {
-  return params[i];
+  if (valid)
+    return params[i];
+  else
+    return 0.0;
 }
 
-void PolnCalibratorExtension::Transformation::set_Estimate
-(unsigned i, const Estimate<double>& e)
+void PolnCalibratorExtension::Transformation::set_Estimate (unsigned i, const Estimate<double>& e)
 {
   params[i] = e;
 }
@@ -480,8 +478,7 @@ PolnCalibratorExtension::Transformation::get_covariance () const
 }
 
 //! Set the covariance matrix of the model paramters
-void PolnCalibratorExtension::Transformation::set_covariance 
-(const vector< vector<double> >& covar)
+void PolnCalibratorExtension::Transformation::set_covariance (const vector<vector<double>>& covar)
 {
   unsigned nparam = get_nparam();
 
@@ -504,15 +501,13 @@ void PolnCalibratorExtension::Transformation::set_covariance
 }
 
 //! Get the covariance matrix efficiently
-void PolnCalibratorExtension::Transformation::get_covariance 
-(vector<double>& covar) const
+void PolnCalibratorExtension::Transformation::get_covariance (vector<double>& covar) const
 {
   covar = covariance;
 }
 
 //! Set the covariance matrix efficiently
-void PolnCalibratorExtension::Transformation::set_covariance
-(const vector<double>& covar)
+void PolnCalibratorExtension::Transformation::set_covariance (const vector<double>& covar)
 {
   covariance = covar;
 

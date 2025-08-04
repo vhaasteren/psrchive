@@ -132,8 +132,7 @@ void ConfigurableProjectionExtension::set_has_covariance (bool has)
   has_covariance = has;
 }
 
-void ConfigurableProjectionExtension::range_check (unsigned ichan,
-                                       const char* method) const
+void ConfigurableProjectionExtension::range_check (unsigned ichan, const char* method) const
 {
   if (ichan >= response.size())
     throw Error (InvalidRange, method, "ichan=%d >= nchan=%d",
@@ -162,8 +161,8 @@ ConfigurableProjectionExtension::get_Estimate ( unsigned iparam, unsigned ichan 
   return get_transformation(ichan)->get_Estimate(iparam);
 }
 
-void ConfigurableProjectionExtension::set_Estimate ( unsigned iparam, unsigned ichan,
-                                             const Estimate<float>& datum )
+void ConfigurableProjectionExtension::set_Estimate (unsigned iparam, unsigned ichan,
+                                                    const Estimate<float>& datum)
 {
 #if _DEBUG
   cerr << "ConfigurableProjectionExtension::set_Estimate iparam=" << iparam
@@ -185,8 +184,7 @@ void ConfigurableProjectionExtension::construct ()
   }
 }
 
-void ConfigurableProjectionExtension::frequency_append (Archive* to,
-						const Archive* from)
+void ConfigurableProjectionExtension::frequency_append (Archive* to, const Archive* from)
 {
   const ConfigurableProjectionExtension* ext = from->get<ConfigurableProjectionExtension>();
   if (!ext)
@@ -215,39 +213,31 @@ ConfigurableProjectionExtension::Transformation::Transformation ()
   valid = true;
 }
 
-unsigned
-ConfigurableProjectionExtension::Transformation::get_nparam() const
+unsigned ConfigurableProjectionExtension::Transformation::get_nparam() const
 {
   return params.size();
 }
 
 //! Get the name of the specified model parameter
-string
-ConfigurableProjectionExtension::Transformation::get_param_name (unsigned i) const
+string ConfigurableProjectionExtension::Transformation::get_param_name (unsigned i) const
 {
   return names[i];
 }
 
 //! Set the name of the specified model parameter
-void
-ConfigurableProjectionExtension::Transformation::set_param_name (unsigned i,
-							 const string& n)
+void ConfigurableProjectionExtension::Transformation::set_param_name (unsigned i, const string& n)
 {
   names[i] = n;
 }
 
 //! Get the description of the specified model parameter
-string
-ConfigurableProjectionExtension::Transformation::get_param_description (unsigned i)
-  const
+string ConfigurableProjectionExtension::Transformation::get_param_description (unsigned i) const
 {
   return descriptions[i];
 }
 
 //! Set the description of the specified model parameter
-void
-ConfigurableProjectionExtension::Transformation::set_param_description 
-(unsigned i, const string& n)
+void ConfigurableProjectionExtension::Transformation::set_param_description (unsigned i, const string& n)
 {
   descriptions[i] = n;
 }
@@ -284,14 +274,15 @@ void ConfigurableProjectionExtension::Transformation::set_variance
   params[i].set_variance(var);
 }
 
-Estimate<double>
-ConfigurableProjectionExtension::Transformation::get_Estimate (unsigned i) const
+Estimate<double> ConfigurableProjectionExtension::Transformation::get_Estimate (unsigned i) const
 {
-  return params[i];
+  if (valid)
+    return params[i];
+  else
+    return 0.0;
 }
 
-void ConfigurableProjectionExtension::Transformation::set_Estimate
-(unsigned i, const Estimate<double>& e)
+void ConfigurableProjectionExtension::Transformation::set_Estimate (unsigned i, const Estimate<double>& e)
 {
   params[i] = e;
 }
@@ -307,8 +298,7 @@ void ConfigurableProjectionExtension::Transformation::set_valid (bool flag)
 }
 
 //! Get the covariance matrix of the model paramters
-vector< vector<double> >
-ConfigurableProjectionExtension::Transformation::get_covariance () const
+vector<vector<double>> ConfigurableProjectionExtension::Transformation::get_covariance () const
 {
   unsigned nparam = get_nparam();
 
@@ -335,8 +325,7 @@ ConfigurableProjectionExtension::Transformation::get_covariance () const
 }
 
 //! Set the covariance matrix of the model paramters
-void ConfigurableProjectionExtension::Transformation::set_covariance 
-(const vector< vector<double> >& covar)
+void ConfigurableProjectionExtension::Transformation::set_covariance (const vector< vector<double> >& covar)
 {
   unsigned nparam = get_nparam();
 
@@ -359,15 +348,13 @@ void ConfigurableProjectionExtension::Transformation::set_covariance
 }
 
 //! Get the covariance matrix efficiently
-void ConfigurableProjectionExtension::Transformation::get_covariance 
-(vector<double>& covar) const
+void ConfigurableProjectionExtension::Transformation::get_covariance (vector<double>& covar) const
 {
   covar = covariance;
 }
 
 //! Set the covariance matrix efficiently
-void ConfigurableProjectionExtension::Transformation::set_covariance
-(const vector<double>& covar)
+void ConfigurableProjectionExtension::Transformation::set_covariance (const vector<double>& covar)
 {
   covariance = covar;
 

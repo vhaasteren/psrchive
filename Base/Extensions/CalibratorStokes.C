@@ -18,7 +18,6 @@ CalibratorStokes::CalibratorStokes ()
 {
   // the default behaviour of pcm since 2002
   coupling_point = BeforeBasis;
-
   current = 0;
 }
 
@@ -93,8 +92,7 @@ bool CalibratorStokes::get_valid (unsigned ichan) const
 }
 
 //! Set the Stokes parameters of the specified frequency channel
-void CalibratorStokes::set_stokes (unsigned ichan,
-				   const Stokes< Estimate<float> >& s)
+void CalibratorStokes::set_stokes (unsigned ichan, const Stokes< Estimate<float> >& s)
 {
   range_check (ichan, "CalibratorStokes::set_stokes");
 
@@ -103,23 +101,23 @@ void CalibratorStokes::set_stokes (unsigned ichan,
 }
 
 //! Get the Stokes parameters of the specified frequency channel
-Stokes< Estimate<float> > 
-CalibratorStokes::get_stokes (unsigned ichan) const
+Stokes<Estimate<float>> CalibratorStokes::get_stokes (unsigned ichan) const
 {
   range_check (ichan, "CalibratorStokes::get_stokes");
 
   return stokes[ichan];
 }
 
-Estimate<float>
-CalibratorStokes::get_Estimate ( unsigned iparam, unsigned ichan ) const
+Estimate<float> CalibratorStokes::get_Estimate ( unsigned iparam, unsigned ichan ) const
 {
   assert (iparam < 3);
-  return get_stokes(ichan)[iparam+1];
+  if (get_valid())
+    return get_stokes(ichan)[iparam+1];
+  else
+    return 0;
 }
 
-void CalibratorStokes::set_Estimate (unsigned iparam, unsigned ichan,
-                                     Estimate<float>& val)
+void CalibratorStokes::set_Estimate (unsigned iparam, unsigned ichan, Estimate<float>& val)
 {
   range_check (ichan, "CalibratorStokes::get_Estimate");
   assert (iparam < 3);
@@ -234,18 +232,18 @@ CalibratorStokes::PolnVector* CalibratorStokes::get_poln (unsigned ichan)
 class CalibratorStokes::Interface : public TextInterface::To<CalibratorStokes>
 {
 public:
-  Interface( CalibratorStokes *s_instance = NULL )
+  Interface (CalibratorStokes *s_instance = nullptr)
   {
     if (s_instance)
       set_instance (s_instance);
 
-    add( &CalibratorStokes::get_coupling_point,
-	 &CalibratorStokes::set_coupling_point,
-	 "coupling", "Point at which reference source is coupled" );
+    add (&CalibratorStokes::get_coupling_point,
+         &CalibratorStokes::set_coupling_point,
+         "coupling", "Point at which reference source is coupled");
     
-    import( "p", PolnVector::Interface(),
-	    &CalibratorStokes::get_poln,
-	    &CalibratorStokes::get_nchan );
+    import ("p", PolnVector::Interface(),
+            &CalibratorStokes::get_poln,
+            &CalibratorStokes::get_nchan);
   }
 };
 
@@ -280,14 +278,12 @@ CalibratorStokes::CouplingPoint string2CouplingPoint (const string& ss)
 	       "Unknown point '" + ss + "'");
 }
 
-std::ostream& Pulsar::operator << (std::ostream& ostr,
-				  CalibratorStokes::CouplingPoint point)
+std::ostream& Pulsar::operator << (std::ostream& ostr, CalibratorStokes::CouplingPoint point)
 {
   return ostr << CouplingPoint2string(point);
 }
 
-std::istream& Pulsar::operator >> (std::istream& is,
-				   CalibratorStokes::CouplingPoint& point)
+std::istream& Pulsar::operator >> (std::istream& is, CalibratorStokes::CouplingPoint& point)
 {
   return extraction (is, point, string2CouplingPoint);
 }
