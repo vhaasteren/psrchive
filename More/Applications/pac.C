@@ -325,8 +325,13 @@ int main (int argc, char *argv[]) try
       break;
 
     case 'i':
-      cerr << "pac: disabling calibration and enabling simulation" << endl;
+      cerr << "pac: disabling calibration and inducing effects" << endl;
       do_calibration = false;
+      do_fluxcal = false;
+      do_polncal = false;
+      do_backend = false;
+      do_frontend = false;
+      unload_ext = "sim";  // "simulated"
       break;
 
     case 'j':
@@ -851,7 +856,7 @@ int main (int argc, char *argv[]) try
     else
       cerr << "pac: Frontend corrections disabled." << endl;
 
-    bool do_special_projection = projection || known_projection;
+    bool do_special_projection = do_calibration && (projection || known_projection);
 
     Receiver* receiver = arch->get<Receiver>();
 

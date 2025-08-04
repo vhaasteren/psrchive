@@ -1173,8 +1173,7 @@ void SystemCalibrator::submit_pulsar_data () try
       submit_pulsar_data( data );
 
       if (verbose > 2)
-        cerr << "SystemCalibrator::submit_pulsar_data ichan="
-            << ichan << " integrate_pulsar_data" << endl;
+        cerr << "SystemCalibrator::submit_pulsar_data ichan=" << ichan << " integrate_pulsar_data" << endl;
 
       // add pulsar data to mean estimate used as initial guess
       integrate_pulsar_data( data );
@@ -1196,21 +1195,21 @@ catch (Error& error)
 void SystemCalibrator::submit_pulsar_data
 ( Calibration::CoherencyMeasurementSet& measurements) try
 {
-  unsigned mchan = measurements.get_ichan();
+  unsigned ichan = measurements.get_ichan();
   MJD epoch = measurements.get_epoch();
 
 #if _DEBUG
-    cerr << "SystemCalibrator::submit_pulsar_data ichan=" << mchan
+    cerr << "SystemCalibrator::submit_pulsar_data ichan=" << ichan
          << " model.size=" << model.size() << endl;
 #endif
     
-  VariableBackendEstimate* backend = model[mchan]->get_backend (epoch);
+  VariableBackendEstimate* backend = model[ichan]->get_backend (epoch);
   IndexedProduct* product = backend->get_psr_response ();
 
   if (!product->has_index())
   {
     DEBUG("SystemCalibrator::submit_pulsar_data call add_psr_path");
-    model[mchan]->add_psr_path (backend);
+    model[ichan]->add_psr_path (backend);
   }
     
   measurements.set_transformation_index (product->get_index ());
@@ -1221,11 +1220,24 @@ void SystemCalibrator::submit_pulsar_data
     cerr << " " << m.get_input_index();
   cerr << endl;
 #endif
-  
-  DEBUG("SystemCalibrator::submit_pulsar_data chan=" << mchan);
-  model[mchan]->get_equation()->add_data (measurements);
 
-  model[mchan]->add_observation_epoch (epoch);
+  if (normalize_by_invariant)
+  {
+    measurements.set_coordinates();
+    for (auto& measurement : measurements)
+    {
+      measurement.set_coordinates();
+      auto transformation = get_transformation (epoch, Signal::Pulsar, ichan);
+      Jones< Estimate<double> > xform = transformation->evaluate();
+      double determinant = std::abs(det(xform)).get_value();
+      measurement.scale(determinant);
+    }
+  }
+
+  DEBUG("SystemCalibrator::submit_pulsar_data chan=" << ichan);
+  model[ichan]->get_equation()->add_data (measurements);
+
+  model[ichan]->add_observation_epoch (epoch);
   backend->add_weight (1.0);
 }
 catch (Error& error)

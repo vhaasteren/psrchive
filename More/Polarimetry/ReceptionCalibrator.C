@@ -411,15 +411,14 @@ void ReceptionCalibrator::add_data
   DEBUG("Pulsar::ReceptionCalibrator::add_data standard_data=" << standard_data.ptr()
         << " stats=" << standard_data->get_poln_stats()->get_stats());
 
-  try {
-
+  try
+  {
     Stokes< Estimate<double> > stokes = standard_data->get_stokes( ibin );
 
-    // NOTE: the measured states are not corrected
+    // NOTE: the measured states are not corrected / calibrated
     Calibration::CoherencyMeasurement state (estimate->input_index);
     state.set_stokes( stokes );
     bins.push_back ( state );
-
   }
   catch (Error& error)
   {
@@ -483,7 +482,7 @@ void ReceptionCalibrator::integrate_pulsar_data
 
   Jones< Estimate<double> > xform = transformation->evaluate();
 
-  // if (Profile::verbose)
+  if (Profile::verbose)
     cerr << "ReceptionCalibrator::integrate_pulsar_data chan=" << ichan << " xform=" << xform << endl;
 
   auto correct = inv(xform);

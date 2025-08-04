@@ -20,8 +20,7 @@ CoherencyMeasurementSet::~CoherencyMeasurementSet ()
 }
 
 //! Set the transformation through which the measurements are made
-void 
-CoherencyMeasurementSet::set_transformation_index (unsigned index)
+void CoherencyMeasurementSet::set_transformation_index (unsigned index)
 {
   transformation_index = index;
 }

@@ -209,3 +209,9 @@ void ObservationUncertainty::add (const Uncertainty* other)
     inv_variance[ipol] = complex<double>( inv_re, inv_im );
   }
 }
+
+//! Scale the variance by the square of a scalar
+void ObservationUncertainty::scale (double x)
+{
+  inv_variance /= x*x;
+}

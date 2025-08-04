@@ -117,7 +117,7 @@ void CoherencyMeasurement::set_stokes
 
 //! Set the measured complex Stokes parameters and the variance functions
 void CoherencyMeasurement::set_stokes
-(const Stokes< complex<double> >& stokes, const Uncertainty* var)
+(const Stokes< complex<double> >& stokes, Uncertainty* var)
 {
   uncertainty = var;
 
@@ -206,3 +206,9 @@ void CoherencyMeasurement::set_coordinates () const
     coordinates[ic]->apply();
 }
 
+void CoherencyMeasurement::scale (double x)
+{
+  rho *= x;
+  variance *= x*x;
+  uncertainty->scale(x);
+}
