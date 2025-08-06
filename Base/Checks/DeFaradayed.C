@@ -132,6 +132,14 @@ void Pulsar::DeFaradayed::check_absolute (const Archive* archive, unsigned isubi
 
   if (archive_corrected != integration_corrected)
   {
+    // special case: in old files, aux:rmc may equal 1 even when there is no int:aux:rm to correct
+    if (!integration_corrected && ext->get_absolute()->get_measure() == 0.0)
+    {
+      if (Integration::verbose)
+        cerr << "Pulsar::DeFaradayed::check_absolute allowing correction mismatch for 0 RM" << endl;
+      return;
+    }
+
     throw Error (InvalidState, "Pulsar::DeFaradayed::apply",
                  archive_description + "\n\tAND\n\t" + integration_description); 
   }
