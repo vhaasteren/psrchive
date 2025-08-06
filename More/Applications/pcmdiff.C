@@ -71,8 +71,7 @@ Pulsar::PolnCalibrator* load_calibrator (const string& filename,
   calibrator = new Pulsar::PolnCalibrator (archive);
 
   if (verbose)
-    cerr << "pcmdiff: Archive Calibrator with nchan=" 
-	 << calibrator->get_nchan() << endl;
+    cerr << "pcmdiff: Archive Calibrator with nchan=" << calibrator->get_nchan() << endl;
 
   unsigned ichan = 0;
 
@@ -80,9 +79,12 @@ Pulsar::PolnCalibrator* load_calibrator (const string& filename,
     calibrator->set_transformation_invalid (zapchan[ichan], "pcmdiff: zapped by user");
 
   calibrator_stokes = archive->get<Pulsar::CalibratorStokes>();
-    
-  for (ichan=0; ichan<zapchan.size(); ichan++)
-    calibrator_stokes->set_valid (zapchan[ichan], false);
+  
+  if (calibrator_stokes)
+  {
+    for (ichan=0; ichan<zapchan.size(); ichan++)
+      calibrator_stokes->set_valid (zapchan[ichan], false);
+  }
 
   return calibrator.release();
 }
@@ -238,7 +240,8 @@ int main (int argc, char** argv) try
 
     case 's':
       compare = load_calibrator (optarg, zapchan);
-      compare_stokes = calibrator_stokes;
+      if (calibrator_stokes)
+        compare_stokes = calibrator_stokes;
       break;
 
     case 'S':
@@ -337,7 +340,9 @@ int main (int argc, char** argv) try
       if (!compare->get_transformation_valid(comchan))
       {
         calibrator->set_transformation_invalid(calchan, "pcmdiff: invalid in solution being compared");
-        calibrator_stokes->set_valid(calchan, false);
+
+        if (calibrator_stokes)
+          calibrator_stokes->set_valid(calchan, false);
       }
 
       if (!calibrator->get_transformation_valid(calchan))
@@ -364,14 +369,17 @@ int main (int argc, char** argv) try
       }
       
       for (unsigned iparam=0; iparam < nparam; iparam++)
+      {
         cal->set_Estimate(iparam,
                           cal->get_Estimate(iparam) -
                           com->get_Estimate(iparam));
+      }
 
-      calibrator_stokes->set_stokes
-        ( calchan,
-          calibrator_stokes->get_stokes(calchan) -
-          compare_stokes->get_stokes(comchan) );
+      if (calibrator_stokes && compare_stokes)
+      {
+        auto diff = calibrator_stokes->get_stokes(calchan) - compare_stokes->get_stokes(comchan);
+        calibrator_stokes->set_stokes (calchan, diff);
+      }
     }
 
     if (calfac > 1)
@@ -381,7 +389,8 @@ int main (int argc, char** argv) try
       for (unsigned ichan=0; ichan < nchan; ichan++)
         for (unsigned ifac=1; ifac < calfac; ifac++) {
           calibrator->set_transformation_invalid(ichan*calfac+ifac, "pcmdiff: extra channel");
-          calibrator_stokes->set_valid(ichan*calfac+ifac, false);
+          if (calibrator_stokes)
+            calibrator_stokes->set_valid(ichan*calfac+ifac, false);
         }
     }
 
@@ -419,32 +428,35 @@ int main (int argc, char** argv) try
 
       diff.resize (nchan);
 
-      nparam = 3;
-
-      for (unsigned iparam=0; iparam<nparam; iparam++)
+      if (calibrator_stokes)
       {
-        unsigned have_chan = 0;
+        nparam = 3;
 
-        for (unsigned ichan=0; ichan < nchan; ichan++)
+        for (unsigned iparam=0; iparam<nparam; iparam++)
         {
-          if (!calibrator_stokes->get_valid(ichan))
-            continue;
+          unsigned have_chan = 0;
 
-          Stokes< Estimate<double> > S = calibrator_stokes->get_stokes (ichan);
+          for (unsigned ichan=0; ichan < nchan; ichan++)
+          {
+            if (!calibrator_stokes->get_valid(ichan))
+              continue;
 
-          diff[have_chan] = S[iparam+1];
-          have_chan++;
+            Stokes< Estimate<double> > S = calibrator_stokes->get_stokes (ichan);
+
+            diff[have_chan] = S[iparam+1];
+            have_chan++;
+          }
+
+          diff.resize (have_chan);
+
+          double chisq = get_chisq (diff);
+          double maxout = get_max_outlier (diff);
+          
+          cout << filenames[ifile]
+              << " ical= " << iparam
+              << " chisq= " << chisq
+              << " maxout= " << maxout << endl;
         }
-
-        diff.resize (have_chan);
-
-        double chisq = get_chisq (diff);
-        double maxout = get_max_outlier (diff);
-        
-        cout << filenames[ifile]
-            << " ical= " << iparam
-            << " chisq= " << chisq
-            << " maxout= " << maxout << endl;
       }
     }
 #if HAVE_PGPLOT
@@ -453,7 +465,7 @@ int main (int argc, char** argv) try
       cpgpage ();
       plotter.plot (calibrator);
       
-      if (plot_calibrator_stokes)
+      if (plot_calibrator_stokes && calibrator_stokes)
       {
         cpgpage ();
         plotter.plot( new Pulsar::CalibratorStokesInfo (calibrator_stokes),
