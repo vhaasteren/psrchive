@@ -166,7 +166,7 @@ void pointer_tracker_remove(Reference::Able *ptr)
 %ignore Pulsar::FrontendCorrection::get_transformation(unsigned);
 %ignore Pulsar::FrontendCorrection::get_basis();
 %ignore Pulsar::FrontendCorrection::get_projection(unsigned);
-%ignore Pulsar::FaradayRotation::get_identity();
+%ignore Pulsar::FaradayRotation::get_identity() const;
 
 // Also does not use the assignment operator
 %ignore Pulsar::Archive::operator=(const Archive&);
