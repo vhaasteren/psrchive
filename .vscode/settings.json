@@ -1,5 +1,13 @@
 {
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
-  "editor.detectIndentation": false
+  "editor.detectIndentation": false,
+  "files.associations": {
+    "pcmdiff.C": "cpp",
+    "psrdnu.C": "cpp",
+    "example.C": "cpp",
+    "pam.C": "cpp",
+    "pdmp.C": "cpp",
+    "FortranSNR.C": "cpp"
+  }
 }

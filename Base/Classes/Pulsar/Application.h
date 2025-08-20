@@ -57,7 +57,7 @@ namespace Pulsar {
     std::vector< Reference::To<Options> > options;
 
     //! Add command line options
-    virtual void add_options (CommandLine::Menu&) = 0;
+    virtual void add_options (CommandLine::Menu&) { }
 
     //! Parse the command line options
     virtual void parse (int argc, char** argv);
