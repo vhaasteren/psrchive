@@ -4,6 +4,9 @@
 AC_PREREQ(2.57)
 AC_INIT([PSRCHIVE],[2025-08-21],[psrchive-developers@lists.sourceforge.net])
 
+AUTOCONF_VERSION=m4_defn([AC_AUTOCONF_VERSION])
+AC_SUBST(AUTOCONF_VERSION)
+
 # Dependencies
 PKG_PROG_PKG_CONFIG
 PKG_INSTALLDIR
