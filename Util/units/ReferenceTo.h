@@ -12,10 +12,12 @@
 #define __psrchive_util_units_ReferenceTo_h
 
 // #define _DEBUG 1
+//
 #include "debug.h"
 #include "ReferenceAble.h"
 #include "Error.h"
 
+#include <type_traits>
 #include <typeinfo>
 #include <string>
 
@@ -56,8 +58,35 @@ namespace Reference {
     //! Comparison operator
     bool operator != (const Type* ptr) const;
 
-    //! Work around "warning: ISO C++ says that these are ambiguous
-    /*! even though the worst conversion for the first is better than the worst conversion for the second" */
+    //! Comparison operator 
+    /*! 
+     * This overloaded operator is 
+     *  - prioritized over ‘operator==(Type*, Type*)’ <built-in> 
+     *  - enabled only if Type is not const (e.g. Reference::To<const T>)
+     */ 
+    template <typename U = Type>
+    typename std::enable_if<!std::is_const<U>::value, bool>::type
+    operator == (U* ptr) const { return is_equal_to(ptr); }
+
+    //! Comparison operator
+    /*!
+     * This overloaded operator is
+     *  - prioritized over ‘operator!=(Type*, Type*)’ <built-in>
+     *  - enabled only if Type is not const (e.g. Reference::To<const T>)
+     */
+    template <typename U = Type>
+    typename std::enable_if<!std::is_const<U>::value, bool>::type
+    operator != (U* ptr) const { return !is_equal_to(ptr); }
+
+    //! Comparison operator
+    /*! This version is prioritized over ‘operator!=(Type*, Type*)’ <built-in> */
+    bool operator == (std::nullptr_t) const;
+
+    //! Comparison operator
+    /*! This version is prioritized over ‘operator!=(Type*, Type*)’ <built-in> */
+    bool operator != (std::nullptr_t) const;
+
+    //! Worker method for all six comparison operator overloads
     bool is_equal_to (const Type* ptr) const;
 
     //! Cast to Type* operator
@@ -104,14 +133,28 @@ namespace Reference {
 template<class Type, bool active>
 bool Reference::To<Type,active>::operator == (const Type* ptr) const
 {
-  DEBUG("Reference::To<"+name()+">::operator ==");
+  DEBUG("Reference::To<"+name()+">::operator == const Type*");
   return is_equal_to(ptr);
 }
 
 template<class Type, bool active>
 bool Reference::To<Type,active>::operator != (const Type* ptr) const
 {
-  DEBUG("Reference::To<"+name()+">::operator !=");
+  DEBUG("Reference::To<"+name()+">::operator != const Type*");
+  return !is_equal_to(ptr);
+}
+
+template<class Type, bool active>
+bool Reference::To<Type,active>::operator == (std::nullptr_t ptr) const
+{
+  DEBUG("Reference::To<"+name()+">::operator == std::nullptr_t");
+  return is_equal_to(ptr);
+}
+
+template<class Type, bool active>
+bool Reference::To<Type,active>::operator != (std::nullptr_t ptr) const
+{
+  DEBUG("Reference::To<"+name()+">::operator != std::nullptr_t");
   return !is_equal_to(ptr);
 }
 
