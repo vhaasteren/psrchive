@@ -41,22 +41,11 @@ namespace Pulsar
     //! Set the frequency channel for which a tranformation will be computed
     void set_chan (unsigned _chan);
 
-    class Transformation;
-
     //! Set the number of frequency channels with a unique Transformation
     void set_nchan (unsigned nchan) override;
 
-    //! Return the Transformation for the specified channel
-    Transformation* get_transformation (unsigned ichan) override;
-
     //! Return a newly constructed Argument::Value for the current archive / subint / chan
     MEAL::Argument::Value* new_value () override;
-
-    //! Return the Transformation instance for the specified channel
-    const Transformation* get_transformation (unsigned ichan) const;
-
-    //! Return true if the speficied channel has a valid solution
-    bool get_transformation_valid (unsigned ichan) const;
 
     //! Get the number of frequency channels
     unsigned get_nchan () const;
@@ -104,8 +93,6 @@ namespace Pulsar
     //! Names of Archive attributes assigned to each abscissa/dimension
     std::map< unsigned, std::vector<std::string> > parameters;
 
-    std::vector< Reference::To<Transformation> > xforms;
-
     //! The effective number of dimensions / abscissa
     unsigned effective_ndim = 0;
     
@@ -144,6 +131,19 @@ namespace Pulsar
       MEAL::Argument* get_argument () { return &argument; }
     };
 
+    //! Return the Transformation for the specified channel
+    Transformation* get_transformation (unsigned ichan) override;
+
+    //! Return the Transformation instance for the specified channel
+    const Transformation* get_transformation (unsigned ichan) const;
+
+    //! Return true if the speficied channel has a valid solution
+    bool get_transformation_valid (unsigned ichan) const;
+
+  protected:
+
+    //! The Transformation instances for each channel
+    std::vector< Reference::To<Transformation> > xforms;
   };
 
   void copy (MEAL::Complex2* to, const ConfigurableProjectionExtension::Transformation* from);
