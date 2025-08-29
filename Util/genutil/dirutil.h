@@ -5,7 +5,7 @@
  *
  ***************************************************************************/
 
- #ifndef __DIRUTILS_H
+#ifndef __DIRUTILS_H
 #define __DIRUTILS_H
 
 #ifdef __cplusplus
@@ -14,7 +14,7 @@
 #include <string>
 
 // in dirwith.C
-const std::string dirwith (double size, const std::vector<std::string>& disks,
+std::string dirwith (double size, const std::vector<std::string>& disks,
 			   const std::string& path=std::string(),
 			   double usage_limit = 0.0,
 			   double leave_free = 0.0);
@@ -50,14 +50,8 @@ void dirglobtree (std::vector<std::string>* filenames,
 void dirglobtree (std::vector<std::string>* filenames, 
 		  const std::string& root, const std::string& pattern);
 
-// expands ~
+//! expands any tilde ~ at the start of the filename
 std::string expand (const std::string& filename);
-
-// returns the directory name (using std C dirname)
-std::string dirname (const std::string& path);
-
-// returns the file name (using std C basename)
-std::string basename (const std::string& path);
 
 extern "C" {
 #endif /* #ifdef __cplusplus */

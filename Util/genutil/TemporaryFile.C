@@ -11,6 +11,7 @@
 
 #include "TemporaryFile.h"
 #include "dirutil.h"
+#include "strutil.h"
 #include "Error.h"
 
 #include <signal.h>
