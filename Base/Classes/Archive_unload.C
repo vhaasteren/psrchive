@@ -62,7 +62,7 @@ void Pulsar::Archive::unload (const char* filename) const
     cerr << "Pulsar::Archive::unload (" << unload_to_filename << ")" << endl;
 
   std::string path = dirname(unload_to_filename);
-  if (path != ".")
+  if (path != "." && path != "")
   {
     int path_exists = file_is_directory(path.c_str());
     if (!path_exists)
