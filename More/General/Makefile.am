@@ -348,7 +348,7 @@ check_PROGRAMS = $(TESTS)
 LDADD = libGeneral.la \
     $(top_builddir)/Base/libpsrbase.la \
     $(top_builddir)/Util/libpsrutil.la \
-    $(top_builddir)/Util/epsic/src/util/libutil.la
+    $(top_builddir)/Util/epsic/src/libepsic.la
 
 include $(top_srcdir)/config/Makefile.include
 
