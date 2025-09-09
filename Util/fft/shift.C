@@ -12,7 +12,9 @@
 
 using namespace std;
 
-/* Uses the Fourier shift theorem to shift an array */
+/*! Uses the Fourier shift theorem to cyclically shift an array of real-valued data
+    @param shift the number of array indeces by which to shift, may be fractional
+ */
 void FTransform::shift (unsigned npts, float* arr, double shift)
 {
   Array16<float> cmplx_arr (2*npts);
