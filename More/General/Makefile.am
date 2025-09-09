@@ -350,13 +350,15 @@ LDADD = libGeneral.la \
     $(top_builddir)/Util/libpsrutil.la \
     $(top_builddir)/Util/epsic/src/libepsic.la
 
-include $(top_srcdir)/config/Makefile.include
-
-AM_CPPFLAGS += \
+BEFORE_LOCAL_INCLUDE = \
     -I$(top_srcdir)/More/Timing \
     -I$(top_srcdir)/More/Polarimetry \
     -I$(top_srcdir)/More/MEAL \
-    -I$(top_srcdir)/More/RFIMitigation \
+    -I$(top_srcdir)/More/RFIMitigation
+
+include $(top_srcdir)/config/Makefile.include
+
+AM_CPPFLAGS += \
     @PGPLOT_CFLAGS@ @TEMPO2_CFLAGS@ @CFITSIO_CFLAGS@ @GSL_CFLAGS@ \
     @SPLINTER_CFLAGS@ @ARMADILLO_CFLAGS@
 

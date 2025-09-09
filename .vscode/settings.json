@@ -8,6 +8,10 @@
     "example.C": "cpp",
     "pam.C": "cpp",
     "pdmp.C": "cpp",
-    "FortranSNR.C": "cpp"
+    "FortranSNR.C": "cpp",
+    "pat.C": "cpp",
+    "PhaseGradShift.C": "cpp",
+    "ScalarTemplateMatching.C": "cpp",
+    "model_profile.C": "cpp"
   }
 }

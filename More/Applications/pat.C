@@ -14,6 +14,7 @@
 #include "Pulsar/ArrivalTime.h"
 #include "Pulsar/MatrixTemplateMatching.h"
 #include "Pulsar/MeanArrivalTime.h"
+#include "Pulsar/HasMaxHarmonic.h"
 
 #include "Pulsar/PhaseGradShift.h"
 #include "Pulsar/SincInterpShift.h"
@@ -169,6 +170,8 @@ void usage ()
     "\n"
     "Fitting options:\n"
     "  -a stdfiles      Automatically select standard from specified group\n"
+    "  -c               Choose the maximum harmonic \n"
+    "  -n harmonics     Use up to the specified number of harmonics \n"
     "  -P               Do not fscrunch the standard (frequency-dependent template)\n"
     "  -I nsubband      Output nsubband TOAs with delta-DM (implies -P)\n"
     "  -D               Denoise standard \n"
@@ -183,8 +186,6 @@ void usage ()
     "\n"
     "Matrix template matching options: \n"
     "  -p               Enable matrix template matching \n"
-    "  -c               Choose the maximum harmonic \n"
-    "  -n harmonics     Use up to the specified number of harmonics \n"
     "  -o               Output best-fit matrix model parameters \n"
     "\n"
     "Algorithm Selection:\n"
@@ -246,10 +247,8 @@ int main (int argc, char** argv) try
   bool tempo2_output = false;
   bool output_profile_residuals = false;
 
-#if HAVE_PGPLOT
   bool plot_difference = false;
   bool centre_template_peak = false;
-#endif
 
   char *metafile = NULL;
 
@@ -492,8 +491,10 @@ int main (int argc, char** argv) try
 
 #if HAVE_PGPLOT
   if (plot_difference)
-      if (cpgopen(plot_device.c_str()) <= 0)
-          cpgopen("?");
+  {
+    if (cpgopen(plot_device.c_str()) <= 0)
+      cpgopen("?");
+  }
 #endif
 
   if (metafile)
@@ -532,6 +533,21 @@ int main (int argc, char** argv) try
     full_poln->set_unload_matrix_model(output_matrix_model_parameters);
   }
 
+  auto hmh = dynamic_cast<HasMaxHarmonic*>(arrival->get_shift_estimator());
+  if (hmh)
+  {
+    if (verbose)
+      cerr << "pat: estimator has a maximum harmonic" << endl;
+    if (maximum_harmonic)
+      hmh->set_maximum_harmonic (maximum_harmonic);
+    hmh->set_choose_maximum_harmonic (choose_maximum_harmonic);
+  }
+  else if (maximum_harmonic || choose_maximum_harmonic)
+  {
+    cerr << "pat: estimator does not have a maximum harmonic" << endl;
+    return -1;
+  }
+
   if (full_freq && mean_arrival_time)
     arrival->set_mean_estimator(mean_arrival_time);
 
@@ -540,11 +556,10 @@ int main (int argc, char** argv) try
 
   // Give format information for Tempo2 output 
 
-  if (strcasecmp(outFormat.c_str(),"tempo2")==0 && !phase_info)
-#if HAVE_PGPLOT
-      if (!plot_difference)
-#endif
-          cout << "FORMAT 1" << endl;
+  if (strcasecmp(outFormat.c_str(),"tempo2")==0 && !phase_info && !plot_difference)
+  {
+    cout << "FORMAT 1" << endl;
+  }
 
   if (ntest_uncertainty)
   {
