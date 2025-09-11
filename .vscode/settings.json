@@ -12,6 +12,16 @@
     "pat.C": "cpp",
     "PhaseGradShift.C": "cpp",
     "ScalarTemplateMatching.C": "cpp",
-    "model_profile.C": "cpp"
+    "model_profile.C": "cpp",
+    "SystemCalibrator.C": "cpp",
+    "StandardPrepare.C": "cpp",
+    "ReferenceCalibrator.C": "cpp",
+    "pcm.C": "cpp",
+    "Archive_remove_baseline.C": "cpp",
+    "RemoveBaseline.C": "cpp",
+    "ReceptionCalibrator.C": "cpp",
+    "StandardData.C": "cpp",
+    "PolnProfileStats.C": "cpp",
+    "ProfileStats.C": "cpp"
   }
 }

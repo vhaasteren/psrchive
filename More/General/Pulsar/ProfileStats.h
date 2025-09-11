@@ -104,6 +104,9 @@ namespace Pulsar
     //! Returns the variance of the baseline
     Estimate<double> get_baseline_variance () const;
 
+    //! Returns the mean of the baseline
+    Estimate<double> get_baseline_mean () const;
+    
     //! Return the on-pulse phase bin mask
     PhaseWeight* get_onpulse ();
 
@@ -174,8 +177,11 @@ namespace Pulsar
     //! All phase bins (subject to include and exclude)
     mutable Reference::To<PhaseWeight> all = new PhaseWeight;
 
-    //! The variance of the total intensity baseline
+    //! The variance of the profile baseline
     mutable Estimate<double> baseline_variance;
+
+    //! The mean of the profile baseline
+    mutable Estimate<double> baseline_mean;
 
     //! The algorithm used to find the included phase bins
     mutable Reference::To<ProfileWeightFunction> include_estimator;

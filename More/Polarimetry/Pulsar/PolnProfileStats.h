@@ -57,6 +57,9 @@ namespace Pulsar {
     //! Get the Stokes parameters for the specified phase bin
     Stokes< Estimate<double> > get_stokes (unsigned ibin) const;
 
+    //! Get the mean Stokes parameters of the baseline phase bins
+    Stokes< Estimate<double> > get_baseline() const;
+    
     //! Returns the total flux of the on-pulse phase bins
     Estimate<double> get_total_intensity () const;
 
@@ -113,8 +116,11 @@ namespace Pulsar {
     //! True when zero determinant phase bins should be avoided
     bool avoid_zero_determinant;
 
-    //! The variance of the total intensity baseline
+    //! The variance of the baseline for each Stokes parameter
     mutable Stokes< Estimate<double> > baseline_variance;
+
+    //! The mean of the baseline for each Stokes parameter
+    mutable Stokes< Estimate<double> > baseline_mean;
 
     //! 
     //! Computes the phase bin masks

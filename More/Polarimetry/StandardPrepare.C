@@ -43,7 +43,6 @@ Calibration::StandardPrepare::factory (std::string name)
 void Calibration::StandardPrepare::prepare (Pulsar::Archive* archive)
 {
   archive->convert_state (Signal::Stokes);
-  archive->remove_baseline ();
   archive->dedisperse ();
 
   /* The following line ensures that data are aligned using the phase predictor

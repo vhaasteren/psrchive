@@ -31,6 +31,9 @@ void Calibration::StandardData::select_profile (const Pulsar::PolnProfile* p)
 
   stats->select_profile (p);
   total_squared_invariant = stats->get_total_squared_invariant ();
+  baseline = stats->get_baseline();
+
+  cerr << "Calibration::StandardData::select_profile baseline=" << baseline << endl;
 }
 
 //! Set the profile from which estimates will be derived
@@ -41,6 +44,9 @@ void Calibration::StandardData::set_profile (const Pulsar::PolnProfile* p)
   DEBUG("Calibration::StandardData::set_profile onpulse nbin=" << stats->get_stats()->get_onpulse_nbin());
 
   total_squared_invariant = stats->get_total_squared_invariant ();
+  baseline = stats->get_baseline();
+
+  DEBUG("Calibration::StandardData::set_profile baseline=" << baseline);
 }
 
 //! Normalize estimates by the average determinant
@@ -55,10 +61,14 @@ void Calibration::StandardData::set_normalize (bool norm)
 }
 
 //! Get the Stokes parameters of the specified phase bin
-Stokes< Estimate<double> >
+Stokes<Estimate<double>>
 Calibration::StandardData::get_stokes (unsigned ibin)
 {
-  Stokes< Estimate<double> > result = stats->get_stokes (ibin);
+  Stokes<Estimate<double>> result = stats->get_stokes (ibin);
+
+  DEBUG("Calibration::StandardData::get_stokes ibin=" << ibin << " stokes=" << result);
+  DEBUG("Calibration::StandardData::get_stokes baseline=" << baseline);
+  result -= baseline;
 
   if (normalize)
   {
@@ -69,6 +79,12 @@ Calibration::StandardData::get_stokes (unsigned ibin)
 
   DEBUG("Calibration::StandardData::get_stokes ibin=" << ibin << endl << "result=" << result);
   return result;
+}
+
+Stokes<Estimate<double>>
+Calibration::StandardData::get_baseline()
+{
+  return baseline;
 }
 
 //! Get the algorithm used to compute the profile statistics

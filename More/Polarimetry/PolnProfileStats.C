@@ -217,10 +217,10 @@ catch (Error& error)
 }
 
 //! Get the Stokes parameters of the specified phase bin
-Stokes< Estimate<double> >
+Stokes<Estimate<double>>
 Pulsar::PolnProfileStats::get_stokes (unsigned ibin) const try
 {
-  Stokes< Estimate<double> > result = profile->get_Stokes (ibin);
+  Stokes<Estimate<double>> result = profile->get_Stokes (ibin);
 
   for (unsigned ipol=0; ipol < 4; ipol++)
     result[ipol].set_variance( get_baseline_variance(ipol).get_value() );
@@ -233,13 +233,22 @@ catch (Error& error)
 }
 
 //! Returns the total of the squared invariant of the on-pulse phase bins
+/*! The average Stokes parameters returned by get_baseline are subtracted from 
+    the Stokes parameters in each on-pulse phase bin before computing the invariant.
+ */
 Estimate<double> Pulsar::PolnProfileStats::get_total_squared_invariant () const try
 {
   Estimate<double> total_inv_squared;
+  Stokes<Estimate<double>> baseline = get_baseline();
 
   for (unsigned ibin=0; ibin < profile->get_nbin(); ibin++)
+  {
     if (stats->get_onpulse(ibin))
-      total_inv_squared += invariant( get_stokes(ibin) );
+    {
+      Stokes<Estimate<double>> S = get_stokes(ibin) - baseline;
+      total_inv_squared += invariant(S);
+    }
+  }
 
   return total_inv_squared;
 }
@@ -265,6 +274,24 @@ catch (Error& error)
   throw error += "Pulsar::PolnProfileStats::get_total_determinant";
 }
 
+//! Get the mean Stokes parameters of the baseline phase bins
+Stokes<Estimate<double>> Pulsar::PolnProfileStats::get_baseline() const
+{
+  if (baseline_mean[0].get_value() == 0)
+  {
+    DEBUG("Pulsar::PolnProfileStats::get_baseline recomputing baseline");
+
+    for (unsigned ipol=0; ipol < 4; ipol++)
+    {
+      stats->set_profile( profile->get_Profile(ipol) );
+      baseline_mean[ipol] = stats->get_baseline_mean();
+      DEBUG("Pulsar::PolnProfileStats::get_baseline ipol="
+            << ipol << " baseline=" << baseline_mean[ipol]);
+    }
+  }
+  return baseline_mean;
+}
+
 Estimate<double>
 Pulsar::PolnProfileStats::get_baseline_variance (unsigned ipol) const try
 {
@@ -284,7 +311,8 @@ catch (Error& error)
 
 void Pulsar::PolnProfileStats::build () try
 {
-  baseline_variance = Stokes< Estimate<double> > ();
+  baseline_variance = Stokes<Estimate<double>> ();
+  baseline_mean = Stokes<Estimate<double>> ();
 
   if (!profile)
     return;

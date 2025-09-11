@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *   Copyright (C) 2005-2009 by Willem van Straten
+ *   Copyright (C) 2005-2025 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -14,6 +14,9 @@
 #include "Pulsar/GaussianBaseline.h"
 #include "Pulsar/SNRatioEstimator.h"
 #include "Pulsar/PhaseWidth.h"
+
+// #define _DEBUG 1
+#include "debug.h"
 
 using namespace std;
 
@@ -260,10 +263,8 @@ Pulsar::ProfileStats::get_total (bool subtract_baseline) const try
 {
   if (!built)
   {
-#if _DEBUG
-    cerr << "Pulsar::ProfileStats::get_total this=" << this
-        << " regions_set=" << regions_set << " calling build" << endl;
-#endif
+    DEBUG("Pulsar::ProfileStats::get_total this=" << this
+        << " regions_set=" << regions_set << " calling build");
     build ();
   }
 
@@ -344,34 +345,54 @@ catch (Error& error)
   throw error += "Pulsar::ProfileStats::get_baseline (ibin)";
 }
 
-Estimate<double> Pulsar::ProfileStats::get_baseline_variance () const try
+Estimate<double> Pulsar::ProfileStats::get_baseline_mean () const try
 {
-#if _DEBUG
-  cerr << "Pulsar::ProfileStats::get_baseline_variance profile=" << profile.get() 
-       << " built=" << built << " variance=" << baseline_variance << endl;
-#endif
+  DEBUG("Pulsar::ProfileStats::get_baseline_mean profile=" << profile.get() 
+       << " built=" << built << " mean=" << baseline_mean);
 
   if (!built)
   {
-#if _DEBUG
-    cerr << "Pulsar::ProfileStats::get_baseline_variance call build" << endl;
-#endif
+    DEBUG("Pulsar::ProfileStats::get_baseline_mean call build");
+
+    build ();
+  }
+
+  if (baseline_mean.get_value() == 0)
+  {
+    DEBUG("Pulsar::ProfileStats::get_baseline_mean get mean");
+
+    baseline_mean = baseline->get_mean();
+  }
+
+  DEBUG("Pulsar::ProfileStats::get_baseline_mean mean=" << baseline_mean);
+
+  return baseline_mean;
+}
+catch (Error& error)
+{
+  throw error += "Pulsar::ProfileStats::get_baseline_mean";
+}
+
+Estimate<double> Pulsar::ProfileStats::get_baseline_variance () const try
+{
+  DEBUG("Pulsar::ProfileStats::get_baseline_variance profile=" << profile.get() 
+       << " built=" << built << " variance=" << baseline_variance);
+
+  if (!built)
+  {
+    DEBUG("Pulsar::ProfileStats::get_baseline_variance call build");
 
     build ();
   }
 
   if (baseline_variance.get_value() == 0)
   {
-#if _DEBUG
-    cerr << "Pulsar::ProfileStats::get_baseline_variance get variance" << endl;
-#endif
+    DEBUG("Pulsar::ProfileStats::get_baseline_variance get variance");
 
     baseline_variance = baseline->get_variance();
   }
 
-#if _DEBUG
-  cerr << "Pulsar::ProfileStats::get_baseline_variance variance=" << baseline_variance << endl;
-#endif
+  DEBUG("Pulsar::ProfileStats::get_baseline_variance variance=" << baseline_variance);
 
   return baseline_variance;
 }
@@ -417,6 +438,7 @@ void Pulsar::ProfileStats::build () const try
   // Profile::verbose = true;
 
   baseline_variance = 0.0;
+  baseline_mean = 0.0;
 
   if (!profile)
   {
@@ -489,22 +511,8 @@ void Pulsar::ProfileStats::build () const try
   if (Profile::verbose)
   {
     cerr << "Pulsar::ProfileStats::build nbin=" << profile->get_nbin()
-	 << " on-pulse=" << onpulse->get_weight_sum()
-	 << " baseline=" << baseline->get_weight_sum() << endl;
-
-#if _DEBUG
-    cerr << "onpulse ";
-    for (unsigned ibin=0; ibin<profile->get_nbin(); ibin++)
-      if (onpulse->at(ibin))
-        cerr << ibin << " ";
-    cerr << endl;
-
-    cerr << "baseline ";
-    for (unsigned ibin=0; ibin<profile->get_nbin(); ibin++)
-      if (baseline[ibin])
-        cerr << ibin << " ";
-    cerr << endl;
-#endif
+         << " on-pulse=" << onpulse->get_weight_sum()
+         << " baseline=" << baseline->get_weight_sum() << endl;
   }
 }
 catch (Error& error)
@@ -521,9 +529,7 @@ void Pulsar::ProfileStats::set_snr_estimator (const std::string& name)
 //! Get the signal-to-noise ratio
 double Pulsar::ProfileStats::get_snr () const
 {
-#if _DEBUG
-  cerr << "Pulsar::ProfileStats::get_snr profile=" << profile.get() << endl;
-#endif
+  DEBUG("Pulsar::ProfileStats::get_snr profile=" << profile.get());
 
   if (snratio_estimator)
     return snratio_estimator->get_snr ( profile );

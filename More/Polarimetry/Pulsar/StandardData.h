@@ -67,6 +67,9 @@ namespace Calibration {
     //! Get the Stokes parameters of the specified phase bin
     Stokes< Estimate<double> > get_stokes (unsigned ibin);
 
+    //! Get the average Stokes parameters of the baseline phase bins
+    Stokes< Estimate<double> > get_baseline();
+
     //! Get the algorithm used to compute the profile statistics
     Pulsar::PolnProfileStats* get_poln_stats ();
 
@@ -81,6 +84,9 @@ namespace Calibration {
     //! The square of the invariant, integrated over all onpulse-phase bins,
     /*! This is proportional to the gain squared, so it's sqrt is taken as a normalization factor. */
     Estimate<double> total_squared_invariant;
+
+    //! The mean Stokes parameters of the baseline phase bins
+    Stokes< Estimate<double> > baseline;
   };
 
 }
