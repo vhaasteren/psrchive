@@ -1249,8 +1249,7 @@ catch (Error& error)
 }
 
 void SystemCalibrator::init_estimates
-( std::vector< Reference::To<Calibration::SourceEstimate> >& estimate,
-  unsigned ibin ) try
+( std::vector< Reference::To<Calibration::SourceEstimate> >& estimate, int ibin ) try
 {
   unsigned nchan = get_nchan ();
   unsigned nbin = get_calibrator()->get_nbin ();
@@ -1258,9 +1257,9 @@ void SystemCalibrator::init_estimates
   if (verbose > 2)
     cerr << "SystemCalibrator::init_estimates ibin=" << ibin << endl;
     
-  if (ibin >= nbin)
+  if (ibin >= 0 && unsigned(ibin) >= nbin)
     throw Error (InvalidRange, "SystemCalibrator::init_estimate",
-		 "phase bin=%d >= nbin=%d", ibin, nbin);
+                "phase bin=%d >= nbin=%d", ibin, nbin);
 
   if (verbose > 2)
     cerr << "SystemCalibrator::init_estimate"
@@ -1287,7 +1286,18 @@ void SystemCalibrator::init_estimates
     estimate[ichan]->phase_bin = ibin;
 
     string name_prefix = instance_name;
-    name_prefix += "_" + tostring(ibin);
+
+    if (ibin == Calibration::SourceEstimate::baseline_mean)
+    {
+      if (verbose < 2)
+        cerr << "SystemCalibrator::init_estimates ichan=" << ichan << " assuming baseline mean has zero Stokes V" << endl;
+      estimate[ichan]->source->set_infit (3, false);
+      name_prefix += "_baseline";
+    }
+    else
+    {
+      name_prefix += "_" + tostring(ibin);
+    }
 
     estimate[ichan]->source->set_param_name_prefix( name_prefix );
   }
@@ -1344,7 +1354,7 @@ void SystemCalibrator::create_calibrator_estimate () try
     cerr << "SystemCalibrator::create_calibrator_estimate" << endl;
 
   // add the calibrator states to the equations
-  init_estimates (calibrator_estimate);
+  init_estimates (calibrator_estimate, Calibration::SourceEstimate::reference_source);
 
   // set the initial guess and fit flags
   Stokes<double> cal_state (1,0,.9,0);

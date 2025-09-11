@@ -169,6 +169,8 @@ protected:
   vector<MJD> get_mjds ();
   void print_time_variation (SystemCalibrator* model);
 
+  bool use_baseline = false;
+
   Reference::To<Pulsar::SystemCalibratorManager> model_manager;
   Reference::To<Pulsar::DataSetManager> data_manager;
 };
@@ -1210,6 +1212,9 @@ void pcm::add_options (CommandLine::Menu& menu)
   arg = menu.add (equal_ellipticities, 'k');
   arg->set_help ("assume that the receptors have equal ellipticities");
 
+  arg = menu.add (use_baseline, "zero_baseline_V");
+  arg->set_help ("assume that the off-pulse baseline has zero Stokes V");
+
   arg = menu.add (model_fluxcal_on_minus_off, 'Y');
   arg->set_help ("model the difference between FluxCal-On and FluxCal-Off");
 
@@ -1854,6 +1859,12 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile) try
 
   model->output_report = output_report;
 
+  if (use_baseline)
+  {
+    cerr << "pcm: assuming that off-pulse baseline has zero Stokes V" << endl;
+    degenerate_V_boost = false;
+  }
+
   model->degenerate_V_boost = degenerate_V_boost;
   model->measure_cal_V = measure_cal_V;
 
@@ -1974,6 +1985,11 @@ SystemCalibrator* pcm::measurement_equation_modeling (const string& binfile) try
   // add the specified phase bins
   for (unsigned ibin=0; ibin<phase_bins.size(); ibin++)
     model->add_state (phase_bins[ibin]);
+
+  if (use_baseline)
+  {
+    model->add_state (Calibration::SourceEstimate::baseline_mean);
+  }
 
   cerr << "pcm: " << model->get_nstate_pulsar() << " states" << endl;
   if ( model->get_nstate_pulsar() == 0 )

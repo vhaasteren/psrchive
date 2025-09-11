@@ -67,8 +67,6 @@ ReceptionCalibrator::ReceptionCalibrator (Calibrator::Type* _type)
   physical_coherency = false;
 
   output_report = false;
-  
-  unique = 0;
 
   nthread = 1;
 }
@@ -304,19 +302,19 @@ void ReceptionCalibrator::submit_calibrator_data ()
 
 
 //! Add the specified pulse phase bin to the set of state constraints
-void ReceptionCalibrator::add_state (unsigned phase_bin)
+void ReceptionCalibrator::add_state (int phase_bin)
 {
   if (verbose > 2)
-    cerr << "Pulsar::ReceptionCalibrator::add_state phase bin=" 
-	 << phase_bin << endl;
+    cerr << "Pulsar::ReceptionCalibrator::add_state phase bin=" << phase_bin << endl;
 
   for (unsigned istate=0; istate<phase_bins.size(); istate++)
+  {
     if (phase_bins[istate] == phase_bin)
     {
-      cerr << "Pulsar::ReceptionCalibrator::add_state phase bin=" << phase_bin
-	   << " already in use" << endl;
+      cerr << "Pulsar::ReceptionCalibrator::add_state phase bin=" << phase_bin << " already in use" << endl;
       return;
     }
+  }
 
   phase_bins.push_back (phase_bin);
 
@@ -406,14 +404,19 @@ void ReceptionCalibrator::add_data
 {
   get_data_call ++;
 
-  unsigned ibin = estimate->phase_bin;
+  int ibin = estimate->phase_bin;
 
   DEBUG("Pulsar::ReceptionCalibrator::add_data standard_data=" << standard_data.ptr()
         << " stats=" << standard_data->get_poln_stats()->get_stats());
 
   try
   {
-    Stokes< Estimate<double> > stokes = standard_data->get_stokes( ibin );
+    Stokes< Estimate<double> > stokes;
+    
+    if (ibin == Calibration::SourceEstimate::baseline_mean)
+      stokes = standard_data->get_baseline();
+    else
+      stokes = standard_data->get_stokes( ibin );
 
     // NOTE: the measured states are not corrected / calibrated
     Calibration::CoherencyMeasurement state (estimate->input_index);
@@ -840,8 +843,11 @@ ReceptionCalibrator::new_info_pulsar (unsigned istate) const
   for (unsigned i=0; i < pulsar_estimate[istate].size(); i++)
     if (pulsar_estimate[istate][i])
     {
-      info->set_title( "Stokes Parameters of Phase Bin " 
-		       + tostring(pulsar_estimate[istate][i]->phase_bin) );
+      int bin = pulsar_estimate[istate][i]->phase_bin;
+      if (bin == Calibration::SourceEstimate::baseline_mean)
+        info->set_title( "Stokes Parameters of the Baseline Mean" );
+      else
+        info->set_title( "Stokes Parameters of Phase Bin " + tostring(bin) );
       break;
     }
 

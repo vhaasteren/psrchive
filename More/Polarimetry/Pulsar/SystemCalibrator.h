@@ -404,7 +404,7 @@ namespace Pulsar
     typedef Reference::To<Calibration::SourceEstimate> SourceEstimate;
     
     //! Initialize a vector of SourceEstimate instances
-    virtual void init_estimates (std::vector<SourceEstimate>&, unsigned ibin = 0);
+    virtual void init_estimates (std::vector<SourceEstimate>&, int ibin);
 
     //! Report on input data failure rates
     virtual void print_input_failed (const std::vector<SourceEstimate>&);

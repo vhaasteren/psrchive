@@ -1,7 +1,7 @@
 //-*-C++-*-
 /***************************************************************************
  *
- *   Copyright (C) 2003 - 2012 by Willem van Straten
+ *   Copyright (C) 2003 - 2025 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -85,7 +85,7 @@ namespace Pulsar
     ReflectStokes reflections;
 
     //! Add the specified pulse phase bin to the set of state constraints
-    void add_state (unsigned pulse_phase_bin);
+    void add_state (int pulse_phase_bin);
     
     //! Get the number of pulsar phase bin input polarization states
     unsigned get_nstate_pulsar () const;
@@ -119,19 +119,13 @@ namespace Pulsar
     //! Standard data interface
     Reference::To<Calibration::StandardData> standard_data;
 
-    //! The unique transformation for each observation
-    MEAL::VectorRule<MEAL::Complex2>* unique;
-
-    //! The unique transformation "axis"
-    MEAL::Axis< unsigned > unique_axis;
-
     std::vector< Reference::To<Calibration::FluxCalManager> > fluxcal;
 
     typedef Reference::To<Calibration::SourceEstimate> SourceEstimate;
 
     //! Uncalibrated estimate of pulsar polarization as a function of phase
     std::vector< std::vector< SourceEstimate > > pulsar_estimate;
-    std::vector< unsigned > phase_bins;
+    std::vector< int > phase_bins;
 
     //! The epochs of all loaded calibrators
     std::vector<MJD> calibrator_epochs;
