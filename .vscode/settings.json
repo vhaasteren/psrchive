@@ -22,6 +22,7 @@
     "ReceptionCalibrator.C": "cpp",
     "StandardData.C": "cpp",
     "PolnProfileStats.C": "cpp",
-    "ProfileStats.C": "cpp"
+    "ProfileStats.C": "cpp",
+    "psrdiff.C": "cpp"
   }
 }
