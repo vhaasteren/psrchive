@@ -97,7 +97,7 @@ public:
 
 class TemplateDifference : public Difference
 {
-  Reference::To<const Archive> difference;
+  Reference::To<const Archive> reference;
   Reference::To<const Integration> std_subint;
   vector<vector<double>> std_variance;
   vector<vector<double>> variance;
