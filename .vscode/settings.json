@@ -23,6 +23,10 @@
     "StandardData.C": "cpp",
     "PolnProfileStats.C": "cpp",
     "ProfileStats.C": "cpp",
-    "psrdiff.C": "cpp"
+    "psrdiff.C": "cpp",
+    "ProfileColumn.C": "cpp",
+    "FITSArchive.C": "cpp",
+    "load_Integration.C": "cpp",
+    "unload_integrations.C": "cpp"
   }
 }

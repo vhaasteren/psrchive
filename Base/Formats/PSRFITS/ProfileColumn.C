@@ -362,8 +362,7 @@ void Pulsar::ProfileColumn::unload_floats (int row, const std::vector<const Prof
 }
 
 //! Unload the given vector of profiles
-void Pulsar::ProfileColumn::unload (int row, 
-				    const std::vector<const Profile*>& prof)
+void Pulsar::ProfileColumn::unload (int row, const std::vector<const Profile*>& prof)
 {
   if (!fptr)
     throw Error (InvalidState, "Pulsar::ProfileColumn::unload",
@@ -389,8 +388,8 @@ void Pulsar::ProfileColumn::unload (int row,
     bug report at https://sourceforge.net/p/psrchive/bugs/440 
   */
 
-  double the_min = 1-pow(2,15)+16;
-  double the_max = pow(2,15)-2-16;
+  const double the_min = 1-pow(2,15)+16;
+  const double the_max = pow(2,15)-2-16;
 
   // cerr << "int16_t min=" << the_min << " max=" << the_max << endl;
 
@@ -412,7 +411,9 @@ void Pulsar::ProfileColumn::unload (int row,
       
     // Test for dynamic range
     if (fabs(min - max) > (100.0 * FLT_MIN))
+    {
       scales[iprof] = (max - min) / (the_max - the_min);
+    }
     else if (verbose)
     {
       scales[iprof] = 1.0;
@@ -453,7 +454,7 @@ void Pulsar::ProfileColumn::unload (int row,
         https://sourceforge.net/p/psrchive/bugs/440
       */
  
-      float fvalue = round( (amps[ibin]-offsets[iprof]) / scales[iprof]);
+      float fvalue = round((amps[ibin]-offsets[iprof]) / scales[iprof]);
       fvalue = std::max(fvalue, (float)INT16_MIN);
       fvalue = std::min(fvalue, (float)INT16_MAX);
       int16_t value = fvalue;
