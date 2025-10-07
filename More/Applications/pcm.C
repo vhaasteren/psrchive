@@ -264,6 +264,11 @@ void auto_select (Pulsar::ReceptionCalibrator& model,
   if (!prepare)
     throw Error (InvalidState, "auto_select", "StandardPrepare policy not set");
 
+  archive->fscrunch ();
+  archive->tscrunch ();
+  archive->remove_baseline();
+  prepare->prepare (archive);
+      
   prepare->set_input_states (maxbins);
   prepare->choose (archive);
   prepare->get_bins (bins);
@@ -275,10 +280,6 @@ void auto_select (Pulsar::ReceptionCalibrator& model,
     // cerr << "pcm: adding phase bin " << bins[ibin] << endl;
     model.add_state (bins[ibin]);
   }
-
-  archive->fscrunch ();
-  archive->tscrunch ();
-  prepare->prepare (archive);
 
   model.set_standard_data( archive );
 
@@ -653,6 +654,7 @@ static bool failed_report = false;
 static bool input_data_report = false;
 static bool data_and_model_report = false;
 static bool total_invariant_report = false;
+static bool covariance_report = false;
 
 static bool plot_guess = false;
 static bool plot_residual = false;
@@ -693,18 +695,23 @@ void pcm::enable_diagnostic (const string& name)
   else if (name == "solver")
     solver_verbosity = 1;
 
-  else if (name == "temporal")
-  {
-    cerr << "pcm: will print temporal variations" << endl;
-    print_variation = true;
-  }
   else if (name == "failed")
     failed_report = true;
 
+  else if (name == "covariance")
+  {
+    cerr << "pcm: will print covariance report" << endl;
+    covariance_report = true;
+  }
   else if (name == "invint")
   {
     cerr << "pcm: will print the normalization factor applied to each profile (based on total invariant)" << endl;
     total_invariant_report = true;
+  }
+  else if (name == "temporal")
+  {
+    cerr << "pcm: will print temporal variations" << endl;
+    print_variation = true;
   }
   else
   {
@@ -1212,7 +1219,7 @@ void pcm::add_options (CommandLine::Menu& menu)
   arg = menu.add (equal_ellipticities, 'k');
   arg->set_help ("assume that the receptors have equal ellipticities");
 
-  arg = menu.add (use_baseline, "zero_baseline_V");
+  arg = menu.add (use_baseline, 'z');
   arg->set_help ("assume that the off-pulse baseline has zero Stokes V");
 
   arg = menu.add (model_fluxcal_on_minus_off, 'Y');
@@ -1242,9 +1249,6 @@ void pcm::add_options (CommandLine::Menu& menu)
 
   arg = menu.add (solve_each, '1');
   arg->set_help ("solve independently for each observation");
-
-  arg = menu.add (shared_phase, 'z');
-  arg->set_help ("share a single phase shift estimate b/w all observations");
 }
 
 Reference::To<Pulsar::PolnCalibrator> previous_solution;
@@ -1363,6 +1367,7 @@ void configure_model (Pulsar::SystemCalibrator* model)
   model->set_report_input_failed (failed_report);
   model->set_report_data_and_model (data_and_model_report);
   model->set_report_total_invariant (total_invariant_report);
+  model->set_report_covariance (covariance_report);
 
   if (response)
     model->set_response( response );
