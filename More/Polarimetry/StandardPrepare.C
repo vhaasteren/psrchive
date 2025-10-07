@@ -189,9 +189,10 @@ double Calibration::MultipleRanking::get_rank (unsigned ibin)
   return rankings[current]->get_rank (ibin);
 }
 
-//! Called when a phase bin has been chosen
+//! Change the ranking policy when each phase bin is chosen
 void Calibration::MultipleRanking::set_chosen (unsigned ibin)
 {
+  // cycle through the ranking policies
   current ++;
   current %= rankings.size();
 

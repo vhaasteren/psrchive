@@ -249,6 +249,9 @@ namespace Pulsar
     //! Report on the total invariant used to normalize each profile
     virtual void set_report_total_invariant (bool flag = true);
 
+    //! Report on the covariances between best-fit model parameters
+    virtual void set_report_covariance (bool flag = true);
+
     //! Set the threshold used to reject outliers when computing CAL levels
     void set_cal_outlier_threshold (float f) { cal_outlier_threshold = f; }
 
@@ -506,22 +509,25 @@ namespace Pulsar
     float invalid_chisq;
 
     //! Report on the projection transformation used in add_pulsar
-    bool report_projection;
+    bool report_projection = false;
 
     //! Report the initial state of model before fitting
-    bool report_initial_state;
+    bool report_initial_state = false;
 
     //! Report on the data included as constraints
-    bool report_input_data;
+    bool report_input_data = false;
 
     //! Report the number of input failures
-    bool report_input_failed;
+    bool report_input_failed = false;
 
     //! Report on the data and model before and after the fit
-    bool report_data_and_model;
+    bool report_data_and_model = false;
 
     //! Report on the total invariant used to normalize each profile
     bool report_total_invariant = false;
+
+    //! Report on the covariances between best-fit model parameters
+    bool report_covariance = false;
 
     //! Threshold used to reject outliers when computing CAL levels
     double cal_outlier_threshold;

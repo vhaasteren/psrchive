@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *   Copyright (C) 2008 - 2025 by Willem van Straten
+ *   Copyright (C) 2008-2025 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
@@ -32,6 +32,7 @@
 #include "Pulsar/ModelParametersReport.h"
 #include "Pulsar/InputDataReport.h"
 #include "Pulsar/DataAndModelReport.h"
+#include "Pulsar/CovarianceReport.h"
 
 #include "Pulsar/ArchiveMatch.h"
 #include "Pulsar/IntegrationExpert.h"
@@ -79,12 +80,6 @@ SystemCalibrator::SystemCalibrator (Archive* archive)
 
   get_data_fail = 0;
   get_data_call = 0;
-
-  report_projection = false;
-  report_initial_state = false;
-  report_input_data = false;
-  report_input_failed = false;
-  report_data_and_model = false;
 
   cal_outlier_threshold = 0.0;
   cal_intensity_threshold = 1.0;    // sigma
@@ -1749,6 +1744,12 @@ void SystemCalibrator::init_model (unsigned ichan)
     filename = stringprintf("results_ichan%04d.dat",ichan);
     equation->add_postfit_report ( new Calibration::DataAndModelReport(filename) );
   }
+
+  if (report_covariance)
+  {
+    filename = stringprintf("covariance_ichan%04d.txt",ichan);
+    equation->add_postfit_report ( new Calibration::CovarianceReport(filename) );
+  }
 }
 
 //! Return the SignalPath for the specified channel
@@ -2585,6 +2586,11 @@ void SystemCalibrator::set_report_total_invariant (bool flag)
 void SystemCalibrator::set_report_input_failed (bool flag)
 {
   report_input_failed = flag;
+}
+
+void SystemCalibrator::set_report_covariance (bool flag)
+{
+  report_covariance = flag;
 }
 
 void SystemCalibrator::check_ichan (const char* name, unsigned ichan) const

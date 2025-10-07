@@ -36,7 +36,7 @@ namespace Calibration
     //! Write the report for the current pulsar
     void report (std::ostream&);
 
-    //! Return the names of all source in the data set
+    //! Return the names of all sources in the data set
     std::set<std::string> get_source_names ();
 
   private:

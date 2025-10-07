@@ -84,7 +84,13 @@ Calibration::StandardData::get_stokes (unsigned ibin)
 Stokes<Estimate<double>>
 Calibration::StandardData::get_baseline()
 {
-  return baseline;
+  Stokes<Estimate<double>> result = baseline;
+  if (normalize)
+  {
+    result /= sqrt(baseline.invariant());
+  }
+
+  return result;
 }
 
 //! Get the algorithm used to compute the profile statistics
