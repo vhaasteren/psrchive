@@ -82,13 +82,7 @@ namespace MEAL
   public:
     static unsigned verbose;
     
-    LevenbergMarquardt ()
-    { 
-      lamda_increase_factor = 10.0;
-      lamda_decrease_factor = 0.1;
-      singular_threshold = 1e-8;
-      restore_policy = NULL;
-    }
+    LevenbergMarquardt () = default;
 
     //! returns initial chi-squared
     /*!
@@ -120,17 +114,20 @@ namespace MEAL
     unsigned get_nparam_infit() const { return nparam_infit; }
 
     //! lamda determines the dominance of the steepest descent method
-    float lamda;
+    float lamda = 1.0;
 
-    float lamda_increase_factor;
-    float lamda_decrease_factor;
+    float lamda_increase_factor = 10.0;
+    float lamda_decrease_factor = 0.1;
 
     //! Singular Matrix threshold
     /*! Passed to MEAL::GaussJordan, this attribute is used to
       decide when the curvature matrix is close to singular. */
-    float singular_threshold;
+    float singular_threshold = 1e-8;
 
-    RestorePolicy* restore_policy;
+    //! print a report on the orthogonality of the curvature matrix on each iteration
+    bool verify_orthogonality = false;
+
+    RestorePolicy* restore_policy = nullptr;
 
   protected:
 
@@ -563,6 +560,9 @@ void MEAL::LevenbergMarquardt<Grad>::solve_delta (const Mt& model)
 
   //! curvature matrix
   std::vector<std::vector<double> > temp_copy (alpha);
+
+  if (verify_orthogonality)
+    verify_orthogonal (temp_copy, model);
 
   try
   {

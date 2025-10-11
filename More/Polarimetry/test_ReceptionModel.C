@@ -1,29 +1,32 @@
 /***************************************************************************
  *
- *   Copyright (C) 2004-2008 by Willem van Straten
+ *   Copyright (C) 2004-2025 by Willem van Straten
  *   Licensed under the Academic Free License version 2.1
  *
  ***************************************************************************/
 
 #include "Pulsar/ReceptionModelSolver.h"
 #include "Pulsar/Parallactic.h"
-#include "MEAL/Axis.h"
-
+#include "Pulsar/CelestialProjection.h"
+#include "Pulsar/CovarianceReport.h"
 #include "Pulsar/CoherencyMeasurementSet.h"
 #include "Pulsar/MeanCoherency.h"
 #include "MEAL/PhysicalCoherency.h"
 
 #include "Pulsar/SingleAxis.h"
-#include "Pulsar/Instrument.h"
+#include "Pulsar/Britton2000.h"
 #include "MEAL/Polar.h"
 #include "MEAL/Gain.h"
+#include "MEAL/Axis.h"
 
 #include "Pulsar/SingleAxisPolynomial.h"
 #include "MEAL/Complex2Constant.h"
 
 #include "Horizon.h"
+#include "Fixed.h"
 #include "Pauli.h"
 #include "BoxMuller.h"
+#include "strutil.h"
 
 #include <iostream>
 #include <algorithm>
@@ -68,6 +71,18 @@ float noise = 0.0;
 // two models: Hamaker or Britton
 bool hamaker = true;
 
+// test the fixed dipole projection
+bool test_projection = false;
+
+// by default, the boost along Stokes V is constrained by the CAL
+bool degenerate_V_boost = false;
+
+// by default, the rotation along Stokes V is constrained by the CAL
+bool degenerate_V_rotation = false;
+
+// print model parameter covariance reports
+bool print_covariance_reports = false;
+
 // plot things
 bool verbose = false;
 bool vverbose= false;
@@ -90,6 +105,7 @@ void usage ()
        << ncal << ")\n"
     "  -d x difficulty (default="
        << difficulty << ")\n"
+    "  -D [b|r] constant boost/rotation along Stokes V \n"
     "  -f x maximum fractional polarization of sources (default="
        << max_poln << ")\n"
     "  -G n test the Geometric Akaike Information Criterion\n"
@@ -121,6 +137,9 @@ void random_receiver (Jones<double>& receiver)
   Quaternion<double, Hermitian> boost;
   random_vector (boost, difficulty);
 
+  if (degenerate_V_boost)
+    boost[3] = 0;
+
   modp=0;
   for (i=1; i<4; i++)
     modp += boost[i]*boost[i];
@@ -129,6 +148,9 @@ void random_receiver (Jones<double>& receiver)
 
   Quaternion<double, Unitary> rotation;
   random_vector (rotation, difficulty);
+
+  if (degenerate_V_rotation)
+    rotation[3] = 0;
 
   modp=0;
   for (i=1; i<4; i++)
@@ -312,10 +334,11 @@ double mean_AIC = 0.0;
 double mean_GIC = 0.0;
 double mean_SIC = 0.0;
 
-int runtest (Calibration::Parallactic& parallactic)
+template<typename T>
+int runtest (T& projection, unsigned iteration)
 {
-  // connect parallactic.set_hour_angle to hour_angle axis
-  hour_angle.signal.connect (&parallactic, &Calibration::Parallactic::set_hour_angle);
+  // connect projection.set_hour_angle to hour_angle axis
+  hour_angle.signal.connect (&projection, &T::set_hour_angle);
 
   // the randomly-generated receiver
   Jones<double> receiver;
@@ -362,11 +385,11 @@ int runtest (Calibration::Parallactic& parallactic)
 
   // ///////////////////////////////////////////////////////////////////////
   //
-  // add the parallactic angle rotation to the signal path
+  // add the projection to the signal path
   //
 
-  // the sources are observed through an additional parallactic angle rotation
-  signal_path.add_model ( &parallactic );
+  // the sources are observed through an additional projection angle rotation
+  signal_path.add_model ( &projection );
 
 
   // ///////////////////////////////////////////////////////////////////////
@@ -384,8 +407,7 @@ int runtest (Calibration::Parallactic& parallactic)
   for (unsigned istate = 0; istate < nstates; istate++)
   {
     random_value (source[istate], intensity, max_poln);
-
-    if (vverbose)
+    if (verbose)
       cerr << "random source[" << istate << "]=" << source[istate] << endl;
   }
 
@@ -393,8 +415,7 @@ int runtest (Calibration::Parallactic& parallactic)
   if (ncal)
     start_index = 1;
 
-  observe (source_obs, source, variance, signal_path, hour_angle, ha_min, ha_max, 1, start_index);
-
+  observe (source_obs, source, variance, signal_path, hour_angle, ha_min, ha_max, start_index, start_index);
 
   // ///////////////////////////////////////////////////////////////////////
   //
@@ -411,10 +432,10 @@ int runtest (Calibration::Parallactic& parallactic)
   {
     source_obs[iobs].set_coordinates();
 
-    Jones<Estimate<double> > para = parallactic.evaluate ();
+    Jones<Estimate<double> > para = projection.evaluate ();
 
-    // if (vverbose)
-      // cerr << "iobs=" << iobs << " para=" << para << endl;
+    if (verbose)
+      cerr << "iobs=" << iobs << " projection=" << para << endl;
 
     for (unsigned istate = 0; istate < nstates; istate++)
     {
@@ -442,13 +463,13 @@ int runtest (Calibration::Parallactic& parallactic)
     // add the calibrator constraint to the model
     //
 
-    if (vverbose)
-      cerr << "construct MEAL::Coherency calibrator instance" << endl;
+    // if (vverbose)
+      cerr << "construct MEAL::PhysicalCoherency calibrator instance" << endl;
     MEAL::Coherency* state = new MEAL::PhysicalCoherency;
 
     state->set_stokes (calibrator);
 
-    // diable fit flags
+    // disable fit flags
     for (unsigned istokes=0; istokes<4; istokes++)
       state->set_infit (istokes, false);
     
@@ -502,13 +523,42 @@ int runtest (Calibration::Parallactic& parallactic)
   {
     cerr << "Using Algebraic Decomposition (Hamaker)" << endl;
     system = new MEAL::Polar;
+
+    if (degenerate_V_boost)
+    {
+      cerr << "Disabling fit for " << system->get_param_name(3) << endl;
+      system->set_infit (3, false); // V boost is b_3
+    }
+    if (degenerate_V_rotation)
+    {
+      cerr << "Disabling fit for " << system->get_param_name(6) << endl;
+      system->set_infit (6, false); // V rotation is r_3
+    }
   }
   else
   {
     cerr << "Using Phenomenological Decomposition (Britton)" << endl;
-    system = new Calibration::Instrument;
+    system = new Calibration::Britton2000;
+
+    if (degenerate_V_boost)
+    {
+      // disabling degenerate parameters
+      cerr << "Disabling fit for " << system->get_param_name(4) << endl;
+      system->set_infit (4, false); // V boost is b_2
+    }
+    if (degenerate_V_rotation)
+    {
+      cerr << "Disabling fit for " << system->get_param_name(6) << endl;
+      system->set_infit (6, false); // V rotation is r_2
+    }
   }
-  
+
+  if (!ncal)
+  {
+    cerr << "Disabling fit for " << system->get_param_name(0) << endl;
+    system->set_infit (0, false); // gain
+  }
+
   path->add_model (system);
 
   unsigned cal_path = 0;
@@ -533,7 +583,7 @@ int runtest (Calibration::Parallactic& parallactic)
   // add the source signal path to the model
   //
 
-  path->add_model( &parallactic );
+  path->add_model( &projection );
 
   src_path = model.get_transformation_index();
 
@@ -543,7 +593,7 @@ int runtest (Calibration::Parallactic& parallactic)
 
   // ///////////////////////////////////////////////////////////////////////
   //
-  // add the parallactic angle rotation
+  // add the projection angle rotation
   //
   
   model.set_transformation_index (cal_path);
@@ -578,6 +628,20 @@ int runtest (Calibration::Parallactic& parallactic)
     return -1;
   }
  
+  cerr << "log(condition(Hessian)) " << model.get_solver()->get_log_cond_curvature() << endl;
+
+  unsigned nparam = system->get_nparam();
+  for (unsigned iparam=0; iparam < nparam; iparam++)
+    cerr << iparam << " " << system->get_param_name(iparam) << " " << system->get_Estimate(iparam) << endl;
+
+  if (print_covariance_reports)
+  {
+    string filename = "covariance_" + stringprintf("%03d", iteration) + ".txt";
+    Calibration::CovarianceReport report (filename);
+    report.set_model(&model);
+    report.Calibration::ReceptionModel::Report::report();
+  }
+
   float AIC_0 = 0.0;
   float GIC_0 = 0.0;
   float SIC_0 = 0.0;
@@ -722,7 +786,7 @@ int runtest (Calibration::Parallactic& parallactic)
 int main (int argc, char** argv)
 {
   int c = 0;
-  const char* args = "b:c:d:f:G:hi:l:n:o:s:t:vV";
+  const char* args = "b:c:d:D:f:G:hi:l:n:o:ps:t:vV";
   while ((c = getopt(argc, argv, args)) != -1)
     switch (c) {
 
@@ -738,6 +802,13 @@ int main (int argc, char** argv)
       difficulty = atof (optarg);
       if (difficulty * sqrt(3.0) > 1.0 || difficulty < 0.0)
         cerr << "difficulty must be >0 and <" << sqrt(3.0) << endl;
+      break;
+
+    case 'D':
+      if (optarg[0] == 'b')
+        degenerate_V_boost = true;
+      else if (optarg[0] == 'r')
+        degenerate_V_rotation = true;
       break;
 
     case 'f':
@@ -767,6 +838,10 @@ int main (int argc, char** argv)
       nobs = atoi (optarg);
       break;
 
+    case 'p':
+      test_projection = true;
+      break;
+
     case 's':
       nstates = atoi (optarg);
       break;
@@ -792,17 +867,24 @@ int main (int argc, char** argv)
 
   // the known parallactic angle rotation of the feeds
   Horizon horizon;
+  Calibration::Parallactic parallactic;
+  parallactic.set_directional( &horizon );
+
+  Fixed fixed;
+  Calibration::CelestialProjection projection;
+  projection.set_projection( &fixed );
+
+  Mount* mount = &horizon;
+  if (test_projection)
+    mount = &fixed;
 
   // Parkes-like
-  horizon.set_observatory_latitude (-33 * M_PI/180.0);
-  horizon.set_observatory_longitude (0);
+  mount->set_observatory_latitude (-33 * M_PI/180.0);
+  mount->set_observatory_longitude (0);
 
   // 0437-like
   sky_coord position ("00:00-47:15");
-  horizon.set_source_coordinates (position);
-
-  Calibration::Parallactic parallactic;
-  parallactic.set_directional( &horizon );
+  mount->set_source_coordinates (position);
 
   cerr << "Generating " << nloop << " random source and receiver combinations"
     " (difficulty=" << difficulty << ")" << endl;
@@ -824,59 +906,65 @@ int main (int argc, char** argv)
 
   int reported_finished = -1;
 
-  try {
+  for (unsigned i=0; i<nloop; i++) try
+  {
+    if (vverbose)
+      cerr << "runtest " << i << endl;
 
-    for (unsigned i=0; i<nloop; i++)
+    if (test_projection)
     {
-      if (vverbose)
-        cerr << "runtest " << i << endl;
-
-      if (runtest (parallactic) < 0)
+      if (runtest (projection, i) < 0)
         errors ++;
+    }
+    else
+    {
+      if (runtest (parallactic, i) < 0)
+        errors ++;
+    }
 
-      int finished = (i*100)/nloop;
+    int finished = (i*100)/nloop;
 
-      if ((finished != reported_finished) || (errors != reported_errors))
-      {
-        cerr << "Finished: " << finished << "% -- errors: " << errors << 
-          " (" << float((errors*1000)/(i+1))/10.0 << "%)" << endl;
+    if ((finished != reported_finished) || (errors != reported_errors))
+    {
+      cerr << "Finished: " << finished << "% -- errors: " << errors << 
+        " (" << float((errors*1000)/(i+1))/10.0 << "%)" << endl;
 
-        reported_finished = finished;
-        reported_errors = errors;
-      }
+      reported_finished = finished;
+      reported_errors = errors;
+    }
 
+    if (!(degenerate_V_rotation || degenerate_V_boost))
       hamaker = !hamaker;
-    }
-
-    if (errors)
-    {
-      float percent = ((errors*1000)/nloop)/10.0;
-
-      cerr << "Failed " << errors << " out of " << nloop << " times" 
-              " (" << percent << "%)" << endl;
-
-      if (percent > 5)
-        return -1;
-    }
-
-    if (test_GIC)
-    {
-      mean_AIC /= nloop;
-      mean_GIC /= nloop;
-      mean_SIC /= nloop;
-      
-      cout << "delta AIC min=" << min_AIC << "\t max=" << max_AIC << "\t mean=" << mean_AIC << endl;
-      cout << "delta GIC min=" << min_GIC << "\t max=" << max_GIC << "\t mean=" << mean_GIC << endl;
-      cout << "delta SIC min=" << min_SIC << "\t max=" << max_SIC << "\t mean=" << mean_SIC << endl;
-    }
   }
   catch (Error& error)
   {
     cerr << "Error " << error << endl;
-    return -1;
+    errors ++;
   }
 
-  cerr << "All tests passed" << endl << endl;
+  float percent = ((errors*1000)/nloop)/10.0;
+
+  if (errors)
+  {
+    cerr << "Failed " << errors << " out of " << nloop << " times" 
+            " (" << percent << "%)" << endl;
+
+    if (percent > 5)
+      return -1;
+    else
+      cerr << "OK" << endl;
+  }
+
+  if (test_GIC)
+  {
+    mean_AIC /= nloop;
+    mean_GIC /= nloop;
+    mean_SIC /= nloop;
+    
+    cout << "delta AIC min=" << min_AIC << "\t max=" << max_AIC << "\t mean=" << mean_AIC << endl;
+    cout << "delta GIC min=" << min_GIC << "\t max=" << max_GIC << "\t mean=" << mean_GIC << endl;
+    cout << "delta SIC min=" << min_SIC << "\t max=" << max_SIC << "\t mean=" << mean_SIC << endl;
+  }
 
   return 0;
 }

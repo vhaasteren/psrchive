@@ -12,6 +12,7 @@ nobase_include_HEADERS = \
 	Pulsar/BrittonInfo.h \
 	Pulsar/CalibratorStokesInfo.h \
 	Pulsar/CalInterpreter.h \
+  Pulsar/CelestialProjection.h \
 	Pulsar/ChannelSubsetMatch.h \
 	Pulsar/CoherencyMeasurement.h \
 	Pulsar/CoherencyMeasurementSet.h \
@@ -136,6 +137,7 @@ libPolarimetry_la_SOURCES = \
 	CalibratorStokesInfo.C \
 	CalibratorType_factory.C \
 	CalInterpreter.C \
+  CelestialProjection.C \
 	ChannelSubsetMatch.C \
 	choose.C \
 	CoherencyMeasurement.C \

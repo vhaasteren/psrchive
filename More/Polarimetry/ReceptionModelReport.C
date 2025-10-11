@@ -31,7 +31,8 @@ std::string Calibration::ReceptionModel::Report::make_reports_path (const string
     fullpath += "/" + subdir;
 
   if (makedir(fullpath.c_str()) < 0)
-    throw Error (FailedSys, "Calibration::ReceptionModel::Report::report", "makedir(" + fullpath + ") failed");
+    throw Error (FailedSys, "Calibration::ReceptionModel::Report::make_reports_path",
+                "makedir(" + fullpath + ") failed");
 
   return fullpath;
 }
