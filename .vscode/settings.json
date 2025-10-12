@@ -30,6 +30,7 @@
     "unload_integrations.C": "cpp",
     "test_ReceptionModel.C": "cpp",
     "CelestialProjection.C": "cpp",
-    "ReceptionModelReport.C": "cpp"
+    "ReceptionModelReport.C": "cpp",
+    "pac.C": "cpp"
   }
 }
