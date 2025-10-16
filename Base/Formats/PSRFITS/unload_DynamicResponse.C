@@ -38,20 +38,24 @@ void Pulsar::FITSArchive::unload (fitsfile* fptr, const DynamicResponse* respons
   if (ndat == 0)
   {
     if (verbose > 2)
-      cerr << "Pulsar::FITSArchive::unload DynamicResponse - no data" << endl;
+      cerr << "Pulsar::FITSArchive::unload DynamicResponse - no data - deleting DYN_RESP HDU" << endl;
+    delete_hdu (fptr, "DYN_RESP");
     return;
   }
 
   unsigned expected_ndat = nchan * ntime * npol;
 
   if (ndat != expected_ndat)
-    throw Error (InvalidState, "Pulsar::FITSArchive::unload DynamicResponse",
-                "invalid data dimensions: ndat=%u does not equal %u = nchan*ntime*npol=%u*%u*%u",
-                ndat, expected_ndat, nchan, ntime, npol);
+  {
+    if (verbose)
+      cerr << "Pulsar::FITSArchive::unload DynamicResponse invalid data dimensions"
+              " ndat=" << ndat << " != " << expected_ndat << 
+	      " (nchan=" << nchan << ",ntime=" << ntime << ",npol=" << npol << ")" << endl;
+    delete_hdu (fptr, "DYN_RESP");
+    return;
+  }
 
-  // Move and Clear existing rows in DYN_RESP 
   psrfits_move_hdu (fptr, "DYN_RESP");
-
   psrfits_update_key (fptr, "NCHAN",    nchan);
   psrfits_update_key (fptr, "NTIME",    ntime);
   psrfits_update_key (fptr, "NPOL",     npol);

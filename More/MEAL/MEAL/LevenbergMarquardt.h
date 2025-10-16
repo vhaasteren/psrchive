@@ -107,7 +107,7 @@ namespace MEAL
                  std::vector<std::vector<double> >& covariance = null_arg,
                  std::vector<std::vector<double> >& curvature = null_arg);
 
-    //! return the logarithm of the determinance of the curvature matrix
+    //! return the logarithm of the determinant of the curvature matrix
     double get_log_det_curvature() const { return log_det_alpha; }
 
     //! return the number of parameters varied in the fit

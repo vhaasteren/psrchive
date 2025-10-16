@@ -117,6 +117,7 @@ void usage ()
        << noise << ")\n"
     "  -o N number of observations (default="
        << nobs << ")\n"
+    "  -p   use the fixed dipole projection (default is parallactic)\n"
     "  -s N number of source states (default="
        << nstates << ")\n"
     "  -t x error tolerance (default="

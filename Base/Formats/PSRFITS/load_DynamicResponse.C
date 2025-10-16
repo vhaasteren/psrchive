@@ -76,5 +76,9 @@ void Pulsar::FITSArchive::load_DynamicResponse (fitsfile* fptr) try
 
 catch (Error& error)
 {
-  throw error += "FITSArchive::load_DynamicResponse";
+  if (verbose)
+    cerr << "FITSArchive::load_DynamicResponse ignoring exception" << endl;
+  if (verbose > 2)
+    cerr << error << endl;
 }
+
