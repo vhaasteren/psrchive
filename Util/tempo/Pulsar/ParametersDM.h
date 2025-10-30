@@ -20,7 +20,7 @@ namespace Pulsar {
   class ParametersDM : public Reference::Able {
 
     //! Reference to the Parameters containing the DM information
-    Reference::To<Pulsar::Parameters> parameters;
+    Reference::To<const Pulsar::Parameters> parameters;
 
     //! The epoch at which the DM is defined
     MJD dm_epoch;
@@ -37,7 +37,7 @@ namespace Pulsar {
   public:
 
     //! Set the Parameters instance from which to read DM values
-    void set_parameters (Pulsar::Parameters* params);
+    void set_parameters (const Pulsar::Parameters* params);
 
     //! Get the epoch at which the DM is defined
     MJD get_dm_epoch();

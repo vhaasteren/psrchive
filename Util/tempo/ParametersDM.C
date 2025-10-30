@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void Pulsar::ParametersDM::set_parameters (Pulsar::Parameters* params)
+void Pulsar::ParametersDM::set_parameters (const Pulsar::Parameters* params)
 {
   parameters = params;
   dm_epoch = get_dm_epoch();

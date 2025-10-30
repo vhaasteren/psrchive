@@ -35,7 +35,7 @@ aopx_SOURCES = aopx.C
 check_PROGRAMS = test_ephio test_polyco_io test_Phase \
 	test_get_configuration test_psrephem test_obsys $(TESTS)
 
-TESTS = test_polyco_io test_psrephem test_TextParameters
+TESTS = test_polyco_io test_psrephem test_TextParameters test_ParametersDM
 
 test_polyco_io_SOURCES		= test_polyco_io.C test.polyco
 test_Phase_SOURCES		= test_Phase.C
@@ -43,6 +43,7 @@ test_get_configuration_SOURCES	= test_get_configuration.C
 test_psrephem_SOURCES		= test_psrephem.C test.psrephem
 test_obsys_SOURCES		= test_obsys.C
 test_TextParameters_SOURCES	= test_TextParameters.C
+test_ParametersDM_SOURCES = test_ParametersDM.C
 
 # ######################################################################
 #

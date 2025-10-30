@@ -31,6 +31,11 @@
     "test_ReceptionModel.C": "cpp",
     "CelestialProjection.C": "cpp",
     "ReceptionModelReport.C": "cpp",
-    "pac.C": "cpp"
+    "pac.C": "cpp",
+    "Parameters.C": "cpp",
+    "ParametersDM.C": "cpp",
+    "test_TextParameters.C": "cpp",
+    "test_ParametersDM.C": "cpp",
+    "TextParameters.C": "cpp"
   }
 }
